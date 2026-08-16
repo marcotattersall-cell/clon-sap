@@ -59,7 +59,7 @@ export const GoodsMovementMIGO = ({ initialMaterialId = '' }) => {
           <form onSubmit={handleSubmitMIGO} className="space-y-4 text-xs">
             {/* Movement Type Selector */}
             <div>
-              <label className="block text-slate-600 dark:text-slate-400 font-bold mb-1">Clase de Movimiento SAP</label>
+              <label className="block text-slate-600 dark:text-slate-400 font-bold mb-1">Clase de Movimiento ERP</label>
               <select
                 value={movementType}
                 onChange={(e) => setMovementType(e.target.value)}

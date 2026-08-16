@@ -46,7 +46,7 @@ export const LoginScreen = () => {
     setIsSubmitting(false);
     if (res.success) {
       setCurrentRole(res.user.role || role);
-      addToast(`Bienvenido a SAP S/4HANA: ${res.user.displayName}`, 'success');
+      addToast(`Bienvenido a Enterprise Cloud ERP: ${res.user.displayName}`, 'success');
     } else {
       setLocalError(res.error);
     }
@@ -307,7 +307,7 @@ export const LoginScreen = () => {
                 <div className="grid grid-cols-2 gap-3">
                   <div>
                     <label className="block text-[11px] font-bold text-slate-700 dark:text-slate-300 mb-1">
-                      Rol Asignado en SAP
+                      Rol Asignado en el Sistema
                     </label>
                     <select
                       value={role}
@@ -347,7 +347,7 @@ export const LoginScreen = () => {
                 ) : (
                   <>
                     {mode === 'login' ? <LogIn className="w-4 h-4" /> : <UserPlus className="w-4 h-4" />}
-                    <span>{mode === 'login' ? 'Ingresar al Sistema SAP' : 'Registrar Nuevo Usuario en Firebase'}</span>
+                    <span>{mode === 'login' ? 'Ingresar al Sistema Enterprise ERP' : 'Registrar Nuevo Usuario en Firebase'}</span>
                   </>
                 )}
               </button>
@@ -381,7 +381,7 @@ export const LoginScreen = () => {
 
       {/* Footer */}
       <footer className="py-4 text-center text-xs text-slate-500 relative z-10 border-t border-slate-900">
-        SAP S/4HANA Enterprise ERP 2026 • Firebase Auth Protected • Planta Central 0001
+        Enterprise Cloud ERP 2026 • Firebase Auth Protected • Planta Central 0001
       </footer>
     </div>
   );

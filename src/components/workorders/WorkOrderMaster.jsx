@@ -258,7 +258,7 @@ export const WorkOrderMaster = ({ onOpenCreateWO, onOpenMIGOForWO }) => {
             <table className="sap-table">
               <thead>
                 <tr>
-                  <th>N° Orden SAP</th>
+                  <th>N° Orden ERP</th>
                   <th>Título de la Orden</th>
                   <th>Tipo</th>
                   <th>Estado</th>

@@ -230,7 +230,7 @@ export const AuthModal = ({ isOpen, onClose }) => {
             <div className="grid grid-cols-2 gap-3">
               <div>
                 <label className="block text-[11px] font-bold text-slate-700 dark:text-slate-300 mb-1">
-                  Rol Asignado en SAP
+                  Rol Asignado en el Sistema
                 </label>
                 <select
                   value={role}
@@ -272,7 +272,7 @@ export const AuthModal = ({ isOpen, onClose }) => {
             ) : (
               <>
                 {mode === 'login' ? <LogIn className="w-4 h-4" /> : <UserPlus className="w-4 h-4" />}
-                <span>{mode === 'login' ? 'Iniciar Sesión en SAP' : 'Registrar Nuevo Usuario'}</span>
+                <span>{mode === 'login' ? 'Iniciar Sesión en el Sistema' : 'Registrar Nuevo Usuario'}</span>
               </>
             )}
           </button>

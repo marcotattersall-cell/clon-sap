@@ -92,11 +92,11 @@ export const FioriHeader = ({ onOpenCreateWO, onOpenCreateMaterial, onOpenCreate
         <div className="flex items-center space-x-3">
           <span className="flex items-center space-x-1.5 text-emerald-600 font-mono">
             <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-            <span className="font-semibold text-slate-800">SAP S/4HANA 2026 Enterprise</span>
+            <span className="font-semibold text-slate-800">Enterprise Cloud ERP 2026</span>
           </span>
           <span className="hidden sm:inline text-slate-300">|</span>
           <div className="hidden md:flex items-center space-x-1.5 text-xs">
-            <span className="text-slate-500 font-medium">Centro SAP:</span>
+            <span className="text-slate-500 font-medium">Centro Operativo:</span>
             <select
               value={activePlant?.id || ''}
               onChange={(e) => {
@@ -117,7 +117,7 @@ export const FioriHeader = ({ onOpenCreateWO, onOpenCreateMaterial, onOpenCreate
             <button
               onClick={onOpenCreatePlant}
               className="bg-sap-blue/10 hover:bg-sap-blue text-sap-blue hover:text-white font-bold px-2 py-0.5 rounded text-[10px] flex items-center gap-1 transition-all"
-              title="Crear nuevo centro de operaciones SAP"
+              title="Crear nuevo centro de operaciones"
             >
               + Crear Centro
             </button>
