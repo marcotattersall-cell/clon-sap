@@ -144,15 +144,6 @@ export const WorkOrderMaster = ({ onOpenCreateWO, onOpenMIGOForWO }) => {
             <TableIcon className="w-3.5 h-3.5" />
             <span>Tabla Grid Enterprise</span>
           </button>
-          <button
-            onClick={() => setViewMode('GANTT')}
-            className={`px-3 py-1.5 rounded-lg text-xs font-bold flex items-center space-x-1.5 transition-all ${
-              viewMode === 'GANTT' ? 'bg-sap-blue text-white shadow' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900'
-            }`}
-          >
-            <Calendar className="w-3.5 h-3.5" />
-            <span>Cronograma Gantt</span>
-          </button>
         </div>
 
         {/* Priority Filter */}
@@ -339,40 +330,6 @@ export const WorkOrderMaster = ({ onOpenCreateWO, onOpenMIGOForWO }) => {
                 })}
               </tbody>
             </table>
-          </div>
-        </div>
-      )}
-
-      {/* VIEW 3: GANTT / TIMELINE VIEW */}
-      {viewMode === 'GANTT' && (
-        <div className="fiori-glass p-6 rounded-2xl border border-slate-200 dark:border-slate-800 space-y-4">
-          <h3 className="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
-            <Calendar className="w-4 h-4 text-sap-blue" />
-            <span>Cronograma de Planificación de Mantenimiento (Gantt Chart)</span>
-          </h3>
-
-          <div className="space-y-4">
-            {filteredWorkOrders.map(wo => (
-              <div key={wo.id} className="bg-slate-50 dark:bg-slate-800/60 p-4 rounded-xl border border-slate-200 dark:border-slate-700/60 space-y-2">
-                <div className="flex items-center justify-between text-xs">
-                  <div className="flex items-center space-x-2">
-                    <span className="font-mono font-bold text-sap-blue">{wo.id}</span>
-                    <span className="font-bold text-slate-800 dark:text-slate-200">{wo.title}</span>
-                  </div>
-                  <span className="text-slate-500 font-mono">Fechas: {wo.startDate} al {wo.targetFinishDate}</span>
-                </div>
-
-                {/* Simulated Timeline bar */}
-                <div className="h-4 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden relative">
-                  <div
-                    className={`h-full rounded-full transition-all ${
-                      wo.status === 'TECO' ? 'bg-purple-500 w-full' :
-                      wo.status === 'REL' ? 'bg-emerald-500 w-3/4' : 'bg-sap-blue w-1/4'
-                    }`}
-                  ></div>
-                </div>
-              </div>
-            ))}
           </div>
         </div>
       )}
