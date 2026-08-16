@@ -1,5 +1,4 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import confetti from 'canvas-confetti';
 
 const SAPContext = createContext(null);
 
@@ -560,16 +559,11 @@ export const SAPProvider = ({ children }) => {
           newLogEntry
         ];
 
-        // Trigger celebratory confetti on TECO (Technical Completion)
+        // Trigger Executive Corporate TECO Confirmation
         if (newStatus === 'TECO' || newStatus === 'CLSD') {
-          confetti({
-            particleCount: 80,
-            spread: 60,
-            origin: { y: 0.6 }
-          });
-          addToast(`🎉 ¡Orden ${woId} cerrada técnicamente (TECO) por ${userName}!`, 'success');
+          addToast(`🛡️ Cierre Técnico Certificado (TECO): Orden ${woId} auditada con éxito por ${userName}.`, 'success');
         } else {
-          addToast(`Estado de OT ${woId} actualizado a ${newStatus} por ${userName}`, 'info');
+          addToast(`Estado de OT ${woId} actualizado a [${newStatus}] por ${userName}.`, 'info');
         }
 
         return {
