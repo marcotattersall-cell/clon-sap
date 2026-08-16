@@ -380,11 +380,6 @@ const INITIAL_PLANTS = [
 ];
 
 export const SAPProvider = ({ children }) => {
-  // Clear legacy cached state if storage version is outdated
-  if (typeof window !== 'undefined' && !localStorage.getItem('erp_storage_v3')) {
-    localStorage.clear();
-    localStorage.setItem('erp_storage_v3', '3.0');
-  }
 
   const [plants, setPlants] = useState(() => {
     const saved = localStorage.getItem('sap_plants');
