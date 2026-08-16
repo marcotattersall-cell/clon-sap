@@ -93,6 +93,84 @@ class ErrorBoundary extends React.Component {
   }
 }
 
+const TECOConfirmationModal = () => {
+  const { tecoModalData, setTecoModalData } = useSAP();
+
+  if (!tecoModalData) return null;
+
+  return (
+    <div className="fixed inset-0 z-[100] bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-4 animate-in fade-in zoom-in-95">
+      <div className="bg-slate-900 border border-emerald-500/50 rounded-2xl shadow-2xl max-w-lg w-full overflow-hidden text-slate-100 ring-1 ring-emerald-500/30">
+        {/* Top Header Ribbon */}
+        <div className="bg-gradient-to-r from-emerald-950 via-slate-900 to-emerald-950 p-5 border-b border-emerald-800/60 flex items-center space-x-3">
+          <div className="w-12 h-12 rounded-full bg-emerald-500/20 border border-emerald-500/50 flex items-center justify-center shrink-0 shadow-lg shadow-emerald-950/50 animate-pulse">
+            <ShieldCheck className="w-7 h-7 text-emerald-400" />
+          </div>
+          <div>
+            <span className="text-[10px] font-mono tracking-widest text-emerald-400 font-bold uppercase">Módulo PM • Auditoría ERP</span>
+            <h3 className="text-base font-bold text-white leading-tight">Certificado de Cierre Técnico (TECO)</h3>
+          </div>
+        </div>
+
+        {/* Body Content */}
+        <div className="p-6 space-y-4 text-xs">
+          <div className="bg-slate-950 p-4 rounded-xl border border-slate-800 space-y-2.5 font-mono">
+            <div className="flex justify-between items-center border-b border-slate-800/80 pb-2">
+              <span className="text-slate-400">Orden de Trabajo:</span>
+              <span className="font-bold text-sky-400 text-sm">{tecoModalData.woId}</span>
+            </div>
+
+            <div className="flex justify-between items-center">
+              <span className="text-slate-400">Equipo / Activo:</span>
+              <span className="font-bold text-slate-200">{tecoModalData.equipmentId}</span>
+            </div>
+
+            <div className="flex justify-between items-center">
+              <span className="text-slate-400">Estado ERP:</span>
+              <span className="px-2 py-0.5 rounded bg-emerald-950 text-emerald-300 font-bold border border-emerald-700">
+                {tecoModalData.status === 'TECO' ? 'TECO - Cierre Técnico' : 'CLSD - Cierre Definitivo'}
+              </span>
+            </div>
+
+            <div className="flex justify-between items-center">
+              <span className="text-slate-400">Auditor Responsable:</span>
+              <span className="font-bold text-slate-200">{tecoModalData.user}</span>
+            </div>
+
+            <div className="flex justify-between items-center">
+              <span className="text-slate-400">Sello de Fecha y Hora:</span>
+              <span className="text-slate-300">{tecoModalData.timestamp}</span>
+            </div>
+          </div>
+
+          {/* Audit Comment Note */}
+          {tecoModalData.comment && (
+            <div className="bg-slate-800/60 p-3 rounded-xl border border-slate-700/80 space-y-1">
+              <span className="text-[10px] font-bold text-amber-400 uppercase tracking-wider block">Justificación Técnica de Auditoría</span>
+              <p className="text-slate-300 italic text-xs leading-relaxed">"{tecoModalData.comment}"</p>
+            </div>
+          )}
+
+          <div className="text-[11px] text-slate-400 leading-relaxed bg-slate-950/60 p-3 rounded-xl border border-slate-800/60 flex items-center space-x-2">
+            <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
+            <span>La orden ha sido sellada. Se ha habilitado la liquidación de costes contables (CO).</span>
+          </div>
+        </div>
+
+        {/* Footer Action Button */}
+        <div className="bg-slate-950 p-4 border-t border-slate-800 flex justify-end">
+          <button
+            onClick={() => setTecoModalData(null)}
+            className="w-full sm:w-auto bg-emerald-600 hover:bg-emerald-500 text-white font-bold px-6 py-2.5 rounded-xl shadow-lg transition-all flex items-center justify-center space-x-2 text-xs"
+          >
+            <span>Aceptar y Confirmar Certificado</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 const SAPAppContent = () => {
   const { user, loading } = useAuth();
   const { activeTab, setActiveTab } = useSAP();
@@ -218,6 +296,9 @@ const SAPAppContent = () => {
         isOpen={isAuthOpen}
         onClose={() => setIsAuthOpen(false)}
       />
+
+      {/* Centered TECO Certificate Modal */}
+      <TECOConfirmationModal />
 
       {/* Toast Notifications */}
       <ToastContainer />

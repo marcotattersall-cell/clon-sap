@@ -428,6 +428,7 @@ export const SAPProvider = ({ children }) => {
   const [activeTab, setActiveTab] = useState('LAUNCHPAD'); // LAUNCHPAD, INVENTORY, WORK_ORDERS, ASSETS, NOTIFICATIONS, PROCUREMENT, ANALYTICS, MIGO
   const [searchTerm, setSearchTerm] = useState('');
   const [globalToasts, setGlobalToasts] = useState([]);
+  const [tecoModalData, setTecoModalData] = useState(null);
 
   // Persistence side effects
   useEffect(() => {
@@ -559,8 +560,19 @@ export const SAPProvider = ({ children }) => {
           newLogEntry
         ];
 
-        // Trigger Executive Corporate TECO Confirmation
+        // Trigger Executive Corporate TECO Confirmation Overlay
         if (newStatus === 'TECO' || newStatus === 'CLSD') {
+          setTecoModalData({
+            woId,
+            equipmentId: wo.equipmentId || 'EQ-GENERAL',
+            title: wo.title || 'Mantenimiento de Equipo',
+            user: userName,
+            timestamp,
+            comment: comment || 'Trabajos técnicos de mantenimiento finalizados con éxito en terreno.',
+            status: newStatus,
+            plannedCost: wo.plannedCost || 300,
+            actualCost: wo.actualCost || wo.plannedCost || 300
+          });
           addToast(`🛡️ Cierre Técnico Certificado (TECO): Orden ${woId} auditada con éxito por ${userName}.`, 'success');
         } else {
           addToast(`Estado de OT ${woId} actualizado a [${newStatus}] por ${userName}.`, 'info');
@@ -788,6 +800,8 @@ export const SAPProvider = ({ children }) => {
         setSearchTerm,
         globalToasts,
         addToast,
+        tecoModalData,
+        setTecoModalData,
         executeGoodsMovement,
         updateWorkOrderStatus,
         issueComponentToWorkOrder,
