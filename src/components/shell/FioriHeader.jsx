@@ -21,7 +21,9 @@ import {
   LogIn,
   LogOut,
   User,
-  KeyRound
+  KeyRound,
+  Download,
+  Smartphone
 } from 'lucide-react';
 
 export const FioriHeader = ({ onOpenCreateWO, onOpenCreateMaterial, onOpenCreateMIGO, onOpenAuthModal, onOpenCreatePlant }) => {
@@ -46,6 +48,29 @@ export const FioriHeader = ({ onOpenCreateWO, onOpenCreateMaterial, onOpenCreate
   const [showRoleMenu, setShowRoleMenu] = useState(false);
   const [showUserMenu, setShowUserMenu] = useState(false);
   const [showQuickActions, setShowQuickActions] = useState(false);
+  const [deferredPrompt, setDeferredPrompt] = useState(null);
+
+  React.useEffect(() => {
+    const handleBeforeInstall = (e) => {
+      e.preventDefault();
+      setDeferredPrompt(e);
+    };
+    window.addEventListener('beforeinstallprompt', handleBeforeInstall);
+    return () => window.removeEventListener('beforeinstallprompt', handleBeforeInstall);
+  }, []);
+
+  const handleInstallPWA = async () => {
+    if (deferredPrompt) {
+      deferredPrompt.prompt();
+      const { outcome } = await deferredPrompt.userChoice;
+      if (outcome === 'accepted') {
+        addToast('¡App Nativa instalada con éxito en tu dispositivo!', 'success');
+      }
+      setDeferredPrompt(null);
+    } else {
+      addToast('💡 Para instalar la App Nativa: En Mac abre Safari/Chrome y selecciona "Instalar Aplicación". En Android selecciona "Añadir a Pantalla de Inicio".', 'info');
+    }
+  };
 
   // Compute urgent alerts for notification panel
   const lowStockItems = materials.filter(m => m.stock <= m.reorderPoint);
@@ -213,6 +238,16 @@ export const FioriHeader = ({ onOpenCreateWO, onOpenCreateMaterial, onOpenCreate
 
         {/* Right: Quick Actions, Firebase User & Auth Controls */}
         <div className="flex items-center space-x-2">
+          {/* Native PWA Install App Button */}
+          <button
+            onClick={handleInstallPWA}
+            title="Instalar App Nativa en macOS o Android"
+            className="bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold px-3 py-1.5 rounded-lg flex items-center space-x-1.5 shadow-sm transition-all animate-in fade-in"
+          >
+            <Download className="w-3.5 h-3.5" />
+            <span className="hidden md:inline">Instalar App Nativa</span>
+          </button>
+
           {/* Quick Action Menu Button */}
           <div className="relative">
             <button

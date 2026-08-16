@@ -1,0 +1,18 @@
+{
+  "name": "Enterprise ERP Cloud Platform",
+  "short_name": "Enterprise ERP",
+  "description": "Sistema de Mantenimiento de Planta y Flota (PM/MM/WM/FICO)",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0f172a",
+  "theme_color": "#0f172a",
+  "orientation": "any",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "192x192 512x512",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
