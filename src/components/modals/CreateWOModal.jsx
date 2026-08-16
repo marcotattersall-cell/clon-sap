@@ -25,12 +25,27 @@ export const CreateWOModal = ({ isOpen, onClose }) => {
   const lastRecordedHourmeter = previousWOs.reduce((max, w) => (w.hourmeter && Number(w.hourmeter) > max ? Number(w.hourmeter) : max), 0);
   const lastRecordedOdometer = previousWOs.reduce((max, w) => (w.odometer && Number(w.odometer) > max ? Number(w.odometer) : max), 0);
 
+  // 🔍 Regla de Negocio IW31: Detectar si ya existe una OT activa para el mismo equipo y tipo de orden (PM01, PM02, PM03)
+  const duplicateActiveWO = workOrders.find(w =>
+    w.equipmentId === equipmentId &&
+    w.type === type &&
+    (w.status === 'CRTE' || w.status === 'REL' || w.status === 'PCNF')
+  );
+
   if (!isOpen) return null;
 
   const handleSubmit = (e) => {
     e.preventDefault();
     setValidationError('');
     if (!title) return;
+
+    // ⛔ Regla de Negocio IW31: Bloquear duplicación de órdenes activas de las mismas características
+    if (duplicateActiveWO) {
+      const errorMsg = `Regla de Negocio IW31: Ya existe la Orden Activa (${duplicateActiveWO.id} - ${duplicateActiveWO.status}) para el equipo ${equipmentId} con el tipo ${type}. No se permite crear duplicados mientras esté en proceso.`;
+      setValidationError(errorMsg);
+      if (addToast) addToast(errorMsg, 'error');
+      return;
+    }
 
     const newHourmeter = isVehicleOrMachinery && hourmeter ? Number(hourmeter) : null;
     const newOdometer = isVehicleOrMachinery && odometer ? Number(odometer) : null;
@@ -89,6 +104,18 @@ export const CreateWOModal = ({ isOpen, onClose }) => {
         </div>
 
         <form onSubmit={handleSubmit} className="p-6 space-y-4 text-xs">
+          {/* 🚫 Banner de Advertencia de Duplicación (Regla de Negocio IW31) */}
+          {duplicateActiveWO && (
+            <div className="bg-rose-950/80 border border-rose-800 p-3 rounded-xl text-rose-200 text-xs flex items-start space-x-2.5 shadow-lg animate-in fade-in">
+              <AlertTriangle className="w-5 h-5 text-rose-400 shrink-0 mt-0.5" />
+              <div className="space-y-0.5">
+                <div className="font-bold text-rose-300">Regla de Negocio IW31 — Orden Duplicada Bloqueada</div>
+                <div className="leading-relaxed text-[11px]">
+                  Ya existe la Orden activa <strong className="font-mono text-white">{duplicateActiveWO.id}</strong> (Estado: <span className="font-mono font-bold text-amber-300">{duplicateActiveWO.status}</span>) registrada para el equipo <strong className="text-white">{equipmentId}</strong> con tipo <strong className="text-white">{type}</strong>. Debe ejecutar el Cierre Técnico (TECO) de la orden en proceso antes de crear una nueva.
+                </div>
+              </div>
+            </div>
+          )}
           <div>
             <label className="block text-slate-400 font-bold mb-1">Título de la Orden PM</label>
             <input
@@ -275,9 +302,14 @@ export const CreateWOModal = ({ isOpen, onClose }) => {
             </button>
             <button
               type="submit"
-              className="bg-sap-blue hover:bg-sap-blue-hover text-white px-5 py-2 rounded-xl font-bold shadow"
+              disabled={!!duplicateActiveWO}
+              className={`px-5 py-2 rounded-xl font-bold shadow transition-all ${
+                duplicateActiveWO 
+                  ? 'bg-slate-800 text-slate-500 cursor-not-allowed border border-slate-700' 
+                  : 'bg-sap-blue hover:bg-sap-blue-hover text-white'
+              }`}
             >
-              Crear Orden (IW31)
+              {duplicateActiveWO ? 'Bloqueado por Duplicación (IW31)' : 'Crear Orden (IW31)'}
             </button>
           </div>
         </form>

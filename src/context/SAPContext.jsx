@@ -661,6 +661,18 @@ export const SAPProvider = ({ children }) => {
       return false;
     }
 
+    // 3. Regla de Negocio IW31: Bloquear duplicación de OT activa con mismo Equipo y mismo Tipo (PM01, PM02, PM03)
+    const existingActiveWO = workOrders.find(w =>
+      w.equipmentId === newWO.equipmentId &&
+      w.type === newWO.type &&
+      (w.status === 'CRTE' || w.status === 'REL' || w.status === 'PCNF')
+    );
+
+    if (existingActiveWO) {
+      addToast(`🚫 Regla de Negocio IW31: Ya existe la Orden de Trabajo activa ${existingActiveWO.id} (${existingActiveWO.status}) para el equipo ${newWO.equipmentId} con el tipo ${newWO.type}. No se permite crear duplicados en proceso.`, 'error');
+      return false;
+    }
+
     const nextId = `WO-400${100 + workOrders.length + 1}`;
     const formattedWO = {
       id: nextId,
