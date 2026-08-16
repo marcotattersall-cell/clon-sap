@@ -1,0 +1,126 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    font-family: 'Inter', 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+    @apply antialiased text-slate-900 bg-white transition-colors duration-150;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: 'Inter', 'Plus Jakarta Sans', sans-serif;
+  }
+
+  .font-mono, code, pre {
+    font-family: 'JetBrains Mono', monospace;
+  }
+}
+
+/* Custom Nordic Minimal Scrollbars */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.02);
+}
+
+.dark ::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.02);
+}
+
+::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 2px;
+}
+
+.dark ::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 2px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #0284c7;
+}
+
+/* Nordic Minimal Platinum Panels */
+.fiori-glass, .enterprise-card {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.04), 0 1px 2px 0 rgba(0, 0, 0, 0.02);
+}
+
+.dark .fiori-glass, .dark .enterprise-card {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.04), 0 1px 2px 0 rgba(0, 0, 0, 0.02);
+}
+
+/* SAP Status Badges - Nordic High-Contrast Pastels */
+.sap-badge {
+  font-family: 'Inter', sans-serif;
+  @apply inline-flex items-center gap-1 px-2.5 py-0.5 rounded text-[11px] font-bold uppercase tracking-wider transition-all border;
+}
+
+.sap-badge-released {
+  @apply bg-emerald-50 text-emerald-800 border-emerald-200 dark:bg-emerald-950/70 dark:text-emerald-300 dark:border-emerald-800;
+}
+
+.sap-badge-created {
+  @apply bg-sky-50 text-sky-800 border-sky-200 dark:bg-sky-950/70 dark:text-sky-300 dark:border-sky-800;
+}
+
+.sap-badge-progress {
+  @apply bg-amber-50 text-amber-800 border-amber-200 dark:bg-amber-950/70 dark:text-amber-300 dark:border-amber-800;
+}
+
+.sap-badge-teco {
+  @apply bg-purple-50 text-purple-800 border-purple-200 dark:bg-purple-950/70 dark:text-purple-300 dark:border-purple-800;
+}
+
+.sap-badge-danger {
+  @apply bg-rose-50 text-rose-800 border-rose-200 dark:bg-rose-950/70 dark:text-rose-300 dark:border-rose-800;
+}
+
+/* Enterprise Grid Table Styling */
+.sap-table {
+  @apply w-full text-left border-collapse text-xs;
+}
+
+.sap-table th {
+  font-family: 'Inter', sans-serif;
+  @apply bg-slate-100 dark:bg-slate-800/90 font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider text-[11px] px-3 py-2.5 border-b-2 border-slate-200 dark:border-slate-700 sticky top-0 z-10 select-none;
+}
+
+.sap-table td {
+  @apply px-3 py-2.5 border-b border-slate-200/80 dark:border-slate-800 text-slate-700 dark:text-slate-200 font-normal transition-colors;
+}
+
+.sap-table tr:hover td {
+  @apply bg-sky-50/70 dark:bg-slate-800/70;
+}
+
+/* Compact Grid View Utility */
+.high-density .sap-table th {
+  @apply py-1 px-2 text-[10px];
+}
+
+.high-density .sap-table td {
+  @apply py-1 px-2 text-[11px];
+}
+
+@media print {
+  body {
+    background: white !important;
+    color: black !important;
+  }
+  .no-print {
+    display: none !important;
+  }
+  .print-only {
+    display: block !important;
+  }
+}
+

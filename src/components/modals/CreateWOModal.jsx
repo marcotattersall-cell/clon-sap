@@ -1,0 +1,287 @@
+import React, { useState } from 'react';
+import { useSAP } from '../../context/SAPContext';
+import { Wrench, Plus, X, AlertTriangle, Gauge, Truck, Clock } from 'lucide-react';
+
+export const CreateWOModal = ({ isOpen, onClose }) => {
+  const { assets, materials, workOrders, createWorkOrder, addToast } = useSAP();
+
+  const [title, setTitle] = useState('');
+  const [type, setType] = useState('PM01');
+  const [priority, setPriority] = useState('Alta');
+  const [equipmentId, setEquipmentId] = useState(assets[0]?.id || 'EQ-1001');
+  const [costCenter, setCostCenter] = useState('CC-4100');
+  const [assignedTech, setAssignedTech] = useState('Jorge Silva');
+  const [plannedHours, setPlannedHours] = useState(4.0);
+  const [plannedCost, setPlannedCost] = useState(300.00);
+
+  // 🚜 Industrial Counters: Hourmeter & Kilometrage for Machinery & Vehicles
+  const [isVehicleOrMachinery, setIsVehicleOrMachinery] = useState(true);
+  const [hourmeter, setHourmeter] = useState('4850.5');
+  const [odometer, setOdometer] = useState('128450');
+  const [validationError, setValidationError] = useState('');
+
+  // Find previous maximum counter readings for the selected equipment/vehicle
+  const previousWOs = workOrders.filter(w => w.equipmentId === equipmentId);
+  const lastRecordedHourmeter = previousWOs.reduce((max, w) => (w.hourmeter && Number(w.hourmeter) > max ? Number(w.hourmeter) : max), 0);
+  const lastRecordedOdometer = previousWOs.reduce((max, w) => (w.odometer && Number(w.odometer) > max ? Number(w.odometer) : max), 0);
+
+  if (!isOpen) return null;
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    setValidationError('');
+    if (!title) return;
+
+    const newHourmeter = isVehicleOrMachinery && hourmeter ? Number(hourmeter) : null;
+    const newOdometer = isVehicleOrMachinery && odometer ? Number(odometer) : null;
+
+    // ⛔ Strict Validation: Horometer and Odometer CANNOT be less than the last recorded values
+    if (isVehicleOrMachinery && newHourmeter !== null && lastRecordedHourmeter > 0 && newHourmeter < lastRecordedHourmeter) {
+      const errorMsg = `Error de Validación IW31: El Horómetro (${newHourmeter} hrs) no puede ser menor a la última lectura registrada (${lastRecordedHourmeter} hrs) para el equipo ${equipmentId}.`;
+      setValidationError(errorMsg);
+      if (addToast) addToast(errorMsg, 'error');
+      return;
+    }
+
+    if (isVehicleOrMachinery && newOdometer !== null && lastRecordedOdometer > 0 && newOdometer < lastRecordedOdometer) {
+      const errorMsg = `Error de Validación IW31: El Kilometraje (${newOdometer.toLocaleString()} km) no puede ser menor a la última lectura registrada (${lastRecordedOdometer.toLocaleString()} km) para el vehículo ${equipmentId}.`;
+      setValidationError(errorMsg);
+      if (addToast) addToast(errorMsg, 'error');
+      return;
+    }
+
+    const success = createWorkOrder({
+      title,
+      type,
+      priority,
+      equipmentId,
+      costCenter,
+      assignedTech,
+      plannedHours: Number(plannedHours),
+      plannedCost: Number(plannedCost),
+      hourmeter: newHourmeter,
+      odometer: newOdometer,
+      startDate: new Date().toISOString().split('T')[0],
+      targetFinishDate: new Date(Date.now() + 86400000 * 2).toISOString().split('T')[0],
+      plannerGroup: 'GRP-MAINT',
+      settlementAccount: 'CTR-COSTO-GENERAL'
+    });
+
+    if (success !== false) {
+      setTitle('');
+      setValidationError('');
+      onClose();
+    }
+  };
+
+  return (
+    <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto animate-in fade-in">
+      <div className="bg-slate-900 text-white w-full max-w-xl rounded-2xl border border-slate-700 shadow-2xl overflow-hidden my-8">
+        {/* Header */}
+        <div className="bg-slate-950 p-4 border-b border-slate-800 flex items-center justify-between">
+          <div className="flex items-center space-x-2">
+            <Wrench className="w-5 h-5 text-amber-400" />
+            <h3 className="font-bold text-sm">Transacción IW31 - Crear Orden de Trabajo</h3>
+          </div>
+          <button onClick={onClose} className="text-slate-400 hover:text-white">
+            <X className="w-5 h-5" />
+          </button>
+        </div>
+
+        <form onSubmit={handleSubmit} className="p-6 space-y-4 text-xs">
+          <div>
+            <label className="block text-slate-400 font-bold mb-1">Título de la Orden PM</label>
+            <input
+              type="text"
+              required
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              placeholder="Ej. Mantención 100,000 km y Cambio de Filtros - Camión Tolva V-102"
+              className="w-full bg-slate-800 text-slate-100 p-2.5 rounded-xl border border-slate-700 focus:ring-2 focus:ring-sap-blue"
+            />
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="block text-slate-400 font-bold mb-1">Tipo de Orden ERP</label>
+              <select
+                value={type}
+                onChange={(e) => setType(e.target.value)}
+                className="w-full bg-slate-800 text-slate-100 p-2.5 rounded-xl border border-slate-700 font-bold"
+              >
+                <option value="PM01">PM01 - Mantenimiento Correctivo</option>
+                <option value="PM02">PM02 - Mantenimiento Preventivo</option>
+                <option value="PM03">PM03 - Inspección y Calibración</option>
+              </select>
+            </div>
+
+            <div>
+              <label className="block text-slate-400 font-bold mb-1">Prioridad</label>
+              <select
+                value={priority}
+                onChange={(e) => setPriority(e.target.value)}
+                className="w-full bg-slate-800 text-slate-100 p-2.5 rounded-xl border border-slate-700 font-bold"
+              >
+                <option value="Muy Alta">Muy Alta / Urgente</option>
+                <option value="Alta">Alta</option>
+                <option value="Media">Media</option>
+                <option value="Baja">Baja</option>
+              </select>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="block text-slate-400 font-bold mb-1">Equipo / Maquinaria / Vehículo</label>
+              <select
+                value={equipmentId}
+                onChange={(e) => setEquipmentId(e.target.value)}
+                className="w-full bg-slate-800 text-slate-100 p-2.5 rounded-xl border border-slate-700"
+              >
+                {assets.map(a => (
+                  <option key={a.id} value={a.id}>{a.id} - {a.name}</option>
+                ))}
+              </select>
+            </div>
+
+            <div>
+              <label className="block text-slate-400 font-bold mb-1">Centro de Coste (CO)</label>
+              <select
+                value={costCenter}
+                onChange={(e) => setCostCenter(e.target.value)}
+                className="w-full bg-slate-800 text-slate-100 p-2.5 rounded-xl border border-slate-700"
+              >
+                <option value="CC-4100">CC-4100 - Flota & Transportes</option>
+                <option value="CC-4200">CC-4200 - Maquinaria Pesada</option>
+                <option value="CC-4300">CC-4300 - Planta Empaque</option>
+              </select>
+            </div>
+          </div>
+
+          {/* Inline Validation Error Banner */}
+          {validationError && (
+            <div className="bg-rose-950/80 border border-rose-800 p-3 rounded-xl text-rose-200 text-xs flex items-start space-x-2 animate-in fade-in">
+              <AlertTriangle className="w-5 h-5 text-rose-400 shrink-0 mt-0.5" />
+              <div className="flex-1 font-semibold leading-snug">
+                {validationError}
+              </div>
+            </div>
+          )}
+
+          {/* 🚜 Heavy Machinery & Vehicle Counter Readings (Kilometraje & Horómetro) */}
+          <div className="bg-slate-950 p-3.5 rounded-xl border border-slate-800 space-y-3">
+            <div className="flex items-center justify-between">
+              <span className="font-bold text-slate-200 flex items-center gap-1.5 text-[11px]">
+                <Gauge className="w-4 h-4 text-sky-400" />
+                Lectura de Contadores (Maquinaria / Vehículos / Camiones)
+              </span>
+              <label className="flex items-center space-x-2 cursor-pointer text-[11px] text-slate-400">
+                <input
+                  type="checkbox"
+                  checked={isVehicleOrMachinery}
+                  onChange={(e) => setIsVehicleOrMachinery(e.target.checked)}
+                  className="rounded border-slate-700 bg-slate-800 text-sap-blue focus:ring-0"
+                />
+                <span>Habilitar Lectura IW31</span>
+              </label>
+            </div>
+
+            {/* Last Recorded Values Guidance */}
+            {(lastRecordedHourmeter > 0 || lastRecordedOdometer > 0) && (
+              <div className="bg-slate-900/80 px-3 py-2 rounded-lg border border-slate-800 flex items-center justify-between text-[11px]">
+                <span className="text-slate-400 font-medium">Último registro en Base de Datos ({equipmentId}):</span>
+                <div className="flex items-center space-x-3 font-mono font-bold">
+                  {lastRecordedHourmeter > 0 && <span className="text-amber-400">⏱️ {lastRecordedHourmeter} hrs</span>}
+                  {lastRecordedOdometer > 0 && <span className="text-emerald-400">🚛 {lastRecordedOdometer.toLocaleString()} km</span>}
+                </div>
+              </div>
+            )}
+
+            {isVehicleOrMachinery && (
+              <div className="grid grid-cols-2 gap-3 pt-1">
+                <div>
+                  <label className="block text-slate-400 font-semibold mb-1 flex items-center gap-1">
+                    <Clock className="w-3.5 h-3.5 text-amber-400" />
+                    Horómetro Actual (hrs)
+                  </label>
+                  <input
+                    type="number"
+                    step="0.1"
+                    value={hourmeter}
+                    onChange={(e) => { setHourmeter(e.target.value); setValidationError(''); }}
+                    placeholder="Ej. 4850.5 hrs"
+                    className="w-full bg-slate-800 text-amber-300 font-mono font-bold p-2 rounded-lg border border-slate-700 focus:ring-1 focus:ring-amber-400"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-slate-400 font-semibold mb-1 flex items-center gap-1">
+                    <Truck className="w-3.5 h-3.5 text-emerald-400" />
+                    Kilometraje Actual (km)
+                  </label>
+                  <input
+                    type="number"
+                    step="1"
+                    value={odometer}
+                    onChange={(e) => { setOdometer(e.target.value); setValidationError(''); }}
+                    placeholder="Ej. 128450 km"
+                    className="w-full bg-slate-800 text-emerald-300 font-mono font-bold p-2 rounded-lg border border-slate-700 focus:ring-1 focus:ring-emerald-400"
+                  />
+                </div>
+              </div>
+            )}
+          </div>
+
+          <div className="grid grid-cols-3 gap-4">
+            <div>
+              <label className="block text-slate-400 font-bold mb-1">Técnico Asignado</label>
+              <input
+                type="text"
+                value={assignedTech}
+                onChange={(e) => setAssignedTech(e.target.value)}
+                className="w-full bg-slate-800 text-slate-100 p-2.5 rounded-xl border border-slate-700"
+              />
+            </div>
+
+            <div>
+              <label className="block text-slate-400 font-bold mb-1">Horas Est.</label>
+              <input
+                type="number"
+                step="0.5"
+                value={plannedHours}
+                onChange={(e) => setPlannedHours(e.target.value)}
+                className="w-full bg-slate-800 text-slate-100 p-2.5 rounded-xl border border-slate-700 font-mono"
+              />
+            </div>
+
+            <div>
+              <label className="block text-slate-400 font-bold mb-1">Coste Est. ($)</label>
+              <input
+                type="number"
+                value={plannedCost}
+                onChange={(e) => setPlannedCost(e.target.value)}
+                className="w-full bg-slate-800 text-slate-100 p-2.5 rounded-xl border border-slate-700 font-mono"
+              />
+            </div>
+          </div>
+
+          <div className="pt-4 border-t border-slate-800 flex justify-end space-x-3">
+            <button
+              type="button"
+              onClick={onClose}
+              className="bg-slate-800 hover:bg-slate-700 px-4 py-2 rounded-xl text-slate-300 font-bold"
+            >
+              Cancelar
+            </button>
+            <button
+              type="submit"
+              className="bg-sap-blue hover:bg-sap-blue-hover text-white px-5 py-2 rounded-xl font-bold shadow"
+            >
+              Crear Orden (IW31)
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+};
