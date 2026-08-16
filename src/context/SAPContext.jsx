@@ -380,6 +380,12 @@ const INITIAL_PLANTS = [
 ];
 
 export const SAPProvider = ({ children }) => {
+  // Clear legacy cached state if storage version is outdated
+  if (typeof window !== 'undefined' && !localStorage.getItem('erp_storage_v3')) {
+    localStorage.clear();
+    localStorage.setItem('erp_storage_v3', '3.0');
+  }
+
   const [plants, setPlants] = useState(() => {
     const saved = localStorage.getItem('sap_plants');
     return saved ? JSON.parse(saved) : INITIAL_PLANTS;
@@ -526,7 +532,7 @@ export const SAPProvider = ({ children }) => {
       targetStorageLocation: targetStorageLocation || 'N/A',
       refDocument: refDocument || 'Manual',
       timestamp: new Date().toLocaleString('es-CL'),
-      user: currentRole === 'WAREHOUSE_SPEC' ? 'M. ALMACEN' : 'OPERADOR SAP',
+      user: currentRole === 'WAREHOUSE_SPEC' ? 'M. ALMACEN' : 'OPERADOR ERP',
       costCenter: material.type === 'SPARE' ? 'CC-4100' : 'CC-4200'
     };
 
