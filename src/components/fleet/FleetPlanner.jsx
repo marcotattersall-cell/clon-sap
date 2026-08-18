@@ -12,20 +12,82 @@ import {
   PlusCircle,
   HardHat,
   ShieldAlert,
-  Activity,
-  Layers,
+  ShieldCheck,
+  FileCheck,
+  FileText,
+  Plus,
+  RefreshCw,
+  XCircle,
   ChevronRight
 } from 'lucide-react';
 
 import { CreateAssetModal } from '../modals/CreateAssetModal';
+import { UpdateVehicleExpirationsModal } from '../modals/UpdateVehicleExpirationsModal';
+import { formatDateDDMMYYYY } from '../../utils/dateUtils';
 
 export const FleetPlanner = ({ onOpenCreateWOForVehicle }) => {
   const { assets, workOrders, createWorkOrder, addToast } = useSAP();
 
+  const [activeSubTab, setActiveSubTab] = useState('MAINTENANCE'); // MAINTENANCE or EXPIRATIONS
   const [searchTerm, setSearchTerm] = useState('');
   const [categoryFilter, setCategoryFilter] = useState('ALL');
   const [statusFilter, setStatusFilter] = useState('ALL');
+  const [expirationsFilter, setExpirationsFilter] = useState('ALL'); // ALL, ALERT_30, EXPIRED, OK
+
   const [isCreateAssetOpen, setIsCreateAssetOpen] = useState(false);
+  const [selectedVehicleForExpirations, setSelectedVehicleForExpirations] = useState(null);
+  const [isExpirationsModalOpen, setIsExpirationsModalOpen] = useState(false);
+
+  // Helper for computing accreditation/document status and days remaining
+  const calculateDaysRemaining = (expiryDateStr) => {
+    if (!expiryDateStr) return { days: 999, status: 'OK' };
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const expiry = new Date(expiryDateStr);
+    expiry.setHours(0, 0, 0, 0);
+
+    const diffTime = expiry.getTime() - today.getTime();
+    const days = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+    if (days <= 0) return { days, status: 'EXPIRED' };
+    if (days <= 30) return { days, status: 'ALERT_30' };
+    return { days, status: 'OK' };
+  };
+
+  const getVehicleExpirationsSummary = (asset) => {
+    const acc = calculateDaysRemaining(asset.accreditationExpiry);
+    const perm = calculateDaysRemaining(asset.circulationPermitExpiry);
+    const soap = calculateDaysRemaining(asset.soapExpiry);
+
+    let customStatusList = [];
+    if (Array.isArray(asset.customExpirations)) {
+      customStatusList = asset.customExpirations.map(c => ({
+        ...c,
+        res: calculateDaysRemaining(c.expiryDate)
+      }));
+    }
+
+    const allStatuses = [
+      acc.status,
+      perm.status,
+      soap.status,
+      ...customStatusList.map(c => c.res.status)
+    ];
+
+    if (allStatuses.includes('EXPIRED')) {
+      return { overallStatus: 'EXPIRED', label: 'Documento Vencido', color: 'bg-rose-600 text-white font-bold', acc, perm, soap, customStatusList };
+    }
+    if (allStatuses.includes('ALERT_30')) {
+      const minDays = Math.min(
+        acc.status === 'ALERT_30' ? acc.days : 999,
+        perm.status === 'ALERT_30' ? perm.days : 999,
+        soap.status === 'ALERT_30' ? soap.days : 999,
+        ...customStatusList.filter(c => c.res.status === 'ALERT_30').map(c => c.res.days)
+      );
+      return { overallStatus: 'ALERT_30', label: `Vence en ≤${minDays}d`, color: 'bg-amber-500 text-white font-bold', acc, perm, soap, customStatusList };
+    }
+    return { overallStatus: 'OK', label: 'Documentación al Día', color: 'bg-emerald-100 text-emerald-800 border border-emerald-300 font-bold', acc, perm, soap, customStatusList };
+  };
 
   // Master Fleet Assets dynamically derived from context assets
   const masterFleet = assets.map(a => ({
@@ -40,10 +102,14 @@ export const FleetPlanner = ({ onOpenCreateWOForVehicle }) => {
     odometerInterval: Number(a.odometerInterval || 10000),
     operator: a.operator || 'Operador Asignado',
     plate: a.plate || a.id,
-    lastServiceDate: a.lastMaintenance || 'N/A'
+    lastServiceDate: a.lastMaintenance || 'N/A',
+    accreditationExpiry: a.accreditationExpiry || '',
+    circulationPermitExpiry: a.circulationPermitExpiry || '',
+    soapExpiry: a.soapExpiry || '',
+    customExpirations: Array.isArray(a.customExpirations) ? a.customExpirations : []
   }));
 
-  // Merge latest readings from IW31 Work Orders and compute progress against the 250 hr / 10,000 km rules
+  // Merge latest readings from IW31 Work Orders and compute progress against rules
   const fleetData = masterFleet.map(veh => {
     const matchingWOs = workOrders.filter(w => w.equipmentId === veh.id);
     const currentHourmeter = matchingWOs.reduce((max, w) => (w.hourmeter && Number(w.hourmeter) > max ? Number(w.hourmeter) : max), veh.baseHourmeter);
@@ -90,6 +156,8 @@ export const FleetPlanner = ({ onOpenCreateWOForVehicle }) => {
       status = 'WARNING';
     }
 
+    const expirationsSummary = getVehicleExpirationsSummary(veh);
+
     return {
       ...veh,
       currentHourmeter,
@@ -100,7 +168,8 @@ export const FleetPlanner = ({ onOpenCreateWOForVehicle }) => {
       progressPct,
       unitLabel,
       cycleLabel,
-      status
+      status,
+      expirationsSummary
     };
   });
 
@@ -111,21 +180,34 @@ export const FleetPlanner = ({ onOpenCreateWOForVehicle }) => {
                           v.equipmentType.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesCategory = categoryFilter === 'ALL' || v.category === categoryFilter;
     const matchesStatus = statusFilter === 'ALL' || v.status === statusFilter;
-    return matchesSearch && matchesCategory && matchesStatus;
+    const matchesExpirations = expirationsFilter === 'ALL' || v.expirationsSummary.overallStatus === expirationsFilter;
+    return matchesSearch && matchesCategory && matchesStatus && matchesExpirations;
   });
 
   // KPI Summary
   const totalFleet = fleetData.length;
   const heavyCount = fleetData.filter(v => v.category === 'HEAVY_MACHINERY').length;
   const roadCount = fleetData.filter(v => v.category === 'ROAD_VEHICLE').length;
+
+  // Maintenance KPIs
   const overdueCount = fleetData.filter(v => v.status === 'OVERDUE').length;
   const warningCount = fleetData.filter(v => v.status === 'WARNING').length;
   const okCount = fleetData.filter(v => v.status === 'OK').length;
 
+  // Expirations KPIs
+  const expExpiredCount = fleetData.filter(v => v.expirationsSummary.overallStatus === 'EXPIRED').length;
+  const expAlertCount = fleetData.filter(v => v.expirationsSummary.overallStatus === 'ALERT_30').length;
+  const expOkCount = fleetData.filter(v => v.expirationsSummary.overallStatus === 'OK').length;
+
+  const handleOpenExpirationsModal = (vehicle) => {
+    setSelectedVehicleForExpirations(vehicle);
+    setIsExpirationsModalOpen(true);
+  };
+
   const handleGeneratePreventiveWO = (vehicle) => {
     const pautaLabel = vehicle.category === 'HEAVY_MACHINERY' ? `${vehicle.targetValue} hrs` : `${vehicle.targetValue.toLocaleString()} km`;
     const title = `[PAUTA FLOTA - ${vehicle.equipmentType.toUpperCase()}] Servicio Preventivo ${pautaLabel} - ${vehicle.name}`;
-    
+
     createWorkOrder({
       title,
       type: 'PM02',
@@ -152,11 +234,11 @@ export const FleetPlanner = ({ onOpenCreateWOForVehicle }) => {
           <div className="flex items-center space-x-2">
             <Truck className="w-6 h-6 text-sky-400" />
             <h2 className="text-xl font-black tracking-tight text-white">
-              Planificación de Mantenimiento de Flota & Maquinaria
+              Planificación de Flota, Maquinaria & Vencimientos Documentales
             </h2>
           </div>
           <p className="text-xs text-slate-300 max-w-3xl leading-relaxed">
-            Esquema industrial parametrizado: <strong className="text-amber-400">Maquinaria Pesada</strong> (Excavadora, Rodillo, Cargador, Retroexcavadora) con ciclo de <strong className="text-amber-400">250 Horas</strong> • <strong className="text-emerald-400">Vehículos de Carretera</strong> (Camiones, Camionetas) con ciclo de <strong className="text-emerald-400">10.000 KM</strong>.
+            Gestión integral de la flota: Ciclos de Mantenimiento Preventivo (<strong className="text-amber-400">250 hrs / 10.000 km</strong>) y Semáforo de <strong className="text-sky-300">Acreditación en Faena, Permiso de Circulación, SOAP y Vencimientos Personalizados</strong>.
           </p>
         </div>
 
@@ -178,56 +260,140 @@ export const FleetPlanner = ({ onOpenCreateWOForVehicle }) => {
         </div>
       </div>
 
-      {/* KPI Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <div className="fiori-card p-4 bg-white rounded-2xl border border-slate-200 shadow-sm flex items-center justify-between">
-          <div>
-            <div className="text-xs font-bold text-slate-500 uppercase tracking-wider">Total Flota Registrada</div>
-            <div className="text-2xl font-black text-slate-900 mt-1">{totalFleet} Unidades</div>
-            <div className="text-[11px] text-slate-500 mt-0.5">{heavyCount} Maquinarias ({'250 hrs'}) | {roadCount} Vehículos ({'10k km'})</div>
-          </div>
-          <div className="w-12 h-12 rounded-xl bg-sky-50 text-sky-600 flex items-center justify-center font-bold">
-            <Truck className="w-6 h-6" />
-          </div>
-        </div>
+      {/* Main Sub-Tab Switcher (Mantenimiento vs Vencimientos) */}
+      <div className="bg-white rounded-2xl border border-slate-200 p-1.5 flex flex-wrap gap-2 shadow-sm">
+        <button
+          onClick={() => setActiveSubTab('MAINTENANCE')}
+          className={`px-5 py-2.5 rounded-xl text-xs font-black transition-all flex items-center space-x-2 ${
+            activeSubTab === 'MAINTENANCE'
+              ? 'bg-slate-900 text-white shadow-md'
+              : 'text-slate-600 hover:bg-slate-100'
+          }`}
+        >
+          <Wrench className="w-4 h-4 text-amber-400" />
+          <span>Pautas de Servicio & Horómetros (250h / 10k km)</span>
+          {overdueCount > 0 && (
+            <span className="bg-rose-600 text-white text-[10px] px-2 py-0.5 rounded-full font-mono font-bold">
+              {overdueCount} Vencidos
+            </span>
+          )}
+        </button>
 
-        <div className="fiori-card p-4 bg-white rounded-2xl border border-slate-200 shadow-sm flex items-center justify-between">
-          <div>
-            <div className="text-xs font-bold text-slate-500 uppercase tracking-wider">Flota Al Día</div>
-            <div className="text-2xl font-black text-emerald-600 mt-1">{okCount} Unidades</div>
-            <div className="text-[11px] text-emerald-700 mt-0.5">Dentro del intervalo preventivo</div>
-          </div>
-          <div className="w-12 h-12 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center font-bold">
-            <CheckCircle2 className="w-6 h-6" />
-          </div>
-        </div>
-
-        <div className="fiori-card p-4 bg-white rounded-2xl border border-slate-200 shadow-sm flex items-center justify-between">
-          <div>
-            <div className="text-xs font-bold text-amber-700 uppercase tracking-wider">Mantenimiento Próximo</div>
-            <div className="text-2xl font-black text-amber-600 mt-1">{warningCount} Unidades</div>
-            <div className="text-[11px] text-amber-700 mt-0.5">Próximo a cumplir pauta</div>
-          </div>
-          <div className="w-12 h-12 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center font-bold">
-            <Clock className="w-6 h-6" />
-          </div>
-        </div>
-
-        <div className="fiori-card p-4 bg-white rounded-2xl border border-slate-200 shadow-sm flex items-center justify-between">
-          <div>
-            <div className="text-xs font-bold text-rose-700 uppercase tracking-wider">Servicio Vencido</div>
-            <div className="text-2xl font-black text-rose-600 mt-1">{overdueCount} Unidades</div>
-            <div className="text-[11px] text-rose-700 mt-0.5">Requiere OT IW31 Inmediata</div>
-          </div>
-          <div className="w-12 h-12 rounded-xl bg-rose-50 text-rose-600 flex items-center justify-center font-bold">
-            <AlertTriangle className="w-6 h-6" />
-          </div>
-        </div>
+        <button
+          onClick={() => setActiveSubTab('EXPIRATIONS')}
+          className={`px-5 py-2.5 rounded-xl text-xs font-black transition-all flex items-center space-x-2 ${
+            activeSubTab === 'EXPIRATIONS'
+              ? 'bg-sky-800 text-white shadow-md'
+              : 'text-slate-600 hover:bg-slate-100'
+          }`}
+        >
+          <FileCheck className="w-4 h-4 text-sky-300" />
+          <span>Acreditación & Vencimientos Documentales (Acreditación / Permiso / SOAP)</span>
+          {expAlertCount + expExpiredCount > 0 && (
+            <span className="bg-amber-500 text-white text-[10px] px-2 py-0.5 rounded-full font-mono font-bold">
+              {expAlertCount + expExpiredCount} Alertas
+            </span>
+          )}
+        </button>
       </div>
+
+      {/* KPI Cards based on Active Sub-Tab */}
+      {activeSubTab === 'MAINTENANCE' ? (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="fiori-card p-4 bg-white rounded-2xl border border-slate-200 shadow-sm flex items-center justify-between">
+            <div>
+              <div className="text-xs font-bold text-slate-500 uppercase tracking-wider">Total Flota Registrada</div>
+              <div className="text-2xl font-black text-slate-900 mt-1">{totalFleet} Unidades</div>
+              <div className="text-[11px] text-slate-500 mt-0.5">{heavyCount} Maquinarias | {roadCount} Vehículos</div>
+            </div>
+            <div className="w-12 h-12 rounded-xl bg-sky-50 text-sky-600 flex items-center justify-center font-bold">
+              <Truck className="w-6 h-6" />
+            </div>
+          </div>
+
+          <div className="fiori-card p-4 bg-white rounded-2xl border border-slate-200 shadow-sm flex items-center justify-between">
+            <div>
+              <div className="text-xs font-bold text-slate-500 uppercase tracking-wider">Servicios al Día</div>
+              <div className="text-2xl font-black text-emerald-600 mt-1">{okCount} Unidades</div>
+              <div className="text-[11px] text-emerald-700 mt-0.5">Dentro del intervalo preventivo</div>
+            </div>
+            <div className="w-12 h-12 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center font-bold">
+              <CheckCircle2 className="w-6 h-6" />
+            </div>
+          </div>
+
+          <div className="fiori-card p-4 bg-white rounded-2xl border border-slate-200 shadow-sm flex items-center justify-between">
+            <div>
+              <div className="text-xs font-bold text-amber-700 uppercase tracking-wider">Mantenimiento Próximo</div>
+              <div className="text-2xl font-black text-amber-600 mt-1">{warningCount} Unidades</div>
+              <div className="text-[11px] text-amber-700 mt-0.5">Próximo a cumplir pauta</div>
+            </div>
+            <div className="w-12 h-12 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center font-bold">
+              <Clock className="w-6 h-6" />
+            </div>
+          </div>
+
+          <div className="fiori-card p-4 bg-white rounded-2xl border border-slate-200 shadow-sm flex items-center justify-between">
+            <div>
+              <div className="text-xs font-bold text-rose-700 uppercase tracking-wider">Servicio Vencido</div>
+              <div className="text-2xl font-black text-rose-600 mt-1">{overdueCount} Unidades</div>
+              <div className="text-[11px] text-rose-700 mt-0.5">Requiere OT IW31 Inmediata</div>
+            </div>
+            <div className="w-12 h-12 rounded-xl bg-rose-50 text-rose-600 flex items-center justify-center font-bold">
+              <AlertTriangle className="w-6 h-6" />
+            </div>
+          </div>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="fiori-card p-4 bg-white rounded-2xl border border-slate-200 shadow-sm flex items-center justify-between">
+            <div>
+              <div className="text-xs font-bold text-slate-500 uppercase tracking-wider">Total Flota Auditada</div>
+              <div className="text-2xl font-black text-slate-900 mt-1">{totalFleet} Vehículos</div>
+              <div className="text-[11px] text-slate-500 mt-0.5">Acreditaciones y Legalidad</div>
+            </div>
+            <div className="w-12 h-12 rounded-xl bg-sky-50 text-sky-600 flex items-center justify-center font-bold">
+              <ShieldCheck className="w-6 h-6" />
+            </div>
+          </div>
+
+          <div className="fiori-card p-4 bg-white rounded-2xl border border-slate-200 shadow-sm flex items-center justify-between">
+            <div>
+              <div className="text-xs font-bold text-slate-500 uppercase tracking-wider">Documentación al Día</div>
+              <div className="text-2xl font-black text-emerald-600 mt-1">{expOkCount} Vehículos</div>
+              <div className="text-[11px] text-emerald-700 mt-0.5">Habilitados para faena</div>
+            </div>
+            <div className="w-12 h-12 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center font-bold">
+              <CheckCircle2 className="w-6 h-6" />
+            </div>
+          </div>
+
+          <div className="fiori-card p-4 bg-white rounded-2xl border border-amber-200 bg-amber-50/30 shadow-sm flex items-center justify-between">
+            <div>
+              <div className="text-xs font-bold text-amber-800 uppercase tracking-wider">Por Vencer (≤30 Días)</div>
+              <div className="text-2xl font-black text-amber-600 mt-1">{expAlertCount} Vehículos</div>
+              <div className="text-[11px] text-amber-700 mt-0.5">Requiere renovación cercana</div>
+            </div>
+            <div className="w-12 h-12 rounded-xl bg-amber-100 text-amber-700 flex items-center justify-center font-bold">
+              <AlertTriangle className="w-6 h-6" />
+            </div>
+          </div>
+
+          <div className="fiori-card p-4 bg-white rounded-2xl border border-rose-200 bg-rose-50/30 shadow-sm flex items-center justify-between">
+            <div>
+              <div className="text-xs font-bold text-rose-800 uppercase tracking-wider">Documentos Vencidos</div>
+              <div className="text-2xl font-black text-rose-600 mt-1">{expExpiredCount} Vehículos</div>
+              <div className="text-[11px] text-rose-700 mt-0.5">Bloqueado para tránsito/faena</div>
+            </div>
+            <div className="w-12 h-12 rounded-xl bg-rose-100 text-rose-700 flex items-center justify-center font-bold">
+              <XCircle className="w-6 h-6" />
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Toolbar & Category Filters */}
       <div className="fiori-card p-4 bg-slate-50 border border-slate-200 rounded-2xl space-y-4">
-        {/* Category Tabs */}
         <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-200 pb-3">
           <div className="flex items-center space-x-2">
             <button
@@ -249,7 +415,7 @@ export const FleetPlanner = ({ onOpenCreateWOForVehicle }) => {
               }`}
             >
               <HardHat className="w-3.5 h-3.5" />
-              <span>🚜 Maquinaria Pesada (Ciclo c/250 hrs)</span>
+              <span>🚜 Maquinaria Pesada</span>
             </button>
             <button
               onClick={() => setCategoryFilter('ROAD_VEHICLE')}
@@ -260,20 +426,33 @@ export const FleetPlanner = ({ onOpenCreateWOForVehicle }) => {
               }`}
             >
               <Truck className="w-3.5 h-3.5" />
-              <span>🚛 Vehículos Carretera & Flota (Ciclo c/10.000 km)</span>
+              <span>🚛 Vehículos & Carretera</span>
             </button>
           </div>
 
-          <select
-            value={statusFilter}
-            onChange={(e) => setStatusFilter(e.target.value)}
-            className="text-xs bg-white border border-slate-200 rounded-xl px-3 py-1.5 font-bold text-slate-700 focus:ring-2 focus:ring-sap-blue"
-          >
-            <option value="ALL">Todos los Estados</option>
-            <option value="OK">🟢 Al Día (OK)</option>
-            <option value="WARNING">🟡 Próximo a Mantenimiento</option>
-            <option value="OVERDUE">🔴 Vencido / OT Requerida</option>
-          </select>
+          {activeSubTab === 'MAINTENANCE' ? (
+            <select
+              value={statusFilter}
+              onChange={(e) => setStatusFilter(e.target.value)}
+              className="text-xs bg-white border border-slate-200 rounded-xl px-3 py-1.5 font-bold text-slate-700 focus:ring-2 focus:ring-sap-blue"
+            >
+              <option value="ALL">Todos los Estados de Mantenimiento</option>
+              <option value="OK">🟢 Al Día (OK)</option>
+              <option value="WARNING">🟡 Próximo a Mantenimiento</option>
+              <option value="OVERDUE">🔴 Vencido / OT Requerida</option>
+            </select>
+          ) : (
+            <select
+              value={expirationsFilter}
+              onChange={(e) => setExpirationsFilter(e.target.value)}
+              className="text-xs bg-white border border-slate-200 rounded-xl px-3 py-1.5 font-bold text-slate-700 focus:ring-2 focus:ring-sky-600"
+            >
+              <option value="ALL">Todos los Estados Documentales</option>
+              <option value="OK">🟢 Documentación al Día</option>
+              <option value="ALERT_30">🟡 Vence en ≤30 Días</option>
+              <option value="EXPIRED">🔴 Documento Vencido</option>
+            </select>
+          )}
         </div>
 
         {/* Search Input */}
@@ -289,144 +468,329 @@ export const FleetPlanner = ({ onOpenCreateWOForVehicle }) => {
         </div>
       </div>
 
-      {/* Fleet Cards Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        {filteredFleet.map(vehicle => {
-          const isHeavy = vehicle.category === 'HEAVY_MACHINERY';
+      {/* ----------------- SUB-TAB 1: PAUTAS Y MANTENIMIENTO ----------------- */}
+      {activeSubTab === 'MAINTENANCE' && (
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+          {filteredFleet.map(vehicle => {
+            const isHeavy = vehicle.category === 'HEAVY_MACHINERY';
+            const expSum = vehicle.expirationsSummary;
 
-          return (
-            <div
-              key={vehicle.id}
-              className={`fiori-card p-5 rounded-2xl border transition-all ${
-                vehicle.status === 'OVERDUE'
-                  ? 'bg-rose-50/40 border-rose-300 hover:border-rose-400 shadow-sm'
-                  : vehicle.status === 'WARNING'
-                  ? 'bg-amber-50/30 border-amber-300 hover:border-amber-400 shadow-sm'
-                  : 'bg-white border-slate-200 hover:border-sap-blue/60 shadow-sm'
-              }`}
-            >
-              {/* Header of Vehicle Card */}
-              <div className="flex items-start justify-between pb-3 border-b border-slate-200/80">
-                <div className="space-y-1">
-                  <div className="flex items-center space-x-2">
-                    <span className="font-mono font-bold text-xs text-sap-blue px-2 py-0.5 rounded bg-sky-100/70 border border-sky-200">
-                      {vehicle.id}
-                    </span>
-                    <span className={`text-[11px] font-extrabold px-2 py-0.5 rounded ${
-                      isHeavy ? 'bg-amber-100 text-amber-900 border border-amber-300' : 'bg-emerald-100 text-emerald-900 border border-emerald-300'
-                    }`}>
-                      {isHeavy ? '🚜 Maquinaria (250 hrs)' : '🚛 Vehículo (10.000 km)'}
-                    </span>
-                    <span className="font-mono text-xs font-bold text-slate-700 bg-slate-100 px-2 py-0.5 rounded border border-slate-200">
-                      Patente: {vehicle.plate}
-                    </span>
+            return (
+              <div
+                key={vehicle.id}
+                className={`fiori-card p-5 rounded-2xl border transition-all ${
+                  vehicle.status === 'OVERDUE'
+                    ? 'bg-rose-50/40 border-rose-300 hover:border-rose-400 shadow-sm'
+                    : vehicle.status === 'WARNING'
+                    ? 'bg-amber-50/30 border-amber-300 hover:border-amber-400 shadow-sm'
+                    : 'bg-white border-slate-200 hover:border-sap-blue/60 shadow-sm'
+                }`}
+              >
+                {/* Header of Vehicle Card */}
+                <div className="flex items-start justify-between pb-3 border-b border-slate-200/80">
+                  <div className="space-y-1">
+                    <div className="flex flex-wrap items-center gap-1.5">
+                      <span className="font-mono font-bold text-xs text-sap-blue px-2 py-0.5 rounded bg-sky-100/70 border border-sky-200">
+                        {vehicle.id}
+                      </span>
+                      <span className={`text-[11px] font-extrabold px-2 py-0.5 rounded ${
+                        isHeavy ? 'bg-amber-100 text-amber-900 border border-amber-300' : 'bg-emerald-100 text-emerald-900 border border-emerald-300'
+                      }`}>
+                        {isHeavy ? '🚜 Maquinaria (250 hrs)' : '🚛 Vehículo (10.000 km)'}
+                      </span>
+                      <span className="font-mono text-xs font-bold text-slate-700 bg-slate-100 px-2 py-0.5 rounded border border-slate-200">
+                        Patente: {vehicle.plate}
+                      </span>
+                    </div>
+                    <h3 className="font-bold text-sm text-slate-900 tracking-tight leading-snug">
+                      {vehicle.name}
+                    </h3>
+                    <p className="text-xs text-slate-500">
+                      Operador: <strong className="text-slate-700">{vehicle.operator}</strong> • Centro Costo: <strong className="text-amber-700 font-mono">{vehicle.costCenter}</strong>
+                    </p>
                   </div>
-                  <h3 className="font-bold text-sm text-slate-900 tracking-tight leading-snug">
-                    {vehicle.name}
-                  </h3>
-                  <p className="text-xs text-slate-500">
-                    Operador: <strong className="text-slate-700">{vehicle.operator}</strong> • Centro Costo: <strong className="text-amber-700 font-mono">{vehicle.costCenter}</strong>
-                  </p>
+
+                  {/* Status Badge */}
+                  <div className="flex flex-col items-end space-y-1">
+                    {vehicle.status === 'OVERDUE' && (
+                      <span className="inline-flex items-center space-x-1 px-3 py-1 rounded-full text-xs font-extrabold bg-rose-600 text-white shadow-sm animate-pulse">
+                        <AlertTriangle className="w-3.5 h-3.5" />
+                        <span>Pauta Vencida</span>
+                      </span>
+                    )}
+                    {vehicle.status === 'WARNING' && (
+                      <span className="inline-flex items-center space-x-1 px-3 py-1 rounded-full text-xs font-extrabold bg-amber-500 text-white shadow-sm">
+                        <Clock className="w-3.5 h-3.5" />
+                        <span>Próximo a Pauta</span>
+                      </span>
+                    )}
+                    {vehicle.status === 'OK' && (
+                      <span className="inline-flex items-center space-x-1 px-3 py-1 rounded-full text-xs font-bold bg-emerald-100 text-emerald-800 border border-emerald-300">
+                        <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
+                        <span>Al Día</span>
+                      </span>
+                    )}
+
+                    {/* Expiration badge preview */}
+                    <button
+                      onClick={() => handleOpenExpirationsModal(vehicle)}
+                      className={`text-[10px] px-2 py-0.5 rounded border font-bold flex items-center space-x-1 ${expSum.color}`}
+                      title="Ver vencimientos documentales del vehículo"
+                    >
+                      <FileCheck className="w-3 h-3" />
+                      <span>{expSum.label}</span>
+                    </button>
+                  </div>
                 </div>
 
-                {/* Status Badge */}
-                <div>
-                  {vehicle.status === 'OVERDUE' && (
-                    <span className="inline-flex items-center space-x-1 px-3 py-1 rounded-full text-xs font-extrabold bg-rose-600 text-white shadow-sm animate-pulse">
-                      <AlertTriangle className="w-3.5 h-3.5" />
-                      <span>Pauta Vencida</span>
-                    </span>
-                  )}
-                  {vehicle.status === 'WARNING' && (
-                    <span className="inline-flex items-center space-x-1 px-3 py-1 rounded-full text-xs font-extrabold bg-amber-500 text-white shadow-sm">
-                      <Clock className="w-3.5 h-3.5" />
-                      <span>Próximo a Pauta</span>
-                    </span>
-                  )}
-                  {vehicle.status === 'OK' && (
-                    <span className="inline-flex items-center space-x-1 px-3 py-1 rounded-full text-xs font-bold bg-emerald-100 text-emerald-800 border border-emerald-300">
-                      <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
-                      <span>Al Día</span>
-                    </span>
-                  )}
+                {/* Maintenance Cycle Bar & Counter Readings */}
+                <div className="py-4 space-y-4">
+                  <div className="bg-slate-50 p-3 rounded-xl border border-slate-200/80 space-y-2">
+                    <div className="flex items-center justify-between text-xs">
+                      <span className="font-bold text-slate-800 flex items-center space-x-1.5">
+                        {isHeavy ? <Clock className="w-4 h-4 text-amber-600" /> : <Truck className="w-4 h-4 text-emerald-600" />}
+                        <span>Lectura Actual ({isHeavy ? 'Horómetro' : 'Kilometraje'}):</span>
+                        <strong className={`font-mono text-sm ${isHeavy ? 'text-amber-700' : 'text-emerald-700'}`}>
+                          {vehicle.currentValue.toLocaleString()} {vehicle.unitLabel}
+                        </strong>
+                      </span>
+                      <span className="text-slate-600 font-mono text-[11px] font-bold">
+                        Meta Pauta: <span className="underline">{vehicle.targetValue.toLocaleString()} {vehicle.unitLabel}</span>
+                      </span>
+                    </div>
+
+                    {/* Progress Bar for Current Cycle */}
+                    <div className="space-y-1">
+                      <div className="w-full h-3.5 bg-slate-200 rounded-full overflow-hidden p-0.5">
+                        <div
+                          className={`h-full rounded-full transition-all duration-500 ${
+                            vehicle.progressPct >= 100
+                              ? 'bg-rose-600'
+                              : vehicle.progressPct >= 80
+                              ? 'bg-amber-500'
+                              : isHeavy
+                              ? 'bg-amber-500'
+                              : 'bg-emerald-500'
+                          }`}
+                          style={{ width: `${vehicle.progressPct}%` }}
+                        />
+                      </div>
+                      <div className="flex items-center justify-between text-[10px] text-slate-500">
+                        <span>{vehicle.cycleLabel}</span>
+                        <span className="font-mono font-bold">
+                          {vehicle.remainingValue <= 0 ? (
+                            <strong className="text-rose-600">¡Vencido por {Math.abs(vehicle.remainingValue).toLocaleString()} {vehicle.unitLabel}!</strong>
+                          ) : (
+                            <span>Quedan {vehicle.remainingValue.toLocaleString()} {vehicle.unitLabel} para el servicio</span>
+                          )}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Card Footer */}
+                <div className="pt-3 border-t border-slate-200/80 flex items-center justify-between gap-2">
+                  <button
+                    onClick={() => handleOpenExpirationsModal(vehicle)}
+                    className="text-xs text-sky-700 hover:text-sky-900 font-bold flex items-center space-x-1 hover:underline"
+                  >
+                    <FileCheck className="w-3.5 h-3.5 text-sky-600" />
+                    <span>Gestión de Vencimientos</span>
+                  </button>
+
+                  <button
+                    onClick={() => handleGeneratePreventiveWO(vehicle)}
+                    className={`px-3.5 py-2 rounded-xl text-xs font-extrabold flex items-center space-x-1.5 shadow-sm transition-all ${
+                      vehicle.status === 'OVERDUE'
+                        ? 'bg-rose-600 hover:bg-rose-700 text-white'
+                        : vehicle.status === 'WARNING'
+                        ? 'bg-amber-600 hover:bg-amber-700 text-white'
+                        : 'bg-slate-900 hover:bg-slate-800 text-white'
+                    }`}
+                  >
+                    <Wrench className="w-3.5 h-3.5" />
+                    <span>⚡ Generar OT IW31</span>
+                  </button>
                 </div>
               </div>
+            );
+          })}
+        </div>
+      )}
 
-              {/* Maintenance Cycle Bar & Counter Readings */}
-              <div className="py-4 space-y-4">
-                <div className="bg-slate-50 p-3 rounded-xl border border-slate-200/80 space-y-2">
-                  <div className="flex items-center justify-between text-xs">
-                    <span className="font-bold text-slate-800 flex items-center space-x-1.5">
-                      {isHeavy ? <Clock className="w-4 h-4 text-amber-600" /> : <Truck className="w-4 h-4 text-emerald-600" />}
-                      <span>Lectura Actual ({isHeavy ? 'Horómetro' : 'Kilometraje'}):</span>
-                      <strong className={`font-mono text-sm ${isHeavy ? 'text-amber-700' : 'text-emerald-700'}`}>
-                        {vehicle.currentValue.toLocaleString()} {vehicle.unitLabel}
-                      </strong>
-                    </span>
-                    <span className="text-slate-600 font-mono text-[11px] font-bold">
-                      Meta Pauta: <span className="underline">{vehicle.targetValue.toLocaleString()} {vehicle.unitLabel}</span>
+      {/* ----------------- SUB-TAB 2: VENCIMIENTOS & ACREDITACION ----------------- */}
+      {activeSubTab === 'EXPIRATIONS' && (
+        <div className="space-y-4">
+          <div className="bg-sky-50 border border-sky-200 p-4 rounded-2xl text-xs space-y-2">
+            <div className="flex items-center space-x-2 font-bold text-sky-900 text-sm">
+              <FileCheck className="w-5 h-5 text-sky-600" />
+              <span>Semáforo de Vencimientos Documentales & Acreditación de Vehículos</span>
+            </div>
+            <p className="text-sky-800 leading-relaxed">
+              Monitoreo continuo de los 3 documentos legales base: <strong>1. Acreditación en Faena</strong>, <strong>2. Permiso de Circulación</strong>, <strong>3. SOAP (Seguro Obligatorio)</strong> y todos los <strong>vencimientos personalizados</strong> agregados por el usuario.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {filteredFleet.map(vehicle => {
+              const exp = vehicle.expirationsSummary;
+
+              return (
+                <div
+                  key={vehicle.id}
+                  className={`fiori-card p-5 rounded-2xl border bg-white shadow-sm space-y-4 relative overflow-hidden transition-all ${
+                    exp.overallStatus === 'EXPIRED'
+                      ? 'border-rose-300 ring-1 ring-rose-200'
+                      : exp.overallStatus === 'ALERT_30'
+                      ? 'border-amber-300 ring-1 ring-amber-200'
+                      : 'border-slate-200'
+                  }`}
+                >
+                  {/* Card Header */}
+                  <div className="flex items-start justify-between pb-3 border-b border-slate-200">
+                    <div className="space-y-1">
+                      <div className="flex items-center space-x-2">
+                        <span className="font-mono font-bold text-xs text-sap-blue px-2 py-0.5 rounded bg-sky-100/70 border border-sky-200">
+                          {vehicle.id}
+                        </span>
+                        <span className="font-mono text-xs font-bold text-slate-800 bg-slate-100 px-2 py-0.5 rounded border border-slate-200">
+                          {vehicle.plate}
+                        </span>
+                      </div>
+                      <h3 className="font-bold text-sm text-slate-900 leading-snug">
+                        {vehicle.name}
+                      </h3>
+                      <p className="text-xs text-slate-500">
+                        {vehicle.equipmentType} • CC: <strong className="text-slate-700 font-mono">{vehicle.costCenter}</strong>
+                      </p>
+                    </div>
+
+                    <span className={`px-2.5 py-1 rounded-full text-xs font-extrabold shrink-0 ${exp.color}`}>
+                      {exp.label}
                     </span>
                   </div>
 
-                  {/* Progress Bar for Current Cycle */}
-                  <div className="space-y-1">
-                    <div className="w-full h-3.5 bg-slate-200 rounded-full overflow-hidden p-0.5">
-                      <div
-                        className={`h-full rounded-full transition-all duration-500 ${
-                          vehicle.progressPct >= 100
-                            ? 'bg-rose-600'
-                            : vehicle.progressPct >= 80
-                            ? 'bg-amber-500'
-                            : isHeavy
-                            ? 'bg-amber-500'
-                            : 'bg-emerald-500'
-                        }`}
-                        style={{ width: `${vehicle.progressPct}%` }}
-                      />
+                  {/* 3 Core Required Expirations Grid */}
+                  <div className="space-y-2 bg-slate-50 p-3 rounded-xl border border-slate-200 text-xs">
+                    <div className="text-[11px] font-bold text-slate-700 uppercase tracking-wider mb-1 flex items-center justify-between">
+                      <span>Documentos Legales Obligatorios</span>
+                      <span className="text-[10px] text-slate-400 font-mono">Días Restantes</span>
                     </div>
-                    <div className="flex items-center justify-between text-[10px] text-slate-500">
-                      <span>{vehicle.cycleLabel}</span>
-                      <span className="font-mono font-bold">
-                        {vehicle.remainingValue <= 0 ? (
-                          <strong className="text-rose-600">¡Vencido por {Math.abs(vehicle.remainingValue).toLocaleString()} {vehicle.unitLabel}!</strong>
-                        ) : (
-                          <span>Quedan {vehicle.remainingValue.toLocaleString()} {vehicle.unitLabel} para el servicio</span>
-                        )}
+
+                    {/* 1. Acreditación en Faena */}
+                    <div className="bg-white p-2 rounded-lg border border-slate-200 flex items-center justify-between text-xs">
+                      <div>
+                        <span className="block font-bold text-slate-800 text-[11px]">1. Acreditación en Faena</span>
+                        <span className="text-[10px] text-slate-500 font-mono">
+                          {vehicle.accreditationExpiry ? formatDateDDMMYYYY(vehicle.accreditationExpiry) : 'No Ingresado'}
+                        </span>
+                      </div>
+                      <span className={`font-mono text-xs font-bold px-2 py-0.5 rounded ${
+                        exp.acc.status === 'EXPIRED' ? 'bg-rose-100 text-rose-800 border border-rose-300' :
+                        exp.acc.status === 'ALERT_30' ? 'bg-amber-100 text-amber-900 border border-amber-300' :
+                        'bg-emerald-50 text-emerald-700 border border-emerald-200'
+                      }`}>
+                        {exp.acc.status === 'EXPIRED' ? '🔴 Vencido' : exp.acc.status === 'ALERT_30' ? `🟡 ${exp.acc.days}d` : `🟢 ${exp.acc.days}d`}
+                      </span>
+                    </div>
+
+                    {/* 2. Permiso de Circulación */}
+                    <div className="bg-white p-2 rounded-lg border border-slate-200 flex items-center justify-between text-xs">
+                      <div>
+                        <span className="block font-bold text-slate-800 text-[11px]">2. Permiso de Circulación</span>
+                        <span className="text-[10px] text-slate-500 font-mono">
+                          {vehicle.circulationPermitExpiry ? formatDateDDMMYYYY(vehicle.circulationPermitExpiry) : 'No Ingresado'}
+                        </span>
+                      </div>
+                      <span className={`font-mono text-xs font-bold px-2 py-0.5 rounded ${
+                        exp.perm.status === 'EXPIRED' ? 'bg-rose-100 text-rose-800 border border-rose-300' :
+                        exp.perm.status === 'ALERT_30' ? 'bg-amber-100 text-amber-900 border border-amber-300' :
+                        'bg-emerald-50 text-emerald-700 border border-emerald-200'
+                      }`}>
+                        {exp.perm.status === 'EXPIRED' ? '🔴 Vencido' : exp.perm.status === 'ALERT_30' ? `🟡 ${exp.perm.days}d` : `🟢 ${exp.perm.days}d`}
+                      </span>
+                    </div>
+
+                    {/* 3. SOAP */}
+                    <div className="bg-white p-2 rounded-lg border border-slate-200 flex items-center justify-between text-xs">
+                      <div>
+                        <span className="block font-bold text-slate-800 text-[11px]">3. Seguro Obligatorio (SOAP)</span>
+                        <span className="text-[10px] text-slate-500 font-mono">
+                          {vehicle.soapExpiry ? formatDateDDMMYYYY(vehicle.soapExpiry) : 'No Ingresado'}
+                        </span>
+                      </div>
+                      <span className={`font-mono text-xs font-bold px-2 py-0.5 rounded ${
+                        exp.soap.status === 'EXPIRED' ? 'bg-rose-100 text-rose-800 border border-rose-300' :
+                        exp.soap.status === 'ALERT_30' ? 'bg-amber-100 text-amber-900 border border-amber-300' :
+                        'bg-emerald-50 text-emerald-700 border border-emerald-200'
+                      }`}>
+                        {exp.soap.status === 'EXPIRED' ? '🔴 Vencido' : exp.soap.status === 'ALERT_30' ? `🟡 ${exp.soap.days}d` : `🟢 ${exp.soap.days}d`}
                       </span>
                     </div>
                   </div>
+
+                  {/* Custom Expirations List Section */}
+                  <div className="bg-amber-50/60 p-3 rounded-xl border border-amber-200 text-xs space-y-2">
+                    <div className="flex items-center justify-between text-[11px] font-bold text-amber-900 uppercase">
+                      <span>Vencimientos Personalizados ({exp.customStatusList.length})</span>
+                      <span className="text-[10px] text-amber-700 font-normal">Disponibles</span>
+                    </div>
+
+                    {exp.customStatusList.length === 0 ? (
+                      <div className="text-[11px] text-amber-800 italic">
+                        Sin vencimientos adicionales agregados.
+                      </div>
+                    ) : (
+                      <div className="space-y-1.5">
+                        {exp.customStatusList.map(item => (
+                          <div key={item.id} className="bg-white p-2 rounded-lg border border-amber-200 flex items-center justify-between text-xs">
+                            <div>
+                              <span className="font-bold text-slate-800 block text-[11px]">{item.title}</span>
+                              <span className="text-[10px] text-slate-500 font-mono">{formatDateDDMMYYYY(item.expiryDate)}</span>
+                            </div>
+                            <span className={`font-mono text-[11px] font-bold px-2 py-0.5 rounded ${
+                              item.res.status === 'EXPIRED' ? 'bg-rose-100 text-rose-800 border border-rose-300' :
+                              item.res.status === 'ALERT_30' ? 'bg-amber-100 text-amber-900 border border-amber-300' :
+                              'bg-emerald-50 text-emerald-700 border border-emerald-200'
+                            }`}>
+                              {item.res.status === 'EXPIRED' ? '🔴 Vencido' : item.res.status === 'ALERT_30' ? `🟡 ${item.res.days}d` : `🟢 ${item.res.days}d`}
+                            </span>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Card Action */}
+                  <button
+                    onClick={() => handleOpenExpirationsModal(vehicle)}
+                    className="w-full bg-sky-700 hover:bg-sky-800 text-white font-bold py-2.5 rounded-xl text-xs transition-all flex items-center justify-center space-x-1.5 shadow-sm"
+                  >
+                    <RefreshCw className="w-3.5 h-3.5" />
+                    <span>Actualizar y Agregar Vencimientos</span>
+                  </button>
                 </div>
-              </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
 
-              {/* Card Footer */}
-              <div className="pt-3 border-t border-slate-200/80 flex items-center justify-between">
-                <div className="text-[11px] text-slate-500 flex items-center space-x-1">
-                  <Calendar className="w-3.5 h-3.5 text-slate-400" />
-                  <span>Último Servicio: {vehicle.lastServiceDate}</span>
-                </div>
-
-                <button
-                  onClick={() => handleGeneratePreventiveWO(vehicle)}
-                  className={`px-3.5 py-2 rounded-xl text-xs font-extrabold flex items-center space-x-1.5 shadow-sm transition-all ${
-                    vehicle.status === 'OVERDUE'
-                      ? 'bg-rose-600 hover:bg-rose-700 text-white'
-                      : vehicle.status === 'WARNING'
-                      ? 'bg-amber-600 hover:bg-amber-700 text-white'
-                      : 'bg-slate-900 hover:bg-slate-800 text-white'
-                  }`}
-                >
-                  <Wrench className="w-3.5 h-3.5" />
-                  <span>⚡ Generar OT IW31</span>
-                </button>
-              </div>
-            </div>
-          );
-        })}
-      </div>
-
+      {/* Modal Alta de Equipo IE01 */}
       <CreateAssetModal
         isOpen={isCreateAssetOpen}
         onClose={() => setIsCreateAssetOpen(false)}
+      />
+
+      {/* Modal Actualización de Vencimientos de Flota */}
+      <UpdateVehicleExpirationsModal
+        isOpen={isExpirationsModalOpen}
+        onClose={() => {
+          setIsExpirationsModalOpen(false);
+          setSelectedVehicleForExpirations(null);
+        }}
+        vehicle={selectedVehicleForExpirations}
       />
     </div>
   );

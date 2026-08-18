@@ -553,6 +553,32 @@ export const SAPProvider = ({ children }) => {
     return true;
   };
 
+  // Fleet: Update Vehicle Document Expirations (Acreditación, Permiso de Circulación, SOAP, Personalizados)
+  const updateAssetExpirations = (assetId, expirationData) => {
+    const asset = assets.find(a => a.id === assetId);
+    if (!asset) return false;
+
+    const updatedAsset = {
+      ...asset,
+      accreditationExpiry: expirationData.accreditationExpiry || asset.accreditationExpiry || '',
+      circulationPermitExpiry: expirationData.circulationPermitExpiry || asset.circulationPermitExpiry || '',
+      soapExpiry: expirationData.soapExpiry || asset.soapExpiry || '',
+      customExpirations: Array.isArray(expirationData.customExpirations) ? expirationData.customExpirations : (asset.customExpirations || [])
+    };
+
+    setAssets(prev => prev.map(a => a.id === assetId ? updatedAsset : a));
+    upsertDocument('assets', assetId, updatedAsset);
+    recordAuditLog({
+      entityType: 'FLEET_EXPIRATIONS',
+      entityId: assetId,
+      action: 'UPDATE_VEHICLE_EXPIRATIONS',
+      details: `Vencimientos documentales actualizados para vehículo/equipo ${asset.name} (${asset.plate || assetId})`,
+      user: 'Gestor de Flota'
+    });
+    addToast(`✅ Fechas de vencimiento actualizadas con éxito para ${asset.name}.`, 'success');
+    return true;
+  };
+
   // HCM: Absence & Leave Request (PT)
   const createAbsenceRequest = (newAbsence) => {
     const nextId = `ABS-2026-00${absences.length + 1}`;
@@ -649,6 +675,7 @@ export const SAPProvider = ({ children }) => {
         reseedEmployees,
         updateEmployeeStatus,
         updateEmployeeCompliance,
+        updateAssetExpirations,
         addFaenaAccreditation,
         createAbsenceRequest,
         updateAbsenceStatus,

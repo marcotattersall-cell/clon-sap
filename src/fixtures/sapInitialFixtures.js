@@ -18,10 +18,76 @@ export const DEFAULT_MATERIALS = [
 ];
 
 export const DEFAULT_ASSETS = [
-  { id: 'EQ-101', name: 'Excavadora Hidráulica CAT 336 GC', category: 'Maquinaria Pesada', location: 'Mina Norte', status: 'OPERATIVE', healthScore: 94, hourmeter: 4250, odometer: 185000, model: 'CAT 336 GC 2024', serialNumber: 'CAT336GC-2024-99' },
-  { id: 'EQ-102', name: 'Cargador Frontal Komatsu WA470', category: 'Maquinaria Pesada', location: 'Planta Chancado', status: 'MAINTENANCE', healthScore: 78, hourmeter: 6100, odometer: 210000, model: 'Komatsu WA470-8', serialNumber: 'KOMWA470-881' },
-  { id: 'EQ-103', name: 'Camión Aljibe Mercedes-Benz Atego 1726', category: 'Flota Transporte', location: 'Campamento Central', status: 'OPERATIVE', healthScore: 98, hourmeter: 1890, odometer: 95400, model: 'Atego 1726 4x2', serialNumber: 'MBAT1726-2023-41' },
-  { id: 'EQ-104', name: 'Chancador Primario de Quijada Metso C125', category: 'Planta Procesamiento', location: 'Línea de Molienda 1', status: 'OPERATIVE', healthScore: 89, hourmeter: 12400, odometer: 0, model: 'Nordberg C125', serialNumber: 'METC125-9921' }
+  {
+    id: 'EQ-101',
+    name: 'Excavadora Hidráulica CAT 336 GC',
+    category: 'Maquinaria Pesada',
+    location: 'Mina Norte',
+    status: 'OPERATIVE',
+    healthScore: 94,
+    hourmeter: 4250,
+    odometer: 185000,
+    model: 'CAT 336 GC 2024',
+    serialNumber: 'CAT336GC-2024-99',
+    accreditationExpiry: '2026-08-30', // Por vencer (≤30d)
+    circulationPermitExpiry: '2027-03-31',
+    soapExpiry: '2027-03-31',
+    customExpirations: [
+      { id: 'CUST-101-1', title: 'Revisión Técnica', expiryDate: '2026-11-15' }
+    ]
+  },
+  {
+    id: 'EQ-102',
+    name: 'Cargador Frontal Komatsu WA470',
+    category: 'Maquinaria Pesada',
+    location: 'Planta Chancado',
+    status: 'MAINTENANCE',
+    healthScore: 78,
+    hourmeter: 6100,
+    odometer: 210000,
+    model: 'Komatsu WA470-8',
+    serialNumber: 'KOMWA470-881',
+    accreditationExpiry: '2026-08-10', // Vencido
+    circulationPermitExpiry: '2027-03-31',
+    soapExpiry: '2027-03-31',
+    customExpirations: [
+      { id: 'CUST-102-1', title: 'Certificado de Gases', expiryDate: '2026-10-20' }
+    ]
+  },
+  {
+    id: 'EQ-103',
+    name: 'Camión Aljibe Mercedes-Benz Atego 1726',
+    category: 'Flota Transporte',
+    location: 'Campamento Central',
+    status: 'OPERATIVE',
+    healthScore: 98,
+    hourmeter: 1890,
+    odometer: 95400,
+    model: 'Atego 1726 4x2',
+    serialNumber: 'MBAT1726-2023-41',
+    accreditationExpiry: '2026-12-31',
+    circulationPermitExpiry: '2027-03-31',
+    soapExpiry: '2027-03-31',
+    customExpirations: [
+      { id: 'CUST-103-1', title: 'Inspección de Extintores', expiryDate: '2026-12-01' }
+    ]
+  },
+  {
+    id: 'EQ-104',
+    name: 'Chancador Primario de Quijada Metso C125',
+    category: 'Planta Procesamiento',
+    location: 'Línea de Molienda 1',
+    status: 'OPERATIVE',
+    healthScore: 89,
+    hourmeter: 12400,
+    odometer: 0,
+    model: 'Nordberg C125',
+    serialNumber: 'METC125-9921',
+    accreditationExpiry: '2027-05-15',
+    circulationPermitExpiry: '2027-03-31',
+    soapExpiry: '2027-03-31',
+    customExpirations: []
+  }
 ];
 
 export const DEFAULT_WORK_ORDERS = [
