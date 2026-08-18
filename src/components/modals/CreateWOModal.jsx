@@ -215,17 +215,11 @@ export const CreateWOModal = ({ isOpen, onClose }) => {
             <div className="flex items-center justify-between">
               <span className="font-bold text-slate-200 flex items-center gap-1.5 text-[11px]">
                 <Gauge className="w-4 h-4 text-sky-400" />
-                Lectura de Contadores (Maquinaria / Vehículos / Camiones)
+                Lectura Obligatoria de Contadores (Horómetro / Kilometraje)
               </span>
-              <label className="flex items-center space-x-2 cursor-pointer text-[11px] text-slate-400">
-                <input
-                  type="checkbox"
-                  checked={isVehicleOrMachinery}
-                  onChange={(e) => setIsVehicleOrMachinery(e.target.checked)}
-                  className="rounded border-slate-700 bg-slate-800 text-sap-blue focus:ring-0"
-                />
-                <span>Habilitar Lectura IW31</span>
-              </label>
+              <span className="text-[10px] font-bold text-emerald-400 bg-emerald-950 px-2 py-0.5 rounded border border-emerald-800">
+                Siempre Activo (ON)
+              </span>
             </div>
 
             {/* Last Recorded Values Guidance */}
@@ -239,39 +233,37 @@ export const CreateWOModal = ({ isOpen, onClose }) => {
               </div>
             )}
 
-            {isVehicleOrMachinery && (
-              <div className="grid grid-cols-2 gap-3 pt-1">
-                <div>
-                  <label className="block text-slate-400 font-semibold mb-1 flex items-center gap-1">
-                    <Clock className="w-3.5 h-3.5 text-amber-400" />
-                    Horómetro Actual (hrs)
-                  </label>
-                  <input
-                    type="number"
-                    step="0.1"
-                    value={hourmeter}
-                    onChange={(e) => { setHourmeter(e.target.value); setValidationError(''); }}
-                    placeholder="Ej. 4850.5 hrs"
-                    className="w-full bg-slate-800 text-amber-300 font-mono font-bold p-2 rounded-lg border border-slate-700 focus:ring-1 focus:ring-amber-400"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-slate-400 font-semibold mb-1 flex items-center gap-1">
-                    <Truck className="w-3.5 h-3.5 text-emerald-400" />
-                    Kilometraje Actual (km)
-                  </label>
-                  <input
-                    type="number"
-                    step="1"
-                    value={odometer}
-                    onChange={(e) => { setOdometer(e.target.value); setValidationError(''); }}
-                    placeholder="Ej. 128450 km"
-                    className="w-full bg-slate-800 text-emerald-300 font-mono font-bold p-2 rounded-lg border border-slate-700 focus:ring-1 focus:ring-emerald-400"
-                  />
-                </div>
+            <div className="grid grid-cols-2 gap-3 pt-1">
+              <div>
+                <label className="block text-slate-400 font-semibold mb-1 flex items-center gap-1">
+                  <Clock className="w-3.5 h-3.5 text-amber-400" />
+                  Horómetro Actual (hrs)
+                </label>
+                <input
+                  type="number"
+                  step="0.1"
+                  value={hourmeter}
+                  onChange={(e) => { setHourmeter(e.target.value); setValidationError(''); }}
+                  placeholder="Ej. 4850.5 hrs"
+                  className="w-full bg-slate-800 text-amber-300 font-mono font-bold p-2 rounded-lg border border-slate-700 focus:ring-1 focus:ring-amber-400"
+                />
               </div>
-            )}
+
+              <div>
+                <label className="block text-slate-400 font-semibold mb-1 flex items-center gap-1">
+                  <Truck className="w-3.5 h-3.5 text-emerald-400" />
+                  Kilometraje Actual (km)
+                </label>
+                <input
+                  type="number"
+                  step="1"
+                  value={odometer}
+                  onChange={(e) => { setOdometer(e.target.value); setValidationError(''); }}
+                  placeholder="Ej. 128450 km"
+                  className="w-full bg-slate-800 text-emerald-300 font-mono font-bold p-2 rounded-lg border border-slate-700 focus:ring-1 focus:ring-emerald-400"
+                />
+              </div>
+            </div>
           </div>
 
           {/* 📦 Planned Material Component & RESB Reservation */}
