@@ -7,6 +7,9 @@
   "firestore": {
     "rules": "firestore.rules"
   },
+  "functions": {
+    "source": "functions"
+  },
   "hosting": [
     {
       "site": "clon-sap-2026",

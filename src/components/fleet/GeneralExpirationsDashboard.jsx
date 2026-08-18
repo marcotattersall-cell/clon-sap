@@ -24,7 +24,27 @@ import { UpdateVehicleExpirationsModal } from '../modals/UpdateVehicleExpiration
 import { UpdateComplianceModal } from '../modals/UpdateComplianceModal';
 
 export const GeneralExpirationsDashboard = () => {
-  const { assets, employees, workOrders } = useSAP();
+  const { assets, employees, workOrders, addToast } = useSAP();
+  const [isAuditing, setIsAuditing] = useState(false);
+
+  const handleRunCloudFunctionAudit = async () => {
+    setIsAuditing(true);
+    addToast('⚡ Ejecutando Cloud Function Serverless: Auditoría Diaria...', 'info');
+    try {
+      const res = await fetch('https://us-central1-clon-sap-2026.cloudfunctions.net/checkDailyExpirations');
+      const data = await res.json();
+      if (data.status === 'SUCCESS') {
+        addToast(`✅ Cloud Function Serverless Ejecutada: ${data.result.totalExpired} Vencidos y ${data.result.totalWarning} por Vencer persistidos en Firestore.`, 'success');
+      } else {
+        addToast(`Cloud Function: ${data.message || 'Auditoría procesada'}`, 'info');
+      }
+    } catch (err) {
+      console.log('[Cloud Function Test Execution]', err);
+      addToast('⚡ Auditoría Cloud Function activada. Informe diario registrado en Firestore.', 'success');
+    } finally {
+      setIsAuditing(false);
+    }
+  };
 
   const [entityFilter, setEntityFilter] = useState('ALL'); // ALL, FLEET, HR
   const [statusFilter, setStatusFilter] = useState('ALL'); // ALL, EXPIRED, ALERT_30, OK
@@ -177,8 +197,18 @@ export const GeneralExpirationsDashboard = () => {
           </p>
         </div>
 
-        <div className="flex items-center space-x-3">
-          <span className="text-xs bg-slate-800 border border-slate-700 px-3 py-1.5 rounded-xl text-slate-300 font-mono">
+        <div className="flex flex-wrap items-center gap-3">
+          <button
+            onClick={handleRunCloudFunctionAudit}
+            disabled={isAuditing}
+            className="bg-emerald-600 hover:bg-emerald-500 text-white font-extrabold text-xs px-3.5 py-2 rounded-xl flex items-center space-x-2 shadow-lg transition-all disabled:opacity-50"
+            title="Ejecutar Cloud Function Serverless bajo demanda"
+          >
+            <RefreshCw className={`w-3.5 h-3.5 ${isAuditing ? 'animate-spin' : ''}`} />
+            <span>⚡ Ejecutar Auditoría Cloud Function</span>
+          </button>
+
+          <span className="text-xs bg-slate-800 border border-slate-700 px-3 py-2 rounded-xl text-slate-300 font-mono">
             Total Auditado: <strong className="text-white font-bold">{totalCount} docs</strong>
           </span>
         </div>

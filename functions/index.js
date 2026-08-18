@@ -160,3 +160,167 @@ exports.ingestIoTTelemetry = functions.https.onRequest(async (req, res) => {
     return res.status(500).json({ error: "Error interno del servidor al procesar telemetría.", details: error.message });
   }
 });
+
+// ============================================================================
+// 🔔 CLOUD FUNCTION: ALERTA DIARIA AUTOMÁTICA DE VENCIMIENTOS (CRON + HTTP)
+// ============================================================================
+
+const getDaysToExpiry = (dateStr) => {
+  if (!dateStr) return 999;
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const target = new Date(dateStr);
+  target.setHours(0, 0, 0, 0);
+  return Math.ceil((target.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+};
+
+const runExpirationsAudit = async () => {
+  const empSnap = await db.collection("employees").get();
+  const assetSnap = await db.collection("assets").get();
+
+  const expiredItems = [];
+  const warningItems = [];
+
+  // Audit Employees (HCM)
+  empSnap.forEach(doc => {
+    const emp = doc.data();
+    const checks = [
+      { name: "Examen Médico Asoex/Mutual", date: emp.medicalExamExpiry },
+      { name: "Acreditación Faena / Pase", date: emp.accreditationExpiry },
+      { name: "Curso de Seguridad OHSAS", date: emp.safetyCourseExpiry },
+      { name: "Contrato Plazo Fijo", date: emp.contractType === 'Plazo Fijo' ? emp.contractExpiry : null }
+    ];
+
+    checks.forEach(c => {
+      if (c.date) {
+        const days = getDaysToExpiry(c.date);
+        const item = {
+          entityType: "COLABORADOR (HCM)",
+          id: emp.id,
+          name: emp.fullName,
+          rut: emp.rut || "N/A",
+          docName: c.name,
+          expiryDate: c.date,
+          daysToExpiry: days
+        };
+
+        if (days <= 0) {
+          expiredItems.push(item);
+        } else if (days <= 30) {
+          warningItems.push(item);
+        }
+      }
+    });
+  });
+
+  // Audit Vehicles & Equipment (PM/Fleet)
+  assetSnap.forEach(doc => {
+    const asset = doc.data();
+    const checks = [
+      { name: "Permiso de Circulación", date: asset.circPermitExpiry },
+      { name: "Seguro Obligatorio SOAP", date: asset.soapExpiry },
+      { name: "Revisión Técnica", date: asset.techInspectExpiry },
+      { name: "Acreditación Minera Faena", date: asset.miningAccreditationExpiry }
+    ];
+
+    if (Array.isArray(asset.customExpirations)) {
+      asset.customExpirations.forEach(ce => {
+        checks.push({ name: ce.title || "Documento Personalizado", date: ce.expiryDate });
+      });
+    }
+
+    checks.forEach(c => {
+      if (c.date) {
+        const days = getDaysToExpiry(c.date);
+        const item = {
+          entityType: "VEHÍCULO / MAQUINARIA (PM)",
+          id: asset.id,
+          name: `${asset.name} (${asset.plate || asset.id})`,
+          plate: asset.plate || asset.id,
+          docName: c.name,
+          expiryDate: c.date,
+          daysToExpiry: days
+        };
+
+        if (days <= 0) {
+          expiredItems.push(item);
+        } else if (days <= 30) {
+          warningItems.push(item);
+        }
+      }
+    });
+  });
+
+  const timestampIso = new Date().toISOString();
+  const dateStr = timestampIso.split("T")[0];
+  const reportId = `AUDIT-REPORT-${dateStr}`;
+
+  const reportSummary = {
+    reportId,
+    timestamp: timestampIso,
+    date: dateStr,
+    totalExpired: expiredItems.length,
+    totalWarning: warningItems.length,
+    expiredItems,
+    warningItems,
+    status: expiredItems.length > 0 ? "CRITICAL" : warningItems.length > 0 ? "WARNING" : "OK"
+  };
+
+  // 1. Persistir Informe en Firestore
+  await db.collection("expirationAuditReports").doc(reportId).set(reportSummary);
+
+  // 2. Generar Alerta en Buzón de Notificaciones si hay observaciones
+  if (expiredItems.length > 0 || warningItems.length > 0) {
+    const notifId = `NOTIF-EXPIRY-${Date.now()}`;
+    await db.collection("notifications").doc(notifId).set({
+      id: notifId,
+      title: `🔴 ALERTA DIARIA: ${expiredItems.length} Documentos Vencidos y ${warningItems.length} por Vencer`,
+      message: `Auditoría automática procesada. Se detectaron ${expiredItems.length} documentos vencidos y ${warningItems.length} por vencer en los próximos 30 días.`,
+      type: "EXPIRATION_ALERT",
+      createdAt: timestampIso,
+      read: false,
+      reportId
+    });
+  }
+
+  return reportSummary;
+};
+
+/**
+ * Trigger Programado Diario (Cron 08:00 AM Chile)
+ */
+exports.checkDailyExpirationsCron = functions.pubsub
+  .schedule("0 8 * * *")
+  .timeZone("America/Santiago")
+  .onRun(async (context) => {
+    console.log("[Cron 08:00 AM] Ejecutando Auditoría Diaria Automática de Vencimientos...");
+    const result = await runExpirationsAudit();
+    console.log("[Cron 08:00 AM] Auditoría finalizada:", JSON.stringify(result));
+    return null;
+  });
+
+/**
+ * Trigger HTTP manual para ejecuciones bajo demanda y pruebas instantáneas desde UI
+ */
+exports.checkDailyExpirations = functions.https.onRequest(async (req, res) => {
+  res.set("Access-Control-Allow-Origin", "*");
+  res.set("Access-Control-Allow-Headers", "Content-Type, Authorization");
+  res.set("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
+
+  if (req.method === "OPTIONS") {
+    return res.status(204).send("");
+  }
+
+  try {
+    const result = await runExpirationsAudit();
+    return res.status(200).json({
+      status: "SUCCESS",
+      message: "Auditoría diaria de vencimientos procesada correctamente.",
+      result
+    });
+  } catch (error) {
+    console.error("Error en checkDailyExpirations HTTP:", error);
+    return res.status(500).json({ error: "Error al ejecutar la auditoría de vencimientos.", details: error.message });
+  }
+});
+
