@@ -23,6 +23,7 @@ import {
 
 import { CreateAssetModal } from '../modals/CreateAssetModal';
 import { UpdateVehicleExpirationsModal } from '../modals/UpdateVehicleExpirationsModal';
+import { GeneralExpirationsDashboard } from './GeneralExpirationsDashboard';
 import { formatDateDDMMYYYY } from '../../utils/dateUtils';
 
 export const FleetPlanner = ({ onOpenCreateWOForVehicle }) => {
@@ -264,7 +265,7 @@ export const FleetPlanner = ({ onOpenCreateWOForVehicle }) => {
         </div>
       </div>
 
-      {/* Main Sub-Tab Switcher (Mantenimiento vs Vencimientos) */}
+      {/* Main Sub-Tab Switcher (Mantenimiento vs Vencimientos Vehículo vs Dashboard General) */}
       <div className="bg-white rounded-2xl border border-slate-200 p-1.5 flex flex-wrap gap-2 shadow-sm">
         <button
           onClick={() => setActiveSubTab('MAINTENANCE')}
@@ -292,12 +293,24 @@ export const FleetPlanner = ({ onOpenCreateWOForVehicle }) => {
           }`}
         >
           <FileCheck className="w-4 h-4 text-sky-300" />
-          <span>Acreditación & Vencimientos Documentales (Acreditación / Permiso / SOAP)</span>
+          <span>Acreditación & Vencimientos Vehiculares</span>
           {expAlertCount + expExpiredCount > 0 && (
             <span className="bg-amber-500 text-white text-[10px] px-2 py-0.5 rounded-full font-mono font-bold">
               {expAlertCount + expExpiredCount} Alertas
             </span>
           )}
+        </button>
+
+        <button
+          onClick={() => setActiveSubTab('GENERAL_DASHBOARD')}
+          className={`px-5 py-2.5 rounded-xl text-xs font-black transition-all flex items-center space-x-2 ${
+            activeSubTab === 'GENERAL_DASHBOARD'
+              ? 'bg-gradient-to-r from-amber-600 to-amber-700 text-white shadow-md'
+              : 'text-slate-600 hover:bg-slate-100 border border-amber-200/60'
+          }`}
+        >
+          <ShieldAlert className="w-4 h-4 text-amber-200" />
+          <span>📊 Dashboard General de Vencimientos (Empresa)</span>
         </button>
       </div>
 
@@ -796,6 +809,11 @@ export const FleetPlanner = ({ onOpenCreateWOForVehicle }) => {
             })}
           </div>
         </div>
+      )}
+
+      {/* ----------------- SUB-TAB 3: DASHBOARD GENERAL DE VENCIMIENTOS ----------------- */}
+      {activeSubTab === 'GENERAL_DASHBOARD' && (
+        <GeneralExpirationsDashboard />
       )}
 
       {/* Modal Alta de Equipo IE01 */}
