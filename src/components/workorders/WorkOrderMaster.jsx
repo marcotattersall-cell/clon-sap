@@ -38,6 +38,7 @@ export const WorkOrderMaster = ({ onOpenCreateWO, onOpenMIGOForWO }) => {
     assets,
     materials,
     searchTerm,
+    currentRole,
     updateWorkOrderStatus,
     issueComponentToWorkOrder,
     addToast
@@ -128,13 +129,20 @@ export const WorkOrderMaster = ({ onOpenCreateWO, onOpenMIGOForWO }) => {
         </div>
 
         <div className="flex flex-wrap items-center gap-3 shrink-0">
-          <button
-            onClick={onOpenCreateWO}
-            className="bg-sap-blue hover:bg-sap-blue-hover text-white text-xs font-extrabold px-4 py-2.5 rounded-xl shadow-sm flex items-center space-x-2 transition-all"
-          >
-            <Plus className="w-4 h-4" />
-            <span>＋ Crear Orden IW31</span>
-          </button>
+          {currentRole === 'FIELD_MECHANIC' ? (
+            <span className="bg-orange-100 text-orange-900 border border-orange-300 font-extrabold px-3 py-2 rounded-xl text-xs flex items-center space-x-1.5 shadow-xs">
+              <Wrench className="w-4 h-4 text-orange-600" />
+              <span>Modo Mecánico de Terreno (Solo Ejecución)</span>
+            </span>
+          ) : (
+            <button
+              onClick={onOpenCreateWO}
+              className="bg-sap-blue hover:bg-sap-blue-hover text-white text-xs font-extrabold px-4 py-2.5 rounded-xl shadow-sm flex items-center space-x-2 transition-all"
+            >
+              <Plus className="w-4 h-4" />
+              <span>＋ Crear Orden IW31</span>
+            </button>
+          )}
         </div>
       </div>
 

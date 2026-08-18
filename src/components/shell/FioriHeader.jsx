@@ -134,6 +134,7 @@ export const FioriHeader = ({ onOpenCreateWO, onOpenCreateMaterial, onOpenCreate
   const totalAlertsCount = lowStockItems.length + criticalWorkOrders.length + complianceAlertEmployees.length;
 
   const roleLabels = {
+    FIELD_MECHANIC: { title: 'Mecánico de Terreno (Operativo)', icon: Wrench, color: 'text-orange-500' },
     MAINTENANCE_MGR: { title: 'Jefe de Mantenimiento (PM)', icon: Wrench, color: 'text-amber-500' },
     WAREHOUSE_SPEC: { title: 'Especialista de Almacén (MM)', icon: Package, color: 'text-blue-500' },
     FLEET_MGR: { title: 'Encargado de Flota y Maquinaria', icon: Building2, color: 'text-purple-500' },
@@ -238,7 +239,7 @@ export const FioriHeader = ({ onOpenCreateWO, onOpenCreateMaterial, onOpenCreate
             </div>
           </button>
 
-          {/* Quick Navigation Tabs */}
+            {/* Quick Navigation Tabs */}
           <nav className="hidden lg:flex items-center space-x-1 pl-4 border-l border-slate-200">
             <button
               onClick={() => setActiveTab('LAUNCHPAD')}
@@ -265,22 +266,6 @@ export const FioriHeader = ({ onOpenCreateWO, onOpenCreateMaterial, onOpenCreate
               Activos (IE03)
             </button>
             <button
-              onClick={() => setActiveTab('INVENTORY')}
-              className={`px-3 py-1.5 rounded-md text-xs font-semibold transition-all ${
-                activeTab === 'INVENTORY' ? 'bg-sap-blue text-white shadow-sm' : 'text-slate-600 hover:bg-slate-100'
-              }`}
-            >
-              Inventario (MM)
-            </button>
-            <button
-              onClick={() => setActiveTab('MIGO')}
-              className={`px-3 py-1.5 rounded-md text-xs font-semibold transition-all ${
-                activeTab === 'MIGO' ? 'bg-sap-blue text-white shadow-sm' : 'text-slate-600 hover:bg-slate-100'
-              }`}
-            >
-              Movimientos MIGO
-            </button>
-            <button
               onClick={() => setActiveTab('FLEET')}
               className={`px-3 py-1.5 rounded-md text-xs font-semibold transition-all ${
                 activeTab === 'FLEET' ? 'bg-sap-blue text-white shadow-sm' : 'text-slate-600 hover:bg-slate-100'
@@ -288,27 +273,49 @@ export const FioriHeader = ({ onOpenCreateWO, onOpenCreateMaterial, onOpenCreate
             >
               Flota & Vencimientos
             </button>
-            <button
-              onClick={() => setActiveTab('ANALYTICS')}
-              className={`px-3 py-1.5 rounded-md text-xs font-semibold transition-all ${
-                activeTab === 'ANALYTICS' ? 'bg-sap-blue text-white shadow-sm' : 'text-slate-600 hover:bg-slate-100'
-              }`}
-            >
-              Executive Analytics
-            </button>
-            <button
-              onClick={() => setActiveTab('HR')}
-              className={`px-3 py-1.5 rounded-md text-xs font-semibold transition-all flex items-center space-x-1 ${
-                activeTab === 'HR' ? 'bg-sap-blue text-white shadow-sm' : 'text-slate-600 hover:bg-slate-100'
-              }`}
-            >
-              <span>Recursos Humanos (HCM)</span>
-              {complianceAlertEmployees.length > 0 && (
-                <span className="bg-amber-500 text-white text-[9px] px-1 rounded-full font-bold">
-                  {complianceAlertEmployees.length}
-                </span>
-              )}
-            </button>
+
+            {/* Admin/Management Only Tabs */}
+            {currentRole !== 'FIELD_MECHANIC' && (
+              <>
+                <button
+                  onClick={() => setActiveTab('INVENTORY')}
+                  className={`px-3 py-1.5 rounded-md text-xs font-semibold transition-all ${
+                    activeTab === 'INVENTORY' ? 'bg-sap-blue text-white shadow-sm' : 'text-slate-600 hover:bg-slate-100'
+                  }`}
+                >
+                  Inventario (MM)
+                </button>
+                <button
+                  onClick={() => setActiveTab('MIGO')}
+                  className={`px-3 py-1.5 rounded-md text-xs font-semibold transition-all ${
+                    activeTab === 'MIGO' ? 'bg-sap-blue text-white shadow-sm' : 'text-slate-600 hover:bg-slate-100'
+                  }`}
+                >
+                  Movimientos MIGO
+                </button>
+                <button
+                  onClick={() => setActiveTab('ANALYTICS')}
+                  className={`px-3 py-1.5 rounded-md text-xs font-semibold transition-all ${
+                    activeTab === 'ANALYTICS' ? 'bg-sap-blue text-white shadow-sm' : 'text-slate-600 hover:bg-slate-100'
+                  }`}
+                >
+                  Executive Analytics
+                </button>
+                <button
+                  onClick={() => setActiveTab('HR')}
+                  className={`px-3 py-1.5 rounded-md text-xs font-semibold transition-all flex items-center space-x-1 ${
+                    activeTab === 'HR' ? 'bg-sap-blue text-white shadow-sm' : 'text-slate-600 hover:bg-slate-100'
+                  }`}
+                >
+                  <span>Recursos Humanos (HCM)</span>
+                  {complianceAlertEmployees.length > 0 && (
+                    <span className="bg-amber-500 text-white text-[9px] px-1 rounded-full font-bold">
+                      {complianceAlertEmployees.length}
+                    </span>
+                  )}
+                </button>
+              </>
+            )}
           </nav>
         </div>
 
@@ -531,13 +538,26 @@ export const FioriHeader = ({ onOpenCreateWO, onOpenCreateMaterial, onOpenCreate
                   </div>
                 </div>
 
-                <div className="px-3 py-2 border-b border-slate-100 text-xs text-slate-700 space-y-1">
-                  <div className="flex items-center justify-between text-[11px]">
-                    <span className="text-slate-500">Rol:</span>
-                    <strong className="text-sky-700">{roleLabels[currentRole]?.title || currentRole}</strong>
+                <div className="px-3 py-2 border-b border-slate-100 text-xs text-slate-700 space-y-2">
+                  <div className="space-y-1">
+                    <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider block">
+                      Seleccionar Rol Activo
+                    </label>
+                    <select
+                      value={currentRole}
+                      onChange={(e) => {
+                        setCurrentRole(e.target.value);
+                        addToast(`Modo cambiado a: ${roleLabels[e.target.value]?.title}`, 'info');
+                      }}
+                      className="w-full bg-slate-50 border border-slate-300 rounded-lg p-1.5 text-xs font-bold text-slate-900 focus:ring-2 focus:ring-sap-blue"
+                    >
+                      {Object.entries(roleLabels).map(([key, val]) => (
+                        <option key={key} value={key}>{val.title}</option>
+                      ))}
+                    </select>
                   </div>
                   <div className="flex items-center justify-between text-[11px]">
-                    <span className="text-slate-500">Planta:</span>
+                    <span className="text-slate-500 font-medium">Planta:</span>
                     <span className="font-semibold text-slate-800">{user.plant || '0001 (Planta Central)'}</span>
                   </div>
                 </div>

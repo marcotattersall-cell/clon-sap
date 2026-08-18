@@ -27,7 +27,7 @@ import { GeneralExpirationsDashboard } from './GeneralExpirationsDashboard';
 import { formatDateDDMMYYYY } from '../../utils/dateUtils';
 
 export const FleetPlanner = ({ onOpenCreateWOForVehicle }) => {
-  const { assets, workOrders, createWorkOrder, addToast } = useSAP();
+  const { assets, workOrders, createWorkOrder, currentRole, addToast } = useSAP();
 
   const [activeSubTab, setActiveSubTab] = useState('MAINTENANCE'); // MAINTENANCE or EXPIRATIONS
   const [searchTerm, setSearchTerm] = useState('');
@@ -248,20 +248,29 @@ export const FleetPlanner = ({ onOpenCreateWOForVehicle }) => {
         </div>
 
         <div className="flex flex-wrap items-center gap-3">
-          <button
-            onClick={() => setIsCreateAssetOpen(true)}
-            className="bg-emerald-600 hover:bg-emerald-500 text-white px-4 py-2.5 rounded-xl text-xs font-extrabold flex items-center space-x-2 shadow-lg transition-all"
-          >
-            <PlusCircle className="w-4 h-4" />
-            <span>＋ Alta de Flota (IE01)</span>
-          </button>
-          <button
-            onClick={() => onOpenCreateWOForVehicle && onOpenCreateWOForVehicle()}
-            className="bg-sap-blue hover:bg-sap-blue-hover text-white px-4 py-2.5 rounded-xl text-xs font-extrabold flex items-center space-x-2 shadow-lg transition-all"
-          >
-            <PlusCircle className="w-4 h-4" />
-            <span>Crear OT Flota IW31</span>
-          </button>
+          {currentRole === 'FIELD_MECHANIC' ? (
+            <span className="bg-orange-100 text-orange-900 border border-orange-300 font-extrabold px-3.5 py-2 rounded-xl text-xs flex items-center space-x-1.5 shadow-sm">
+              <Wrench className="w-4 h-4 text-orange-600" />
+              <span>Modo Mecánico: Control & Registros</span>
+            </span>
+          ) : (
+            <>
+              <button
+                onClick={() => setIsCreateAssetOpen(true)}
+                className="bg-emerald-600 hover:bg-emerald-500 text-white px-4 py-2.5 rounded-xl text-xs font-extrabold flex items-center space-x-2 shadow-lg transition-all"
+              >
+                <PlusCircle className="w-4 h-4" />
+                <span>＋ Alta de Flota (IE01)</span>
+              </button>
+              <button
+                onClick={() => onOpenCreateWOForVehicle && onOpenCreateWOForVehicle()}
+                className="bg-sap-blue hover:bg-sap-blue-hover text-white px-4 py-2.5 rounded-xl text-xs font-extrabold flex items-center space-x-2 shadow-lg transition-all"
+              >
+                <PlusCircle className="w-4 h-4" />
+                <span>Crear OT Flota IW31</span>
+              </button>
+            </>
+          )}
         </div>
       </div>
 
