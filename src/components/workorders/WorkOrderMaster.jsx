@@ -26,7 +26,9 @@ import {
   History,
   ShieldCheck,
   User,
-  MessageSquare
+  MessageSquare,
+  Search,
+  RefreshCw
 } from 'lucide-react';
 import { formatDateDDMMYYYY } from '../../utils/dateUtils';
 
@@ -41,19 +43,20 @@ export const WorkOrderMaster = ({ onOpenCreateWO, onOpenMIGOForWO }) => {
     addToast
   } = useSAP();
 
-  const [viewMode, setViewMode] = useState('KANBAN'); // KANBAN, TABLE, GANTT
+  const [viewMode, setViewMode] = useState('KANBAN'); // KANBAN or TABLE
   const [selectedStatusFilter, setSelectedStatusFilter] = useState('ALL');
   const [selectedPriorityFilter, setSelectedPriorityFilter] = useState('ALL');
+
+  // Modal State for inspecting order (IW32/IW33)
   const [activeWOModal, setActiveWOModal] = useState(null);
-  const [activeTabWOModal, setActiveTabWOModal] = useState('HEADER'); // HEADER, OPERATIONS, COMPONENTS, COSTS, LOGS
+  const [activeTabWOModal, setActiveTabWOModal] = useState('HEADER'); // HEADER, OPERATIONS, COMPONENTS, LOGS
   const [issueQtyInput, setIssueQtyInput] = useState({});
 
-  // 📝 Traceability & Audit Form States
-  const [statusChangeUser, setStatusChangeUser] = useState('Marco Vidal (Especialista PM)');
-  const [selectedNewStatus, setSelectedNewStatus] = useState('REL');
+  // Traceability & Status Transition Form State
+  const [statusChangeUser, setStatusChangeUser] = useState('Especialista Mantenimiento PM');
   const [auditReason, setAuditReason] = useState('');
 
-  // 🔄 Synchronized Active Work Order Data
+  // Active synchronized order data
   const activeWO = activeWOModal ? (workOrders.find(w => w.id === activeWOModal.id) || activeWOModal) : null;
   const operations = Array.isArray(activeWO?.operations) ? activeWO.operations : [];
   const components = Array.isArray(activeWO?.components) ? activeWO.components : [];
@@ -74,10 +77,10 @@ export const WorkOrderMaster = ({ onOpenCreateWO, onOpenMIGOForWO }) => {
   });
 
   const kanbanColumns = [
-    { status: 'CRTE', label: 'Creada (CRTE)', badgeClass: 'sap-badge-created' },
-    { status: 'REL', label: 'Liberada (REL)', badgeClass: 'sap-badge-released' },
-    { status: 'PCNF', label: 'En Proceso (PCNF)', badgeClass: 'sap-badge-progress' },
-    { status: 'TECO', label: 'Cierre Técnico (TECO)', badgeClass: 'sap-badge-teco' }
+    { status: 'CRTE', label: 'Creada (CRTE)', borderClass: 'border-t-sky-500', badgeClass: 'bg-sky-100 text-sky-800 border-sky-300' },
+    { status: 'REL', label: 'Liberada (REL)', borderClass: 'border-t-amber-500', badgeClass: 'bg-amber-100 text-amber-900 border-amber-300' },
+    { status: 'PCNF', label: 'En Proceso (PCNF)', borderClass: 'border-t-purple-500', badgeClass: 'bg-purple-100 text-purple-900 border-purple-300' },
+    { status: 'TECO', label: 'Cierre Técnico (TECO)', borderClass: 'border-t-emerald-500', badgeClass: 'bg-emerald-100 text-emerald-900 border-emerald-300' }
   ];
 
   const handleIssueComponent = (woId, materialId) => {
@@ -85,166 +88,278 @@ export const WorkOrderMaster = ({ onOpenCreateWO, onOpenMIGOForWO }) => {
     const success = issueComponentToWorkOrder(woId, materialId, qty);
     if (success) {
       setIssueQtyInput(prev => ({ ...prev, [materialId]: 1 }));
-      // Refresh modal active WO
       const updatedWO = workOrders.find(w => w.id === woId);
       if (updatedWO) setActiveWOModal(updatedWO);
     }
   };
 
-  const handlePrintJobCard = (wo) => {
-    window.print();
+  const handleQuickStatusChange = (wo, newStatus) => {
+    const reasonText = auditReason.trim() || `Transición de estado a [${newStatus}] desde panel limpio`;
+    const success = updateWorkOrderStatus(wo.id, newStatus, statusChangeUser, reasonText);
+    if (success && activeWOModal?.id === wo.id) {
+      const updated = workOrders.find(w => w.id === wo.id);
+      setActiveWOModal(updated || null);
+      setAuditReason('');
+    }
   };
 
+  // KPIs
+  const totalCount = workOrders.length;
+  const crteCount = workOrders.filter(w => w.status === 'CRTE').length;
+  const relCount = workOrders.filter(w => w.status === 'REL').length;
+  const pcnfCount = workOrders.filter(w => w.status === 'PCNF').length;
+  const tecoCount = workOrders.filter(w => w.status === 'TECO' || w.status === 'CLSD').length;
+
   return (
-    <div className="space-y-4 animate-in fade-in duration-300">
+    <div className="space-y-6 animate-in fade-in duration-300">
       {/* Header Banner */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-slate-900 text-white p-5 rounded-2xl border border-slate-800 shadow-xl">
+      <div className="bg-white p-5 sm:p-6 rounded-2xl border border-slate-200 border-l-4 border-l-sap-blue shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <div className="flex items-center space-x-2 text-xs font-semibold text-amber-400 uppercase tracking-wider mb-1">
-            <Wrench className="w-4 h-4" />
-            <span>Módulo PM - Órdenes de Trabajo & Mantenimiento de Planta</span>
+          <div className="flex items-center space-x-2 text-xs font-bold uppercase tracking-wider text-sap-blue mb-1">
+            <Wrench className="w-4 h-4 text-sap-blue" />
+            <span>Módulo SAP PM • Gestión de Mantenimiento Industrial</span>
           </div>
-          <h2 className="text-xl font-bold tracking-tight">
-            Control de Órdenes de Mantenimiento (IW31 / IW32 / IW33)
-          </h2>
-          <p className="text-xs text-slate-400 mt-0.5">
-            Gestión completa de mantenimiento preventivo y correctivo con imputación directa a inventario y centros de coste.
+          <h1 className="text-xl sm:text-2xl font-black tracking-tight text-slate-900">
+            Control & Ejecución de Órdenes de Trabajo (IW31 / IW32)
+          </h1>
+          <p className="text-xs sm:text-sm text-slate-600 mt-1 max-w-3xl">
+            Gestión simplificada del flujo de mantenimiento: Liberación, asignación de repuestos MIGO 261, control de horas y Certificado de Cierre Técnico TECO.
           </p>
         </div>
 
-        <div className="flex items-center space-x-3">
+        <div className="flex flex-wrap items-center gap-3 shrink-0">
           <button
             onClick={onOpenCreateWO}
-            className="bg-sap-blue hover:bg-sap-blue-hover text-white text-xs font-bold px-4 py-2.5 rounded-xl shadow flex items-center space-x-2 transition-all"
+            className="bg-sap-blue hover:bg-sap-blue-hover text-white text-xs font-extrabold px-4 py-2.5 rounded-xl shadow-sm flex items-center space-x-2 transition-all"
           >
             <Plus className="w-4 h-4" />
-            <span>Nueva Orden de Trabajo</span>
+            <span>＋ Crear Orden IW31</span>
           </button>
         </div>
       </div>
 
-      {/* View Switcher & Toolbar */}
-      <div className="fiori-glass p-4 rounded-xl border border-slate-200 dark:border-slate-800 flex flex-wrap items-center justify-between gap-4">
-        {/* View mode toggle */}
-        <div className="flex items-center space-x-1 bg-slate-200 dark:bg-slate-800 p-1 rounded-xl">
-          <button
-            onClick={() => setViewMode('KANBAN')}
-            className={`px-3 py-1.5 rounded-lg text-xs font-bold flex items-center space-x-1.5 transition-all ${
-              viewMode === 'KANBAN' ? 'bg-sap-blue text-white shadow' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900'
-            }`}
-          >
-            <Kanban className="w-3.5 h-3.5" />
-            <span>Tablero Kanban</span>
-          </button>
-          <button
-            onClick={() => setViewMode('TABLE')}
-            className={`px-3 py-1.5 rounded-lg text-xs font-bold flex items-center space-x-1.5 transition-all ${
-              viewMode === 'TABLE' ? 'bg-sap-blue text-white shadow' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900'
-            }`}
-          >
-            <TableIcon className="w-3.5 h-3.5" />
-            <span>Tabla Grid Enterprise</span>
-          </button>
+      {/* KPI Cards Strip */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div
+          onClick={() => setSelectedStatusFilter('ALL')}
+          className="fiori-card p-4 bg-white rounded-2xl border border-slate-200 shadow-sm cursor-pointer hover:border-sap-blue transition-all flex items-center justify-between"
+        >
+          <div>
+            <div className="text-xs font-bold text-slate-500 uppercase tracking-wider">Total Órdenes Registradas</div>
+            <div className="text-2xl font-black text-slate-900 mt-1">{totalCount} Órdenes</div>
+            <div className="text-[11px] text-slate-500 mt-0.5">{crteCount} Creadas | {relCount} Liberadas</div>
+          </div>
+          <div className="w-12 h-12 rounded-xl bg-sky-50 text-sky-600 flex items-center justify-center font-bold">
+            <Wrench className="w-6 h-6" />
+          </div>
         </div>
 
-        {/* Priority Filter */}
-        <div className="flex items-center space-x-2">
-          <span className="text-xs font-bold text-slate-500 flex items-center gap-1">
-            <Filter className="w-3.5 h-3.5" /> Prioridad:
-          </span>
-          <select
-            value={selectedPriorityFilter}
-            onChange={(e) => setSelectedPriorityFilter(e.target.value)}
-            className="bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-200 text-xs font-semibold px-3 py-1.5 rounded-lg border border-slate-300 dark:border-slate-700"
-          >
-            <option value="ALL">Todas las Prioridades</option>
-            <option value="Muy Alta">Muy Alta / Urgente</option>
-            <option value="Alta">Alta</option>
-            <option value="Media">Media</option>
-            <option value="Baja">Baja</option>
-          </select>
+        <div
+          onClick={() => setSelectedStatusFilter('REL')}
+          className="fiori-card p-4 bg-white rounded-2xl border border-amber-200 bg-amber-50/20 shadow-sm cursor-pointer hover:border-amber-400 transition-all flex items-center justify-between"
+        >
+          <div>
+            <div className="text-xs font-bold text-amber-800 uppercase tracking-wider">Liberadas para Ejecución</div>
+            <div className="text-2xl font-black text-amber-600 mt-1">{relCount} Órdenes</div>
+            <div className="text-[11px] text-amber-700 mt-0.5">Listas para inicio de trabajo</div>
+          </div>
+          <div className="w-12 h-12 rounded-xl bg-amber-100 text-amber-700 flex items-center justify-center font-bold">
+            <Clock className="w-6 h-6" />
+          </div>
+        </div>
+
+        <div
+          onClick={() => setSelectedStatusFilter('PCNF')}
+          className="fiori-card p-4 bg-white rounded-2xl border border-purple-200 bg-purple-50/20 shadow-sm cursor-pointer hover:border-purple-400 transition-all flex items-center justify-between"
+        >
+          <div>
+            <div className="text-xs font-bold text-purple-800 uppercase tracking-wider">En Proceso Técnico</div>
+            <div className="text-2xl font-black text-purple-600 mt-1">{pcnfCount} Órdenes</div>
+            <div className="text-[11px] text-purple-700 mt-0.5">Mecánicos en faena</div>
+          </div>
+          <div className="w-12 h-12 rounded-xl bg-purple-100 text-purple-700 flex items-center justify-center font-bold">
+            <Play className="w-6 h-6" />
+          </div>
+        </div>
+
+        <div
+          onClick={() => setSelectedStatusFilter('TECO')}
+          className="fiori-card p-4 bg-white rounded-2xl border border-emerald-200 bg-emerald-50/20 shadow-sm cursor-pointer hover:border-emerald-400 transition-all flex items-center justify-between"
+        >
+          <div>
+            <div className="text-xs font-bold text-emerald-800 uppercase tracking-wider">Cierre Técnico (TECO)</div>
+            <div className="text-2xl font-black text-emerald-600 mt-1">{tecoCount} Órdenes</div>
+            <div className="text-[11px] text-emerald-700 mt-0.5">Certificado emitido</div>
+          </div>
+          <div className="w-12 h-12 rounded-xl bg-emerald-100 text-emerald-700 flex items-center justify-center font-bold">
+            <CheckCircle2 className="w-6 h-6" />
+          </div>
         </div>
       </div>
 
-      {/* VIEW 1: KANBAN BOARD */}
+      {/* Toolbar & Filters */}
+      <div className="bg-slate-50 border border-slate-200 p-4 rounded-2xl flex flex-wrap items-center justify-between gap-3 text-xs">
+        <div className="flex flex-wrap items-center gap-3 flex-1">
+          {/* View Mode Switcher */}
+          <div className="bg-white border border-slate-200 p-1 rounded-xl flex items-center space-x-1 shadow-xs">
+            <button
+              onClick={() => setViewMode('KANBAN')}
+              className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center space-x-1.5 ${
+                viewMode === 'KANBAN' ? 'bg-slate-900 text-white shadow-xs' : 'text-slate-600 hover:bg-slate-100'
+              }`}
+            >
+              <Kanban className="w-3.5 h-3.5" />
+              <span>Tablero Kanban</span>
+            </button>
+            <button
+              onClick={() => setViewMode('TABLE')}
+              className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center space-x-1.5 ${
+                viewMode === 'TABLE' ? 'bg-slate-900 text-white shadow-xs' : 'text-slate-600 hover:bg-slate-100'
+              }`}
+            >
+              <TableIcon className="w-3.5 h-3.5" />
+              <span>Lista Tabular</span>
+            </button>
+          </div>
+
+          {/* Filters */}
+          <div className="flex items-center space-x-2">
+            <span className="text-slate-500 font-bold">Estado:</span>
+            <select
+              value={selectedStatusFilter}
+              onChange={(e) => setSelectedStatusFilter(e.target.value)}
+              className="bg-white border border-slate-200 rounded-xl px-3 py-1.5 text-xs font-bold text-slate-800 focus:ring-2 focus:ring-sap-blue"
+            >
+              <option value="ALL">Todos los Estados</option>
+              <option value="CRTE">CRTE - Creada</option>
+              <option value="REL">REL - Liberada</option>
+              <option value="PCNF">PCNF - En Proceso</option>
+              <option value="TECO">TECO - Cierre Técnico</option>
+            </select>
+          </div>
+
+          <div className="flex items-center space-x-2">
+            <span className="text-slate-500 font-bold">Prioridad:</span>
+            <select
+              value={selectedPriorityFilter}
+              onChange={(e) => setSelectedPriorityFilter(e.target.value)}
+              className="bg-white border border-slate-200 rounded-xl px-3 py-1.5 text-xs font-bold text-slate-800 focus:ring-2 focus:ring-sap-blue"
+            >
+              <option value="ALL">Todas las Prioridades</option>
+              <option value="Muy Alta">🔴 Muy Alta</option>
+              <option value="Alta">🟡 Alta</option>
+              <option value="Media">🔵 Media</option>
+              <option value="Baja">🟢 Baja</option>
+            </select>
+          </div>
+        </div>
+
+        <button
+          onClick={onOpenCreateWO}
+          className="bg-sap-blue hover:bg-sap-blue-hover text-white px-4 py-2 rounded-xl text-xs font-extrabold flex items-center space-x-1.5 shadow-xs transition-all"
+        >
+          <Plus className="w-4 h-4" />
+          <span>Nueva Orden IW31</span>
+        </button>
+      </div>
+
+      {/* ----------------- VIEW MODE 1: KANBAN MINIMALISTA ----------------- */}
       {viewMode === 'KANBAN' && (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           {kanbanColumns.map(col => {
-            const colWOs = filteredWorkOrders.filter(w => w.status === col.status);
+            const columnOrders = filteredWorkOrders.filter(w => {
+              if (col.status === 'TECO') return w.status === 'TECO' || w.status === 'CLSD';
+              return w.status === col.status;
+            });
 
             return (
               <div
                 key={col.status}
-                className="bg-slate-100/70 dark:bg-slate-900/60 p-4 rounded-2xl border border-slate-200 dark:border-slate-800 space-y-3 min-h-[500px]"
+                className={`bg-slate-50/80 rounded-2xl border border-slate-200 border-t-4 ${col.borderClass} p-3.5 space-y-3 min-h-[500px] flex flex-col justify-between`}
               >
-                <div className="flex items-center justify-between pb-2 border-b border-slate-200 dark:border-slate-800">
-                  <div className="flex items-center space-x-2">
-                    <span className={`sap-badge ${col.badgeClass}`}>{col.label}</span>
-                  </div>
-                  <span className="text-xs font-bold text-slate-500 font-mono">({colWOs.length})</span>
-                </div>
-
                 <div className="space-y-3">
-                  {colWOs.map(wo => {
-                    const asset = assets.find(a => a.id === wo.equipmentId);
+                  {/* Column Header */}
+                  <div className="flex items-center justify-between pb-2 border-b border-slate-200/80">
+                    <span className="font-extrabold text-xs text-slate-800 uppercase tracking-wider">
+                      {col.label}
+                    </span>
+                    <span className={`px-2 py-0.5 rounded-full text-xs font-mono font-bold border ${col.badgeClass}`}>
+                      {columnOrders.length}
+                    </span>
+                  </div>
 
-                    return (
-                      <div
-                        key={wo.id}
-                        onClick={() => { setActiveWOModal(wo); setActiveTabWOModal('HEADER'); }}
-                        className="fiori-glass p-4 rounded-xl border border-slate-200/80 dark:border-slate-700/80 hover:border-sap-blue/80 cursor-pointer shadow-sm hover:shadow-fiori-hover transition-all transform hover:-translate-y-0.5 space-y-2.5"
-                      >
-                        <div className="flex items-center justify-between">
-                          <span className="font-mono font-bold text-xs text-sap-blue">{wo.id}</span>
-                          <span className={`text-[10px] font-bold px-2 py-0.5 rounded ${
-                            wo.priority === 'Muy Alta' ? 'bg-rose-100 text-rose-800 dark:bg-rose-950 dark:text-rose-300' : 'bg-slate-200 text-slate-700 dark:bg-slate-800 dark:text-slate-300'
-                          }`}>
-                            {wo.priority}
-                          </span>
-                        </div>
-
-                        <h4 className="text-xs font-bold text-slate-900 dark:text-slate-100 leading-snug line-clamp-2">
-                          {wo.title}
-                        </h4>
-
-                        <div className="text-[11px] text-slate-500 dark:text-slate-400 font-medium truncate">
-                          Equipo: <strong className="text-slate-700 dark:text-slate-200">{asset?.name || wo.equipmentId}</strong>
-                        </div>
-
-                        {/* 🚜 Vehicle & Machinery Counter Badges (Horómetro & Kilometraje) */}
-                        {(wo.hourmeter || wo.odometer) && (
-                          <div className="flex flex-wrap items-center gap-1.5 pt-0.5 font-mono text-[10px]">
-                            {wo.hourmeter && (
-                              <span className="inline-flex items-center space-x-1 px-2 py-0.5 rounded-md bg-amber-500/10 text-amber-600 dark:text-amber-300 border border-amber-500/20 font-bold">
-                                <Clock className="w-3 h-3 text-amber-500" />
-                                <span>{wo.hourmeter} hrs</span>
-                              </span>
-                            )}
-                            {wo.odometer && (
-                              <span className="inline-flex items-center space-x-1 px-2 py-0.5 rounded-md bg-emerald-500/10 text-emerald-600 dark:text-emerald-300 border border-emerald-500/20 font-bold">
-                                <Truck className="w-3 h-3 text-emerald-500" />
-                                <span>{Number(wo.odometer).toLocaleString()} km</span>
-                              </span>
-                            )}
-                          </div>
-                        )}
-
-                        {/* Progress stats */}
-                        <div className="pt-2 border-t border-slate-200 dark:border-slate-800/80 flex items-center justify-between text-[11px]">
-                          <span className="text-slate-500">{wo.assignedTech}</span>
-                          <span className="font-mono font-bold text-emerald-600 dark:text-emerald-400">
-                            ${wo.actualCost}
-                          </span>
-                        </div>
+                  {/* Column Cards */}
+                  <div className="space-y-3">
+                    {columnOrders.length === 0 ? (
+                      <div className="text-center py-10 text-slate-400 text-xs italic bg-white/50 rounded-xl border border-dashed border-slate-200">
+                        Sin órdenes en esta etapa
                       </div>
-                    );
-                  })}
+                    ) : (
+                      columnOrders.map(wo => {
+                        const matchingAsset = assets.find(a => a.id === wo.equipmentId);
+                        const equipmentName = matchingAsset ? matchingAsset.name : wo.equipmentId;
+                        const plate = matchingAsset?.plate || wo.equipmentId;
 
-                  {colWOs.length === 0 && (
-                    <div className="text-center py-10 text-xs text-slate-400 italic">
-                      Sin órdenes en esta etapa
-                    </div>
-                  )}
+                        return (
+                          <div
+                            key={wo.id}
+                            className="bg-white p-4 rounded-xl border border-slate-200 hover:border-sap-blue/60 shadow-xs hover:shadow-md transition-all space-y-3 group"
+                          >
+                            {/* Card Top Strip */}
+                            <div className="flex items-center justify-between text-xs">
+                              <span className="font-mono font-bold text-sap-blue bg-sky-50 px-2 py-0.5 rounded border border-sky-100">
+                                {wo.id}
+                              </span>
+
+                              {/* Priority badge only if high/very high */}
+                              {(wo.priority === 'Muy Alta' || wo.priority === 'Alta') && (
+                                <span className={`px-2 py-0.5 rounded text-[10px] font-extrabold ${
+                                  wo.priority === 'Muy Alta' ? 'bg-rose-100 text-rose-800 border border-rose-300' : 'bg-amber-100 text-amber-900 border border-amber-300'
+                                }`}>
+                                  {wo.priority}
+                                </span>
+                              )}
+                            </div>
+
+                            {/* Title & Equipment */}
+                            <div>
+                              <h4 className="font-bold text-slate-900 text-xs leading-snug group-hover:text-sap-blue transition-colors">
+                                {wo.title}
+                              </h4>
+                              <p className="text-[11px] text-slate-500 mt-1 flex items-center space-x-1">
+                                <Truck className="w-3 h-3 text-slate-400 shrink-0" />
+                                <span className="font-semibold text-slate-700">{equipmentName}</span>
+                                <span className="font-mono text-slate-400">({plate})</span>
+                              </p>
+                            </div>
+
+                            {/* Technician & Target Date */}
+                            <div className="pt-2 border-t border-slate-100 flex items-center justify-between text-[11px] text-slate-500">
+                              <span className="flex items-center space-x-1">
+                                <User className="w-3 h-3 text-slate-400" />
+                                <span className="font-medium text-slate-700">{wo.assignedTech}</span>
+                              </span>
+                              <span className="font-mono text-slate-500">
+                                {formatDateDDMMYYYY(wo.targetFinishDate || wo.startDate)}
+                              </span>
+                            </div>
+
+                            {/* Single Action Button */}
+                            <button
+                              onClick={() => {
+                                setActiveWOModal(wo);
+                                setActiveTabWOModal('HEADER');
+                              }}
+                              className="w-full bg-slate-100 group-hover:bg-sap-blue group-hover:text-white text-slate-800 font-bold py-2 rounded-lg text-xs transition-all flex items-center justify-center space-x-1.5 shadow-xs"
+                            >
+                              <span>Ver / Procesar Orden (IW32)</span>
+                              <ChevronRight className="w-3.5 h-3.5" />
+                            </button>
+                          </div>
+                        );
+                      })
+                    )}
+                  </div>
                 </div>
               </div>
             );
@@ -252,78 +367,73 @@ export const WorkOrderMaster = ({ onOpenCreateWO, onOpenMIGOForWO }) => {
         </div>
       )}
 
-      {/* VIEW 2: SAP ENTERPRISE GRID TABLE */}
+      {/* ----------------- VIEW MODE 2: LISTA TABULAR ----------------- */}
       {viewMode === 'TABLE' && (
-        <div className="fiori-glass rounded-2xl border border-slate-200 dark:border-slate-800 overflow-hidden shadow-lg">
+        <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-xs">
           <div className="overflow-x-auto">
-            <table className="sap-table">
-              <thead>
+            <table className="w-full text-left text-xs divide-y divide-slate-200">
+              <thead className="bg-slate-100 text-slate-700 font-bold uppercase tracking-wider">
                 <tr>
-                  <th>N° Orden ERP</th>
-                  <th>Título de la Orden</th>
-                  <th>Tipo</th>
-                  <th>Estado</th>
-                  <th>Prioridad</th>
-                  <th>Equipo / Activo</th>
-                  <th>Centro Coste</th>
-                  <th>Técnico Asignado</th>
-                  <th>Coste Plan</th>
-                  <th>Coste Real</th>
-                  <th className="text-right">Gestión</th>
+                  <th className="p-3.5">Folio Orden</th>
+                  <th className="p-3.5">Título / Descripción</th>
+                  <th className="p-3.5">Equipo Asignado</th>
+                  <th className="p-3.5">Técnico Resp.</th>
+                  <th className="p-3.5">Prioridad</th>
+                  <th className="p-3.5">Fecha Término</th>
+                  <th className="p-3.5 text-center">Estado SAP</th>
+                  <th className="p-3.5 text-right">Acción</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-200 dark:divide-slate-800">
+              <tbody className="divide-y divide-slate-100 font-medium text-slate-800">
                 {filteredWorkOrders.map(wo => {
-                  const asset = assets.find(a => a.id === wo.equipmentId);
+                  const matchingAsset = assets.find(a => a.id === wo.equipmentId);
+                  const equipmentName = matchingAsset ? matchingAsset.name : wo.equipmentId;
 
                   return (
-                    <tr key={wo.id} className="hover:bg-blue-50/50 dark:hover:bg-slate-800/50 transition-colors">
-                      <td className="font-mono font-bold text-sap-blue">
+                    <tr key={wo.id} className="hover:bg-slate-50 transition-colors">
+                      <td className="p-3.5 font-mono font-bold text-sap-blue">
                         {wo.id}
                       </td>
-                      <td className="font-semibold text-slate-900 dark:text-slate-100 max-w-xs truncate">
+                      <td className="p-3.5 font-bold text-slate-900">
                         {wo.title}
                       </td>
-                      <td>
-                        <span className="font-mono text-xs text-slate-600 dark:text-slate-300 font-bold">
-                          {wo.type}
+                      <td className="p-3.5 text-slate-700">
+                        {equipmentName}
+                      </td>
+                      <td className="p-3.5 text-slate-700">
+                        {wo.assignedTech}
+                      </td>
+                      <td className="p-3.5">
+                        <span className={`px-2 py-0.5 rounded text-[10px] font-extrabold ${
+                          wo.priority === 'Muy Alta' ? 'bg-rose-100 text-rose-800 border border-rose-300' :
+                          wo.priority === 'Alta' ? 'bg-amber-100 text-amber-900 border border-amber-300' :
+                          'bg-slate-100 text-slate-700 border border-slate-200'
+                        }`}>
+                          {wo.priority}
                         </span>
                       </td>
-                      <td>
-                        <span className={`sap-badge ${
-                          wo.status === 'REL' ? 'sap-badge-released' :
-                          wo.status === 'TECO' ? 'sap-badge-teco' :
-                          wo.status === 'PCNF' ? 'sap-badge-progress' : 'sap-badge-created'
+                      <td className="p-3.5 font-mono text-slate-600">
+                        {formatDateDDMMYYYY(wo.targetFinishDate || wo.startDate)}
+                      </td>
+                      <td className="p-3.5 text-center">
+                        <span className={`px-2.5 py-1 rounded-full text-[10px] font-extrabold border ${
+                          wo.status === 'TECO' ? 'bg-emerald-100 text-emerald-800 border-emerald-300' :
+                          wo.status === 'PCNF' ? 'bg-purple-100 text-purple-800 border-purple-300' :
+                          wo.status === 'REL' ? 'bg-amber-100 text-amber-800 border-amber-300' :
+                          'bg-sky-100 text-sky-800 border-sky-300'
                         }`}>
                           {wo.status}
                         </span>
                       </td>
-                      <td className="font-bold text-xs">
-                        <span className={wo.priority === 'Muy Alta' ? 'text-rose-600' : 'text-slate-700 dark:text-slate-300'}>
-                          {wo.priority}
-                        </span>
-                      </td>
-                      <td className="text-xs truncate max-w-[140px]">
-                        {asset?.name || wo.equipmentId}
-                      </td>
-                      <td className="font-mono text-xs text-slate-500">
-                        {wo.costCenter}
-                      </td>
-                      <td className="text-xs text-slate-700 dark:text-slate-300">
-                        {wo.assignedTech}
-                      </td>
-                      <td className="font-mono text-slate-600 dark:text-slate-400">
-                        ${wo.plannedCost.toFixed(2)}
-                      </td>
-                      <td className="font-mono font-bold text-emerald-600 dark:text-emerald-400">
-                        ${wo.actualCost.toFixed(2)}
-                      </td>
-                      <td className="text-right">
+                      <td className="p-3.5 text-right">
                         <button
-                          onClick={() => { setActiveWOModal(wo); setActiveTabWOModal('HEADER'); }}
-                          className="bg-sap-blue/10 hover:bg-sap-blue text-sap-blue hover:text-white text-xs font-bold px-2.5 py-1 rounded-lg transition-all"
+                          onClick={() => {
+                            setActiveWOModal(wo);
+                            setActiveTabWOModal('HEADER');
+                          }}
+                          className="bg-sap-blue hover:bg-sap-blue-hover text-white px-3 py-1 rounded-lg font-bold text-xs shadow-xs transition-all"
                         >
-                          Ver / Editar (IW32)
+                          Abrir (IW32)
                         </button>
                       </td>
                     </tr>
@@ -335,393 +445,258 @@ export const WorkOrderMaster = ({ onOpenCreateWO, onOpenMIGOForWO }) => {
         </div>
       )}
 
-      {/* WORK ORDER DETAIL MODAL (IW32 FULL SAP EXPERIENCE) */}
+      {/* ----------------- MODAL DETALLE DE ORDEN IW32 / IW33 ----------------- */}
       {activeWO && (
-        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto animate-in fade-in">
-          <div className="bg-slate-900 text-white w-full max-w-4xl rounded-2xl border border-slate-700 shadow-2xl overflow-hidden my-8">
-              {/* Modal Header */}
-              <div className="bg-slate-950 p-5 border-b border-slate-800 flex items-center justify-between">
+        <div className="fixed inset-0 z-50 bg-slate-950/70 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in overflow-y-auto">
+          <div className="bg-white border border-slate-200 rounded-2xl shadow-2xl max-w-3xl w-full overflow-hidden text-slate-900 my-8">
+            {/* Modal Header */}
+            <div className="bg-gradient-to-r from-slate-900 to-slate-800 p-5 text-white flex items-center justify-between">
+              <div className="flex items-center space-x-3">
+                <div className="w-10 h-10 rounded-xl bg-white/10 border border-white/20 flex items-center justify-center font-bold">
+                  <Wrench className="w-5 h-5 text-sky-400" />
+                </div>
                 <div>
-                  <div className="flex items-center space-x-3">
-                    <span className="font-mono text-base font-black text-sap-blue">{activeWO.id}</span>
-                    <span className={`sap-badge ${activeWO.status === 'REL' ? 'sap-badge-released' : 'sap-badge-created'}`}>
-                      {activeWO.status}
+                  <div className="flex items-center space-x-2">
+                    <span className="font-mono font-bold text-xs text-sky-300 bg-sky-950 px-2 py-0.5 rounded border border-sky-800">
+                      {activeWO.id}
                     </span>
-                    <span className="text-xs text-slate-400 font-mono">Tipo: {activeWO.type}</span>
+                    <span className="text-[10px] font-mono text-slate-300">Transacción SAP IW32</span>
                   </div>
-                  <h3 className="text-lg font-bold text-slate-100 mt-1">
+                  <h3 className="text-base font-black leading-tight mt-0.5">
                     {activeWO.title}
                   </h3>
                 </div>
-
-                <div className="flex items-center space-x-2">
-                  <button
-                    onClick={() => handlePrintJobCard(activeWO)}
-                    className="bg-slate-800 hover:bg-slate-700 text-slate-200 px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center space-x-1.5 transition-colors no-print"
-                  >
-                    <Printer className="w-4 h-4 text-amber-400" />
-                    <span>Imprimir Hoja de Ruta</span>
-                  </button>
-                  <button
-                    onClick={() => setActiveWOModal(null)}
-                    className="text-slate-400 hover:text-white p-1 rounded-lg text-sm"
-                  >
-                    ✕
-                  </button>
-                </div>
               </div>
 
-              {/* Modal Tabs Navigation */}
-              <div className="flex border-b border-slate-800 bg-slate-900/80 px-4 pt-2 gap-2 overflow-x-auto">
-                <button
-                  onClick={() => setActiveTabWOModal('HEADER')}
-                  className={`px-4 py-2 text-xs font-bold border-b-2 transition-all ${
-                    activeTabWOModal === 'HEADER' ? 'border-sap-blue text-sap-blue' : 'border-transparent text-slate-400 hover:text-slate-200'
-                  }`}
-                >
-                  1. Cabecera & Datos
-                </button>
-                <button
-                  onClick={() => setActiveTabWOModal('OPERATIONS')}
-                  className={`px-4 py-2 text-xs font-bold border-b-2 transition-all ${
-                    activeTabWOModal === 'OPERATIONS' ? 'border-sap-blue text-sap-blue' : 'border-transparent text-slate-400 hover:text-slate-200'
-                  }`}
-                >
-                  2. Operaciones ({operations.length})
-                </button>
-                <button
-                  onClick={() => setActiveTabWOModal('COMPONENTS')}
-                  className={`px-4 py-2 text-xs font-bold border-b-2 transition-all ${
-                    activeTabWOModal === 'COMPONENTS' ? 'border-sap-blue text-sap-blue' : 'border-transparent text-slate-400 hover:text-slate-200'
-                  }`}
-                >
-                  3. Componentes & Stock ({components.length})
-                </button>
-                <button
-                  onClick={() => setActiveTabWOModal('COSTS')}
-                  className={`px-4 py-2 text-xs font-bold border-b-2 transition-all ${
-                    activeTabWOModal === 'COSTS' ? 'border-sap-blue text-sap-blue' : 'border-transparent text-slate-400 hover:text-slate-200'
-                  }`}
-                >
-                  4. Costes & Imputación
-                </button>
-                <button
-                  onClick={() => setActiveTabWOModal('LOGS')}
-                  className={`px-4 py-2 text-xs font-bold border-b-2 transition-all flex items-center space-x-1.5 ${
-                    activeTabWOModal === 'LOGS' ? 'border-sap-blue text-sap-blue' : 'border-transparent text-slate-400 hover:text-slate-200'
-                  }`}
-                >
-                  <History className="w-3.5 h-3.5" />
-                  <span>5. Trazabilidad & Auditoría ({logs.length})</span>
-                </button>
-              </div>
+              <button
+                onClick={() => setActiveWOModal(null)}
+                className="p-2 rounded-lg hover:bg-white/10 text-white/80 hover:text-white transition-colors"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
 
-            {/* Modal Content Panels */}
-            <div className="p-6 max-h-[60vh] overflow-y-auto space-y-4">
-              {/* TAB 1: HEADER & DATA */}
+            {/* Modal Navigation Tabs */}
+            <div className="bg-slate-100 border-b border-slate-200 p-2 flex flex-wrap gap-1 text-xs">
+              <button
+                onClick={() => setActiveTabWOModal('HEADER')}
+                className={`px-4 py-2 rounded-lg font-bold transition-all ${
+                  activeTabWOModal === 'HEADER' ? 'bg-sap-blue text-white shadow-xs' : 'text-slate-600 hover:bg-slate-200'
+                }`}
+              >
+                1. Cabecera & Datos Generales
+              </button>
+              <button
+                onClick={() => setActiveTabWOModal('OPERATIONS')}
+                className={`px-4 py-2 rounded-lg font-bold transition-all ${
+                  activeTabWOModal === 'OPERATIONS' ? 'bg-sap-blue text-white shadow-xs' : 'text-slate-600 hover:bg-slate-200'
+                }`}
+              >
+                2. Operaciones & Tareas ({operations.length})
+              </button>
+              <button
+                onClick={() => setActiveTabWOModal('COMPONENTS')}
+                className={`px-4 py-2 rounded-lg font-bold transition-all ${
+                  activeTabWOModal === 'COMPONENTS' ? 'bg-sap-blue text-white shadow-xs' : 'text-slate-600 hover:bg-slate-200'
+                }`}
+              >
+                3. Componentes MIGO ({components.length})
+              </button>
+              <button
+                onClick={() => setActiveTabWOModal('LOGS')}
+                className={`px-4 py-2 rounded-lg font-bold transition-all ${
+                  activeTabWOModal === 'LOGS' ? 'bg-sap-blue text-white shadow-xs' : 'text-slate-600 hover:bg-slate-200'
+                }`}
+              >
+                4. Historial & Trazabilidad ({logs.length})
+              </button>
+            </div>
+
+            {/* Modal Content Body */}
+            <div className="p-6 space-y-4 text-xs max-h-[60vh] overflow-y-auto">
+              {/* TAB 1: CABECERA */}
               {activeTabWOModal === 'HEADER' && (
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
-                  <div className="bg-slate-800/60 p-4 rounded-xl border border-slate-700/80 space-y-2">
-                    <span className="font-bold text-slate-400 uppercase text-[10px]">Datos de Planificación</span>
-                    <div>Prioridad: <strong className="text-rose-400">{activeWO.priority}</strong></div>
-                    <div>Equipo / Activo: <strong className="text-slate-200">{activeWO.equipmentId}</strong></div>
-                    <div>Técnico Asignado: <strong className="text-slate-200">{activeWO.assignedTech}</strong></div>
-                    <div>Grupo Planificador: <strong className="text-slate-200">{activeWO.plannerGroup}</strong></div>
+                <div className="space-y-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div className="bg-slate-50 p-3.5 rounded-xl border border-slate-200 space-y-1">
+                      <span className="text-[11px] text-slate-500 font-bold uppercase">Equipo Afectado</span>
+                      <div className="font-bold text-slate-900 text-sm">
+                        {assets.find(a => a.id === activeWO.equipmentId)?.name || activeWO.equipmentId}
+                      </div>
+                      <div className="text-slate-500">ID: <strong className="font-mono text-slate-700">{activeWO.equipmentId}</strong></div>
+                    </div>
+
+                    <div className="bg-slate-50 p-3.5 rounded-xl border border-slate-200 space-y-1">
+                      <span className="text-[11px] text-slate-500 font-bold uppercase">Responsable & Asignación</span>
+                      <div className="font-bold text-slate-900 text-sm">
+                        {activeWO.assignedTech}
+                      </div>
+                      <div className="text-slate-500">Centro Costo: <strong className="font-mono text-amber-700">{activeWO.costCenter}</strong></div>
+                    </div>
                   </div>
 
-                  <div className="bg-slate-800/60 p-4 rounded-xl border border-slate-700/80 space-y-2">
-                    <span className="font-bold text-slate-400 uppercase text-[10px]">Fechas & Centros de Coste</span>
-                    <div>Fecha Inicio Plan: <strong className="text-slate-200">{formatDateDDMMYYYY(activeWO.startDate)}</strong></div>
-                    <div>Fecha Fin Objetivo: <strong className="text-slate-200">{formatDateDDMMYYYY(activeWO.targetFinishDate)}</strong></div>
-                    <div>Centro de Coste (CO): <strong className="text-amber-400">{activeWO.costCenter}</strong></div>
-                    <div>Cuenta de Liquidación: <strong className="text-slate-200">{activeWO.settlementAccount}</strong></div>
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                    <div className="bg-slate-50 p-3 rounded-xl border border-slate-200 space-y-1">
+                      <span className="text-slate-500 font-bold">Tipo Orden</span>
+                      <div className="font-bold text-slate-800">{activeWO.type || 'PM01'} (Mantenimiento)</div>
+                    </div>
+                    <div className="bg-slate-50 p-3 rounded-xl border border-slate-200 space-y-1">
+                      <span className="text-slate-500 font-bold">Prioridad</span>
+                      <div className="font-bold text-slate-800">{activeWO.priority}</div>
+                    </div>
+                    <div className="bg-slate-50 p-3 rounded-xl border border-slate-200 space-y-1">
+                      <span className="text-slate-500 font-bold">Fecha Límite</span>
+                      <div className="font-mono font-bold text-slate-800">{formatDateDDMMYYYY(activeWO.targetFinishDate || activeWO.startDate)}</div>
+                    </div>
                   </div>
+                </div>
+              )}
 
-                  {/* 🚜 Heavy Machinery & Vehicle Counter Readings (Kilometraje & Horómetro) */}
-                  {(activeWO.hourmeter || activeWO.odometer) && (
-                    <div className="col-span-1 md:col-span-2 bg-slate-950 p-4 rounded-xl border border-slate-800 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
-                      <div className="flex items-center space-x-2">
-                        <Gauge className="w-5 h-5 text-sky-400 shrink-0" />
-                        <div>
-                          <div className="font-bold text-slate-200 text-xs">Lectura de Contadores IW31</div>
-                          <div className="text-[10px] text-slate-400">Registrado para Maquinarias, Camiones y Vehículos de Flota</div>
+              {/* TAB 2: OPERACIONES */}
+              {activeTabWOModal === 'OPERATIONS' && (
+                <div className="space-y-3">
+                  <h4 className="font-bold text-slate-900 text-xs uppercase tracking-wider">
+                    Pauta de Operaciones & Tareas a Ejecutar
+                  </h4>
+                  {operations.length === 0 ? (
+                    <div className="text-slate-400 italic text-center py-6">Sin operaciones individuales registradas.</div>
+                  ) : (
+                    <div className="space-y-2">
+                      {operations.map((op, idx) => (
+                        <div key={op.id || idx} className="bg-slate-50 p-3 rounded-xl border border-slate-200 flex items-center justify-between">
+                          <div className="space-y-0.5">
+                            <div className="font-bold text-slate-900">{op.text}</div>
+                            <div className="text-[11px] text-slate-500">Asignado: {op.assigned} • Duración estim.: {op.duration} hrs</div>
+                          </div>
+                          <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${
+                            op.status === 'Completed' ? 'bg-emerald-100 text-emerald-800' : 'bg-slate-200 text-slate-700'
+                          }`}>
+                            {op.status === 'Completed' ? '✔ Completado' : 'Pendiente'}
+                          </span>
                         </div>
-                      </div>
-                      <div className="flex items-center space-x-3 font-mono text-xs">
-                        {activeWO.hourmeter && (
-                          <div className="px-3 py-1.5 rounded-lg bg-amber-950/80 border border-amber-800 text-amber-300 font-bold flex items-center space-x-1.5">
-                            <Clock className="w-4 h-4 text-amber-400" />
-                            <span>Horómetro: {activeWO.hourmeter} hrs</span>
-                          </div>
-                        )}
-                        {activeWO.odometer && (
-                          <div className="px-3 py-1.5 rounded-lg bg-emerald-950/80 border border-emerald-800 text-emerald-300 font-bold flex items-center space-x-1.5">
-                            <Truck className="w-4 h-4 text-emerald-400" />
-                            <span>Kilometraje: {Number(activeWO.odometer).toLocaleString()} km</span>
-                          </div>
-                        )}
-                      </div>
+                      ))}
                     </div>
                   )}
                 </div>
               )}
 
-              {/* TAB 2: OPERATIONS */}
-              {activeTabWOModal === 'OPERATIONS' && (
-                <div className="space-y-3 text-xs">
-                  {operations.map(op => (
-                    <div key={op.id} className="flex items-center justify-between bg-slate-800/80 p-3 rounded-xl border border-slate-700">
-                      <div className="flex items-center space-x-3">
-                        <span className="w-6 h-6 rounded-full bg-sap-blue/20 text-sap-blue flex items-center justify-center font-bold font-mono">
-                          {op.id}
-                        </span>
-                        <div>
-                          <div className="font-bold text-slate-100">{op.text}</div>
-                          <div className="text-[10px] text-slate-400">Asignado: {op.assigned} • Duración: {op.duration}h</div>
-                        </div>
-                      </div>
-                      <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${
-                        op.status === 'Done' ? 'bg-emerald-950 text-emerald-400 border border-emerald-800' : 'bg-slate-700 text-slate-300'
-                      }`}>
-                        {op.status}
-                      </span>
-                    </div>
-                  ))}
-                </div>
-              )}
-
-              {/* TAB 3: COMPONENTS INTEGRATED WITH INVENTORY (MIGO 261) */}
+              {/* TAB 3: COMPONENTES MIGO */}
               {activeTabWOModal === 'COMPONENTS' && (
-                <div className="space-y-4 text-xs">
-                  <div className="bg-amber-950/40 border border-amber-800/60 p-3 rounded-xl text-amber-300 text-xs flex items-center justify-between">
-                    <span>
-                      Integración en tiempo real MM ↔ PM: Al registrar el consumo de repuesto, el stock del almacén disminuye mediante documento MIGO 261.
-                    </span>
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <h4 className="font-bold text-slate-900 text-xs uppercase tracking-wider">
+                      Repuestos & Materiales Planificados (MIGO 261)
+                    </h4>
+                    <button
+                      onClick={() => {
+                        setActiveWOModal(null);
+                        if (onOpenMIGOForWO) onOpenMIGOForWO(activeWO);
+                      }}
+                      className="bg-amber-600 hover:bg-amber-500 text-white font-bold px-3 py-1.5 rounded-lg text-xs transition-all flex items-center space-x-1 shadow-xs"
+                    >
+                      <Package className="w-3.5 h-3.5" />
+                      <span>Ir a MIGO Completo</span>
+                    </button>
                   </div>
 
-                  <div className="space-y-3">
-                    {components.map(comp => (
-                      <div key={comp.materialId} className="bg-slate-800/80 p-4 rounded-xl border border-slate-700 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                        <div>
-                          <div className="font-mono font-bold text-sap-blue">{comp.materialId}</div>
-                          <div className="font-bold text-slate-100">{comp.description}</div>
-                          <div className="text-slate-400 text-[11px] mt-0.5">
-                            Planificado: <strong>{comp.qtyPlanned} {comp.unit}</strong> | Consumido Real: <strong className="text-emerald-400">{comp.qtyIssued} {comp.unit}</strong>
+                  {components.length === 0 ? (
+                    <div className="text-slate-400 italic text-center py-6">Sin repuestos o materiales asignados.</div>
+                  ) : (
+                    <div className="space-y-2">
+                      {components.map((comp, idx) => (
+                        <div key={comp.materialId || idx} className="bg-slate-50 p-3 rounded-xl border border-slate-200 flex items-center justify-between">
+                          <div>
+                            <div className="font-bold text-slate-900">{comp.description || comp.materialId}</div>
+                            <div className="text-[11px] text-slate-500">
+                              Planificado: {comp.qtyPlanned} {comp.unit} • Consumido (MIGO 261): <strong className="text-amber-700">{comp.qtyIssued || 0} {comp.unit}</strong>
+                            </div>
                           </div>
-                        </div>
 
-                        {/* Direct Goods Issue Input */}
-                        <div className="flex items-center space-x-2">
-                          <input
-                            type="number"
-                            min="1"
-                            value={issueQtyInput[comp.materialId] || 1}
-                            onChange={(e) => setIssueQtyInput({ ...issueQtyInput, [comp.materialId]: Number(e.target.value) })}
-                            className="w-16 bg-slate-900 border border-slate-700 rounded px-2 py-1 text-center font-mono font-bold"
-                          />
                           <button
                             onClick={() => handleIssueComponent(activeWO.id, comp.materialId)}
-                            className="bg-emerald-600 hover:bg-emerald-500 text-white font-bold px-3 py-1.5 rounded-lg text-xs flex items-center space-x-1"
+                            className="bg-emerald-600 hover:bg-emerald-500 text-white font-bold px-3 py-1 rounded-lg text-xs transition-all shadow-xs"
                           >
-                            <Package className="w-3.5 h-3.5" />
-                            <span>MIGO 261 Consumir</span>
+                            + Reclamar 1 UN
                           </button>
                         </div>
-                      </div>
-                    ))}
-
-                    {components.length === 0 && (
-                      <div className="text-slate-400 text-center py-6 italic">
-                        Esta orden no tiene repuestos asignados en la lista de materiales.
-                      </div>
-                    )}
-                  </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
               )}
 
-              {/* TAB 4: COSTS */}
-              {activeTabWOModal === 'COSTS' && (
-                <div className="space-y-4 text-xs">
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="bg-slate-800/60 p-4 rounded-xl border border-slate-700 text-center">
-                      <div className="text-slate-400 font-bold">Coste Planificado</div>
-                      <div className="text-2xl font-mono font-black text-slate-200 mt-1">${(activeWO.plannedCost || 0).toFixed(2)}</div>
-                    </div>
-                    <div className="bg-slate-800/60 p-4 rounded-xl border border-slate-700 text-center">
-                      <div className="text-slate-400 font-bold">Coste Real Imputado (CO)</div>
-                      <div className="text-2xl font-mono font-black text-emerald-400 mt-1">${(activeWO.actualCost || 0).toFixed(2)}</div>
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              {/* TAB 5: TRAZABILIDAD & AUDITORÍA DE CAMBIOS DE ESTADO */}
+              {/* TAB 4: HISTORIAL & LOGS */}
               {activeTabWOModal === 'LOGS' && (
-                <div className="space-y-5 text-xs">
-                  {/* Status Change Audit Form */}
-                  <div className="bg-slate-950 p-4 rounded-xl border border-slate-800 space-y-3">
-                    <div className="flex items-center space-x-2 text-slate-200 font-bold">
-                      <ShieldCheck className="w-4 h-4 text-sap-blue" />
-                      <span>Registrar Transición de Estado con Trazabilidad (Auditoría)</span>
-                    </div>
-
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-                      <div>
-                        <label className="block text-[11px] font-semibold text-slate-400 mb-1">Usuario Responsable</label>
-                        <input
-                          type="text"
-                          value={statusChangeUser}
-                          onChange={(e) => setStatusChangeUser(e.target.value)}
-                          className="w-full bg-slate-800 text-slate-100 p-2 rounded-lg border border-slate-700 font-bold"
-                        />
-                      </div>
-
-                      <div>
-                        <label className="block text-[11px] font-semibold text-slate-400 mb-1">Nuevo Estado ERP</label>
-                        <select
-                          value={selectedNewStatus}
-                          onChange={(e) => setSelectedNewStatus(e.target.value)}
-                          className="w-full bg-slate-800 text-slate-100 p-2 rounded-lg border border-slate-700 font-bold"
-                        >
-                          <option value="CRTE">CRTE - Creada</option>
-                          <option value="REL">REL - Liberada para Ejecución</option>
-                          <option value="PCNF">PCNF - Parcialmente Confirmada</option>
-                          <option value="TECO">TECO - Cierre Técnico</option>
-                          <option value="CLSD">CLSD - Cerrada Definitiva</option>
-                        </select>
-                      </div>
-
-                      <div className="flex items-end">
-                        <button
-                          onClick={() => {
-                            const newSt = selectedNewStatus || 'REL';
-                            if (!auditReason.trim()) {
-                              addToast('Ingresa un motivo o justificación para registrar el cambio en la trazabilidad', 'info');
-                            }
-                            updateWorkOrderStatus(activeWO.id, newSt, statusChangeUser, auditReason);
-                            setAuditReason('');
-                          }}
-                          className="w-full bg-sap-blue hover:bg-sap-blue-hover text-white font-bold p-2 rounded-lg flex items-center justify-center space-x-1.5 transition-all shadow"
-                        >
-                          <History className="w-4 h-4" />
-                          <span>Guardar Cambio en Auditoría</span>
-                        </button>
-                      </div>
-                    </div>
-
-                    <div>
-                      <label className="block text-[11px] font-semibold text-slate-400 mb-1">Motivo / Justificación del Cambio</label>
-                      <input
-                        type="text"
-                        value={auditReason}
-                        onChange={(e) => setAuditReason(e.target.value)}
-                        placeholder="Ej. Inspección de seguridad LOTO completada. Liberado para trabajo en terreno."
-                        className="w-full bg-slate-800 text-slate-100 p-2 rounded-lg border border-slate-700 focus:ring-1 focus:ring-sap-blue"
-                      />
-                    </div>
-                  </div>
-
-                  {/* Vertical Timeline Traceability Log */}
-                  <div className="space-y-3">
-                    <div className="font-bold text-slate-300 flex items-center justify-between text-xs border-b border-slate-800 pb-2">
-                      <span className="flex items-center gap-1.5">
-                        <History className="w-4 h-4 text-sky-400" />
-                        Historial de Auditoría & Trazabilidad ({logs.length} registros)
-                      </span>
-                      <span className="text-[10px] text-slate-500 font-mono">Orden ID: {activeWO.id}</span>
-                    </div>
-
-                    <div className="relative pl-6 space-y-4 before:absolute before:left-2.5 before:top-2 before:bottom-2 before:w-0.5 before:bg-slate-700">
-                      {logs.map((log, index) => {
-                        const isString = typeof log === 'string';
-                        const logUser = isString ? 'OPERADOR SISTEMA' : (log?.user || 'SISTEMA');
-                        const logTime = isString ? '' : (log?.timestamp || '');
-                        const logText = isString ? log : (log?.text || 'Movimiento registrado');
-                        const logComment = isString ? null : log?.comment;
-                        const prevSt = isString ? null : log?.previousStatus;
-                        const newSt = isString ? null : log?.newStatus;
-
-                        return (
-                          <div key={log?.id || index} className="relative flex items-start space-x-3 bg-slate-800/80 p-3 rounded-xl border border-slate-700 shadow-sm">
-                            {/* Timeline Dot */}
-                            <div className="absolute -left-6 top-3.5 w-3 h-3 rounded-full bg-sap-blue border-2 border-slate-900" />
-
-                            <div className="w-8 h-8 rounded-full bg-slate-700 text-slate-200 flex items-center justify-center font-bold shrink-0">
-                              <User className="w-4 h-4 text-sky-400" />
-                            </div>
-
-                            <div className="flex-1 space-y-1">
-                              <div className="flex items-center justify-between">
-                                <span className="font-bold text-slate-100 text-xs">{logUser}</span>
-                                {logTime && <span className="text-[10px] font-mono text-slate-400">{logTime}</span>}
-                              </div>
-
-                              {prevSt && newSt && (
-                                <div className="flex items-center space-x-2 text-[10px] font-mono font-bold pt-0.5">
-                                  <span className="px-1.5 py-0.5 rounded bg-slate-700 text-slate-300">{prevSt}</span>
-                                  <span className="text-slate-400">➔</span>
-                                  <span className="px-1.5 py-0.5 rounded bg-sap-blue text-white">{newSt}</span>
-                                </div>
-                              )}
-
-                              <p className="text-xs text-slate-300 leading-snug">
-                                {logText}
-                              </p>
-
-                              {logComment && (
-                                <div className="text-[11px] text-amber-300 italic pt-0.5 flex items-center gap-1">
-                                  <MessageSquare className="w-3 h-3 text-amber-400 shrink-0" />
-                                  <span>Nota: "{logComment}"</span>
-                                </div>
-                              )}
-                            </div>
+                <div className="space-y-3">
+                  <h4 className="font-bold text-slate-900 text-xs uppercase tracking-wider">
+                    Historial de Trazabilidad & Cambios de Estado
+                  </h4>
+                  {logs.length === 0 ? (
+                    <div className="text-slate-400 italic text-center py-6">Sin registros de trazabilidad.</div>
+                  ) : (
+                    <div className="space-y-2">
+                      {logs.map((log, idx) => (
+                        <div key={log.id || idx} className="bg-slate-50 p-3 rounded-xl border border-slate-200 text-xs space-y-1">
+                          <div className="flex items-center justify-between text-slate-500 font-mono text-[11px]">
+                            <span>{log.timestamp}</span>
+                            <span className="font-bold text-slate-800">{log.user}</span>
                           </div>
-                        );
-                      })}
-
-                      {logs.length === 0 && (
-                        <div className="text-center text-slate-500 text-xs italic py-4">
-                          Sin historial de auditoría registrado.
+                          <div className="font-bold text-slate-900">{log.text}</div>
+                          {log.comment && <p className="text-slate-600 italic">"{log.comment}"</p>}
                         </div>
-                      )}
+                      ))}
                     </div>
-                  </div>
+                  )}
                 </div>
               )}
             </div>
 
-            {/* Modal Footer Actions */}
-            <div className="bg-slate-950 p-4 border-t border-slate-800 flex items-center justify-between no-print">
+            {/* Modal Action Footer: Quick Transition Bar */}
+            <div className="bg-slate-100 p-4 border-t border-slate-200 flex flex-wrap items-center justify-between gap-3 text-xs">
               <div className="flex items-center space-x-2">
+                <span className="font-bold text-slate-700">Estado Actual:</span>
+                <span className="font-mono font-bold bg-slate-900 text-white px-2.5 py-1 rounded-lg">
+                  {activeWO.status}
+                </span>
+              </div>
+
+              {/* Transition Actions */}
+              <div className="flex flex-wrap items-center gap-2">
                 {activeWO.status === 'CRTE' && (
                   <button
-                    onClick={() => {
-                      updateWorkOrderStatus(activeWO.id, 'REL');
-                    }}
-                    className="bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs px-4 py-2 rounded-xl transition-colors"
+                    onClick={() => handleQuickStatusChange(activeWO, 'REL')}
+                    className="bg-amber-600 hover:bg-amber-500 text-white font-bold px-4 py-2 rounded-xl transition-all shadow-xs"
                   >
-                    Liberar Orden (REL)
+                    ⚡ Liberar Orden (REL)
                   </button>
                 )}
 
                 {activeWO.status === 'REL' && (
                   <button
-                    onClick={() => {
-                      updateWorkOrderStatus(activeWO.id, 'TECO');
-                    }}
-                    className="bg-purple-600 hover:bg-purple-500 text-white font-bold text-xs px-4 py-2 rounded-xl transition-colors"
+                    onClick={() => handleQuickStatusChange(activeWO, 'PCNF')}
+                    className="bg-purple-600 hover:bg-purple-500 text-white font-bold px-4 py-2 rounded-xl transition-all shadow-xs"
                   >
-                    Ejecutar Cierre Técnico (TECO)
+                    ▶ Iniciar Trabajos (PCNF)
                   </button>
                 )}
-              </div>
 
-              <button
-                onClick={() => setActiveWOModal(null)}
-                className="bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold text-xs px-4 py-2 rounded-xl transition-colors"
-              >
-                Cerrar Ventana
-              </button>
+                {(activeWO.status === 'REL' || activeWO.status === 'PCNF') && (
+                  <button
+                    onClick={() => handleQuickStatusChange(activeWO, 'TECO')}
+                    className="bg-emerald-600 hover:bg-emerald-500 text-white font-extrabold px-4 py-2 rounded-xl transition-all shadow-xs flex items-center space-x-1"
+                  >
+                    <CheckCircle2 className="w-4 h-4" />
+                    <span>Emitir Cierre TECO</span>
+                  </button>
+                )}
+
+                <button
+                  onClick={() => setActiveWOModal(null)}
+                  className="bg-white border border-slate-300 text-slate-700 font-bold px-4 py-2 rounded-xl hover:bg-slate-200 transition-colors"
+                >
+                  Cerrar
+                </button>
+              </div>
             </div>
           </div>
         </div>
