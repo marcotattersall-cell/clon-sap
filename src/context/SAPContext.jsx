@@ -246,13 +246,13 @@ export const SAPProvider = ({ children }) => {
     const lastHourmeter = prevEqWOs.reduce((max, w) => (w.hourmeter && Number(w.hourmeter) > max ? Number(w.hourmeter) : max), 0);
     const lastOdometer = prevEqWOs.reduce((max, w) => (w.odometer && Number(w.odometer) > max ? Number(w.odometer) : max), 0);
 
-    if (newWO.hourmeter && lastHourmeter > 0 && Number(newWO.hourmeter) < lastHourmeter) {
-      addToast(`❌ Error de Validación IW31: Horómetro (${newWO.hourmeter} hrs) menor al último registro (${lastHourmeter} hrs).`, 'error');
+    if (!newWO.isCounterCorrection && newWO.hourmeter && lastHourmeter > 0 && Number(newWO.hourmeter) < lastHourmeter) {
+      addToast(`❌ Error de Validación IW31: Horómetro (${newWO.hourmeter} hrs) menor al último registro (${lastHourmeter} hrs). Active "Corrección por Error de Digitador" para autorizar.`, 'error');
       return false;
     }
 
-    if (newWO.odometer && lastOdometer > 0 && Number(newWO.odometer) < lastOdometer) {
-      addToast(`❌ Error de Validación IW31: Kilometraje (${newWO.odometer.toLocaleString()} km) menor al último registro (${lastOdometer.toLocaleString()} km).`, 'error');
+    if (!newWO.isCounterCorrection && newWO.odometer && lastOdometer > 0 && Number(newWO.odometer) < lastOdometer) {
+      addToast(`❌ Error de Validación IW31: Kilometraje (${newWO.odometer.toLocaleString()} km) menor al último registro (${lastOdometer.toLocaleString()} km). Active "Corrección por Error de Digitador" para autorizar.`, 'error');
       return false;
     }
 
@@ -290,6 +290,40 @@ export const SAPProvider = ({ children }) => {
 
     setWorkOrders(prev => [formattedWO, ...prev]);
     upsertDocument('workOrders', nextId, formattedWO);
+
+    // Update asset counters & track corrections if applicable
+    if (newWO.equipmentId && (newWO.hourmeter || newWO.odometer)) {
+      setAssets(prev => prev.map(a => {
+        if (a.id === newWO.equipmentId) {
+          const currentLogs = Array.isArray(a.counterAuditLogs) ? a.counterAuditLogs : [];
+          const currentCount = Number(a.counterCorrectionCount) || 0;
+          const isCorrection = newWO.isCounterCorrection;
+
+          const updatedLog = isCorrection ? [{
+            id: `LOG-CORR-${Date.now()}`,
+            timestamp: new Date().toLocaleString('es-CL'),
+            user: newWO.assignedTech || 'Especialista PM',
+            reason: newWO.correctionReason || 'Ajuste por error de digitación previo',
+            previousHourmeter: lastHourmeter,
+            newHourmeter: newWO.hourmeter || a.hourmeter,
+            previousOdometer: lastOdometer,
+            newOdometer: newWO.odometer || a.odometer,
+            orderId: nextId
+          }, ...currentLogs] : currentLogs;
+
+          const updatedAsset = {
+            ...a,
+            hourmeter: newWO.hourmeter || a.hourmeter,
+            odometer: newWO.odometer || a.odometer,
+            counterCorrectionCount: isCorrection ? currentCount + 1 : currentCount,
+            counterAuditLogs: updatedLog
+          };
+          upsertDocument('assets', a.id, updatedAsset);
+          return updatedAsset;
+        }
+        return a;
+      }));
+    }
 
     addToast(`Nueva OT ${nextId} registrada con Reserva Almacén ${reservationNum}.`, 'success');
     return true;

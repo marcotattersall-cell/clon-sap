@@ -289,6 +289,58 @@ export const UpdateVehicleExpirationsModal = ({ isOpen, onClose, vehicle }) => {
             )}
           </div>
 
+          {/* 📜 Counter Correction History & Audit Trace */}
+          <div className="space-y-3 bg-slate-900 text-white p-4 rounded-xl border border-slate-800">
+            <div className="flex items-center justify-between border-b border-slate-800 pb-2">
+              <div className="flex items-center space-x-2">
+                <RefreshCw className="w-4 h-4 text-amber-400" />
+                <h4 className="font-extrabold text-xs text-white uppercase tracking-wider">
+                  Historial & Contador de Correcciones de Lectura
+                </h4>
+              </div>
+              <span className={`px-2.5 py-0.5 rounded-full text-[11px] font-mono font-bold border ${
+                (vehicle.counterCorrectionCount || 0) > 2 
+                  ? 'bg-rose-950 text-rose-300 border-rose-800 animate-pulse' 
+                  : (vehicle.counterCorrectionCount || 0) > 0 
+                  ? 'bg-amber-950 text-amber-300 border-amber-800' 
+                  : 'bg-slate-800 text-slate-400 border-slate-700'
+              }`}>
+                {(vehicle.counterCorrectionCount || 0)} Correcciones Acumuladas
+              </span>
+            </div>
+
+            {(vehicle.counterCorrectionCount || 0) > 2 && (
+              <div className="bg-rose-950/80 border border-rose-800 p-2.5 rounded-lg text-rose-200 text-[11px] flex items-center space-x-2">
+                <AlertTriangle className="w-4 h-4 text-rose-400 shrink-0" />
+                <span>
+                  <strong>Alerta de Control de Calidad:</strong> Se han registrado múltiples correcciones de lectura en este activo. Se recomienda evaluar la práctica de digitación del equipo operativo.
+                </span>
+              </div>
+            )}
+
+            {!Array.isArray(vehicle.counterAuditLogs) || vehicle.counterAuditLogs.length === 0 ? (
+              <div className="text-slate-400 italic text-[11px] py-1 text-center">
+                Sin correcciones de contador registradas para este vehículo (Lecturas normales).
+              </div>
+            ) : (
+              <div className="space-y-2 max-h-40 overflow-y-auto pr-1">
+                {vehicle.counterAuditLogs.map((log) => (
+                  <div key={log.id} className="bg-slate-950 p-2.5 rounded-lg border border-slate-800 text-[11px] space-y-1">
+                    <div className="flex items-center justify-between text-slate-400 font-mono text-[10px]">
+                      <span>📅 {log.timestamp}</span>
+                      <span className="font-bold text-sky-400">👤 {log.user}</span>
+                    </div>
+                    <div className="flex items-center justify-between font-bold text-slate-200">
+                      <span>Valores: {log.previousHourmeter ? `${log.previousHourmeter}h ➔ ${log.newHourmeter}h` : ''} {log.previousOdometer ? `${log.previousOdometer}km ➔ ${log.newOdometer}km` : ''}</span>
+                      {log.orderId && <span className="font-mono text-amber-400 text-[10px]">OT: {log.orderId}</span>}
+                    </div>
+                    <p className="text-slate-300 italic text-[10px]">"{log.reason}"</p>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
           {/* Footer Actions */}
           <div className="pt-3 border-t border-slate-200 flex items-center justify-end space-x-3">
             <button

@@ -683,9 +683,20 @@ export const FleetPlanner = ({ onOpenCreateWOForVehicle }) => {
                       </p>
                     </div>
 
-                    <span className={`px-2.5 py-1 rounded-full text-xs font-extrabold shrink-0 ${exp.color}`}>
-                      {exp.label}
-                    </span>
+                    <div className="flex flex-col items-end gap-1 shrink-0">
+                      <span className={`px-2.5 py-1 rounded-full text-xs font-extrabold ${exp.color}`}>
+                        {exp.label}
+                      </span>
+                      {Number(vehicle.counterCorrectionCount || 0) > 0 && (
+                        <span className={`text-[10px] font-mono font-bold px-2 py-0.5 rounded border ${
+                          Number(vehicle.counterCorrectionCount) > 2 
+                            ? 'bg-rose-100 text-rose-800 border-rose-300 animate-pulse' 
+                            : 'bg-amber-100 text-amber-900 border-amber-300'
+                        }`} title="Total de correcciones de lectura acumuladas">
+                          🔧 {vehicle.counterCorrectionCount} Ajustes Lectura
+                        </span>
+                      )}
+                    </div>
                   </div>
 
                   {/* 3 Core Required Expirations Grid */}
