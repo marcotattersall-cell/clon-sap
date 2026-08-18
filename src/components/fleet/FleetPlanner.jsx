@@ -239,7 +239,7 @@ export const FleetPlanner = ({ onOpenCreateWOForVehicle }) => {
           <div className="flex items-center space-x-2">
             <Truck className="w-6 h-6 text-sky-400" />
             <h2 className="text-xl font-black tracking-tight text-white">
-              Planificación de Flota, Maquinaria & Vencimientos Documentales
+              Gestión de Flota & Control de Vencimientos
             </h2>
           </div>
           <p className="text-xs text-slate-300 max-w-3xl leading-relaxed">
