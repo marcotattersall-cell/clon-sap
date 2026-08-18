@@ -141,25 +141,7 @@ export const CreateWOModal = ({ isOpen, onClose }) => {
             </div>
           )}
 
-          {/* 🏷️ Título Autogenerado (SAP PM Standard) */}
-          <div className="bg-slate-950 p-3.5 rounded-xl border border-slate-800 space-y-1.5">
-            <div className="flex items-center justify-between text-[11px] font-bold text-slate-400">
-              <span>Título Autogenerado de la Orden (SAP PM Standard)</span>
-              <span className="text-emerald-400 font-mono">Automático ✔</span>
-            </div>
-            <div className="font-bold text-white text-xs bg-slate-800/80 p-2.5 rounded-lg border border-slate-700 font-mono text-amber-300">
-              {computedTitle}
-            </div>
-            <div className="pt-1">
-              <input
-                type="text"
-                value={notes}
-                onChange={(e) => setNotes(e.target.value)}
-                placeholder="Añadir nota u observación adicional al título (Opcional)..."
-                className="w-full bg-slate-900 text-slate-200 p-2 rounded-lg border border-slate-700/80 focus:ring-1 focus:ring-sap-blue text-xs"
-              />
-            </div>
-          </div>
+          {/* ----------------- FORM FIELDS ----------------- */}
 
           <div className="grid grid-cols-2 gap-4">
             <div>
