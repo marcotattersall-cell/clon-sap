@@ -286,7 +286,7 @@ export const FioriHeader = ({ onOpenCreateWO, onOpenCreateMaterial, onOpenCreate
                 activeTab === 'FLEET' ? 'bg-sap-blue text-white shadow-sm' : 'text-slate-600 hover:bg-slate-100'
               }`}
             >
-              Gestión de Flota & Control de Vencimientos
+              Flota & Vencimientos
             </button>
             <button
               onClick={() => setActiveTab('ANALYTICS')}
