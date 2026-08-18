@@ -28,6 +28,7 @@ import {
   User,
   MessageSquare
 } from 'lucide-react';
+import { formatDateDDMMYYYY } from '../../utils/dateUtils';
 
 export const WorkOrderMaster = ({ onOpenCreateWO, onOpenMIGOForWO }) => {
   const {
@@ -430,8 +431,8 @@ export const WorkOrderMaster = ({ onOpenCreateWO, onOpenMIGOForWO }) => {
 
                   <div className="bg-slate-800/60 p-4 rounded-xl border border-slate-700/80 space-y-2">
                     <span className="font-bold text-slate-400 uppercase text-[10px]">Fechas & Centros de Coste</span>
-                    <div>Fecha Inicio Plan: <strong className="text-slate-200">{activeWO.startDate}</strong></div>
-                    <div>Fecha Fin Objetivo: <strong className="text-slate-200">{activeWO.targetFinishDate}</strong></div>
+                    <div>Fecha Inicio Plan: <strong className="text-slate-200">{formatDateDDMMYYYY(activeWO.startDate)}</strong></div>
+                    <div>Fecha Fin Objetivo: <strong className="text-slate-200">{formatDateDDMMYYYY(activeWO.targetFinishDate)}</strong></div>
                     <div>Centro de Coste (CO): <strong className="text-amber-400">{activeWO.costCenter}</strong></div>
                     <div>Cuenta de Liquidación: <strong className="text-slate-200">{activeWO.settlementAccount}</strong></div>
                   </div>

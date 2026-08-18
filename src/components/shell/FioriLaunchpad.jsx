@@ -23,7 +23,9 @@ import {
   PieChart as PieChartIcon,
   ArrowUpRight,
   ArrowDownRight,
-  Sparkles
+  Sparkles,
+  Users,
+  HardHat
 } from 'lucide-react';
 import {
   ResponsiveContainer,
@@ -46,6 +48,7 @@ export const FioriLaunchpad = ({ onOpenCreateWO, onOpenCreateMIGO }) => {
     notifications,
     purchaseOrders,
     migoDocuments,
+    employees = [],
     setActiveTab,
     currentRole,
     plants,
@@ -59,6 +62,15 @@ export const FioriLaunchpad = ({ onOpenCreateWO, onOpenCreateMIGO }) => {
   const lowStockItems = materials.filter(m => m.stock <= m.reorderPoint);
   const downAssets = assets.filter(a => a.status === 'Down');
   const availabilityRate = Math.round(((assets.length - downAssets.length) / (assets.length || 1)) * 100);
+
+  const today = new Date();
+  today.setHours(0,0,0,0);
+  const hrAlertsCount = employees.filter(e => {
+    const medDays = Math.ceil((new Date(e.medicalExamExpiry).getTime() - today.getTime()) / (1000 * 3600 * 24));
+    const accDays = Math.ceil((new Date(e.accreditationExpiry).getTime() - today.getTime()) / (1000 * 3600 * 24));
+    const safDays = Math.ceil((new Date(e.safetyCourseExpiry).getTime() - today.getTime()) / (1000 * 3600 * 24));
+    return medDays <= 30 || accDays <= 30 || safDays <= 30;
+  }).length;
 
   // Recharts Monthly Trend Data
   const monthlyData = [
@@ -84,7 +96,7 @@ export const FioriLaunchpad = ({ onOpenCreateWO, onOpenCreateMIGO }) => {
               Bienvenido al Sistema de Gestión Integrado
             </h1>
             <p className="text-xs sm:text-sm text-slate-600 mt-1 max-w-3xl">
-              Supervisión en tiempo real de Mantenimiento de Planta (PM), Maestro de Materiales (MM), Almacén e Inventario (WM) y Control de Costes (FI/CO).
+              Supervisión en tiempo real de Mantenimiento de Planta (PM), Almacén e Inventario (MM), Gestión de Flota y Maquinaria, y Cockpit Analítico.
             </p>
           </div>
 
@@ -146,7 +158,7 @@ export const FioriLaunchpad = ({ onOpenCreateWO, onOpenCreateMIGO }) => {
           </span>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
           {/* Tile 1: Órdenes de Trabajo Activas */}
           <div
             onClick={() => setActiveTab('WORK_ORDERS')}
@@ -172,7 +184,7 @@ export const FioriLaunchpad = ({ onOpenCreateWO, onOpenCreateMIGO }) => {
                 {criticalWorkOrders.length} Urgentes
               </span>
               <span className="text-sap-blue group-hover:underline flex items-center font-bold">
-                Ver Módulo PM <ArrowRight className="w-3 h-3 ml-1" />
+                Ver PM <ArrowRight className="w-3 h-3 ml-1" />
               </span>
             </div>
           </div>
@@ -183,22 +195,22 @@ export const FioriLaunchpad = ({ onOpenCreateWO, onOpenCreateMIGO }) => {
             className="fiori-glass p-5 rounded-xl cursor-pointer hover:border-sap-blue hover:shadow-md transition-all transform hover:-translate-y-0.5 group relative overflow-hidden"
           >
             <div className="flex items-center justify-between text-slate-500 mb-2">
-              <span className="text-xs font-bold uppercase tracking-wider text-slate-600">Valoración Inventario (MM)</span>
+              <span className="text-xs font-bold uppercase tracking-wider text-slate-600">Valoración MM</span>
               <div className="w-8 h-8 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center font-bold">
                 <DollarSign className="w-4 h-4 group-hover:scale-110 transition-transform" />
               </div>
             </div>
             <div className="flex items-baseline justify-between">
               <div className="text-2xl font-black text-slate-900 tracking-tight">
-                ${totalStockValuation.toLocaleString('es-CL', { minimumFractionDigits: 2 })}
+                ${totalStockValuation.toLocaleString('es-CL', { minimumFractionDigits: 0 })}
               </div>
               <span className="text-xs font-bold text-sky-700 bg-sky-50 px-2 py-0.5 rounded flex items-center">
-                <ArrowUpRight className="w-3 h-3 mr-0.5" /> +4.2% MoM
+                <ArrowUpRight className="w-3 h-3 mr-0.5" /> +4.2%
               </span>
             </div>
             <div className="flex items-center justify-between mt-3 pt-3 border-t border-slate-100 text-xs">
               <span className="text-slate-600 font-medium">
-                {materials.length} SKUs en Maestro MM
+                {materials.length} SKUs MM
               </span>
               <span className="text-sap-blue group-hover:underline flex items-center font-bold">
                 Maestro MM <ArrowRight className="w-3 h-3 ml-1" />
@@ -212,7 +224,7 @@ export const FioriLaunchpad = ({ onOpenCreateWO, onOpenCreateMIGO }) => {
             className="fiori-glass p-5 rounded-xl cursor-pointer hover:border-sap-blue hover:shadow-md transition-all transform hover:-translate-y-0.5 group relative overflow-hidden"
           >
             <div className="flex items-center justify-between text-slate-500 mb-2">
-              <span className="text-xs font-bold uppercase tracking-wider text-slate-600">Punto de Pedido Almacén</span>
+              <span className="text-xs font-bold uppercase tracking-wider text-slate-600">Stock Crítico</span>
               <div className="w-8 h-8 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center font-bold">
                 <Package className="w-4 h-4 group-hover:scale-110 transition-transform" />
               </div>
@@ -220,18 +232,18 @@ export const FioriLaunchpad = ({ onOpenCreateWO, onOpenCreateMIGO }) => {
             <div className="flex items-baseline justify-between">
               <div className="text-3xl font-black text-slate-900 tracking-tight flex items-baseline gap-2">
                 <span>{lowStockItems.length}</span>
-                <span className="text-xs font-semibold text-rose-600">Items Críticos</span>
+                <span className="text-xs font-semibold text-rose-600">Recomprar</span>
               </div>
               <span className="text-xs font-bold text-rose-600 bg-rose-50 px-2 py-0.5 rounded">
-                Recomprar
+                Alert
               </span>
             </div>
             <div className="flex items-center justify-between mt-3 pt-3 border-t border-slate-100 text-xs">
               <span className="text-amber-700 font-medium">
-                Requerimiento MIGO / PO
+                MIGO / PO
               </span>
               <span className="text-sap-blue group-hover:underline flex items-center font-bold">
-                Gestión Stock <ArrowRight className="w-3 h-3 ml-1" />
+                Gestión <ArrowRight className="w-3 h-3 ml-1" />
               </span>
             </div>
           </div>
@@ -242,7 +254,7 @@ export const FioriLaunchpad = ({ onOpenCreateWO, onOpenCreateMIGO }) => {
             className="fiori-glass p-5 rounded-xl cursor-pointer hover:border-sap-blue hover:shadow-md transition-all transform hover:-translate-y-0.5 group relative overflow-hidden"
           >
             <div className="flex items-center justify-between text-slate-500 mb-2">
-              <span className="text-xs font-bold uppercase tracking-wider text-slate-600">Salud de Activos (PM)</span>
+              <span className="text-xs font-bold uppercase tracking-wider text-slate-600">Salud Activos</span>
               <div className="w-8 h-8 rounded-lg bg-purple-50 text-purple-600 flex items-center justify-center font-bold">
                 <Cpu className="w-4 h-4 group-hover:scale-110 transition-transform" />
               </div>
@@ -250,18 +262,51 @@ export const FioriLaunchpad = ({ onOpenCreateWO, onOpenCreateMIGO }) => {
             <div className="flex items-baseline justify-between">
               <div className="text-3xl font-black text-slate-900 tracking-tight flex items-baseline gap-2">
                 <span>{availabilityRate}%</span>
-                <span className="text-xs font-semibold text-emerald-600">Disponibilidad</span>
+                <span className="text-xs font-semibold text-emerald-600">Disp.</span>
               </div>
               <span className="text-xs font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded">
-                SLA OK
+                OK
               </span>
             </div>
             <div className="flex items-center justify-between mt-3 pt-3 border-t border-slate-100 text-xs">
               <span className="text-rose-600 font-semibold">
-                {downAssets.length} Equipos Detenidos
+                {downAssets.length} Detenidos
               </span>
               <span className="text-sap-blue group-hover:underline flex items-center font-bold">
-                Ver Activos <ArrowRight className="w-3 h-3 ml-1" />
+                Activos <ArrowRight className="w-3 h-3 ml-1" />
+              </span>
+            </div>
+          </div>
+
+          {/* Tile 5: Recursos Humanos & Acreditaciones HCM */}
+          <div
+            onClick={() => setActiveTab('HR')}
+            className="fiori-glass p-5 rounded-xl cursor-pointer hover:border-sap-blue hover:shadow-md transition-all transform hover:-translate-y-0.5 group relative overflow-hidden border-sky-200 bg-sky-50/30"
+          >
+            <div className="flex items-center justify-between text-slate-500 mb-2">
+              <span className="text-xs font-bold uppercase tracking-wider text-slate-700">Recursos Humanos (HCM)</span>
+              <div className="w-8 h-8 rounded-lg bg-sky-100 text-sky-700 flex items-center justify-center font-bold">
+                <Users className="w-4 h-4 group-hover:scale-110 transition-transform" />
+              </div>
+            </div>
+            <div className="flex items-baseline justify-between">
+              <div className="text-3xl font-black text-slate-900 tracking-tight flex items-baseline gap-2">
+                <span>{employees.length}</span>
+                <span className="text-xs font-semibold text-sky-700">Colaboradores</span>
+              </div>
+              {hrAlertsCount > 0 && (
+                <span className="text-xs font-bold text-amber-800 bg-amber-100 px-2 py-0.5 rounded animate-pulse">
+                  {hrAlertsCount} Alertas
+                </span>
+              )}
+            </div>
+            <div className="flex items-center justify-between mt-3 pt-3 border-t border-slate-200/80 text-xs">
+              <span className="text-amber-800 font-bold flex items-center gap-1">
+                <HardHat className="w-3.5 h-3.5 text-amber-600" />
+                Semáforo Faenas
+              </span>
+              <span className="text-sap-blue group-hover:underline flex items-center font-bold">
+                Ver HCM <ArrowRight className="w-3 h-3 ml-1" />
               </span>
             </div>
           </div>

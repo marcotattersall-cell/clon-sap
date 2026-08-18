@@ -20,12 +20,15 @@ import { Activity, DollarSign, TrendingUp, ShieldCheck, Wrench, Package, PieChar
 export const SAPAnalyticsCockpit = () => {
   const { materials, workOrders, assets, purchaseOrders } = useSAP();
 
-  // 1. Cost breakdown by Cost Center (FI/CO)
-  const costCenterData = [
-    { name: 'CC-4100 (Empaque)', planned: 680, actual: 291 },
-    { name: 'CC-4200 (Servicios)', planned: 978, actual: 0 },
-    { name: 'CC-4300 (Calidad)', planned: 150, actual: 140 }
-  ];
+  // 1. Cost breakdown by Cost Center (FI/CO) dynamically calculated
+  const costCenterMap = {};
+  workOrders.forEach(w => {
+    const cc = w.costCenter || 'CC-GENERAL';
+    if (!costCenterMap[cc]) costCenterMap[cc] = { name: cc, planned: 0, actual: 0 };
+    costCenterMap[cc].planned += Number(w.plannedCost || 0);
+    costCenterMap[cc].actual += Number(w.actualCost || 0);
+  });
+  const costCenterData = Object.values(costCenterMap);
 
   // 2. Work Order Status Distribution
   const statusCounts = {
@@ -49,15 +52,12 @@ export const SAPAnalyticsCockpit = () => {
     criticality: a.criticality
   }));
 
-  // 4. Monthly Spend Trend (Simulated 6-Month Data)
-  const monthlySpendData = [
-    { month: 'Marzo', planned: 2400, actual: 2100 },
-    { month: 'Abril', planned: 3100, actual: 2950 },
-    { month: 'Mayo', planned: 2800, actual: 3200 },
-    { month: 'Junio', planned: 3500, actual: 3100 },
-    { month: 'Julio', planned: 4000, actual: 3800 },
-    { month: 'Agosto', planned: 4200, actual: 2850 }
-  ];
+  // 4. Monthly Spend Trend dynamically calculated
+  const monthlySpendData = purchaseOrders.length > 0 ? purchaseOrders.map(p => ({
+    month: p.createdDate || 'Agosto',
+    planned: Number(p.totalAmount || 0),
+    actual: p.status === 'Recibido' ? Number(p.totalAmount || 0) : 0
+  })) : [];
 
   return (
     <div className="space-y-6 animate-in fade-in duration-300">

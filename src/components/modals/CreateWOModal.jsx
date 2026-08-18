@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useSAP } from '../../context/SAPContext';
-import { Wrench, Plus, X, AlertTriangle, Gauge, Truck, Clock } from 'lucide-react';
+import { Wrench, Plus, X, AlertTriangle, Gauge, Truck, Clock, Package } from 'lucide-react';
 
 export const CreateWOModal = ({ isOpen, onClose }) => {
   const { assets, materials, workOrders, createWorkOrder, addToast } = useSAP();
@@ -8,16 +8,18 @@ export const CreateWOModal = ({ isOpen, onClose }) => {
   const [title, setTitle] = useState('');
   const [type, setType] = useState('PM01');
   const [priority, setPriority] = useState('Alta');
-  const [equipmentId, setEquipmentId] = useState(assets[0]?.id || 'EQ-1001');
+  const [equipmentId, setEquipmentId] = useState(assets[0]?.id || '');
   const [costCenter, setCostCenter] = useState('CC-4100');
   const [assignedTech, setAssignedTech] = useState('Jorge Silva');
   const [plannedHours, setPlannedHours] = useState(4.0);
   const [plannedCost, setPlannedCost] = useState(300.00);
+  const [selectedPlannedMaterial, setSelectedPlannedMaterial] = useState('');
+  const [plannedMaterialQty, setPlannedMaterialQty] = useState(1);
 
   // 🚜 Industrial Counters: Hourmeter & Kilometrage for Machinery & Vehicles
   const [isVehicleOrMachinery, setIsVehicleOrMachinery] = useState(true);
-  const [hourmeter, setHourmeter] = useState('4850.5');
-  const [odometer, setOdometer] = useState('128450');
+  const [hourmeter, setHourmeter] = useState('');
+  const [odometer, setOdometer] = useState('');
   const [validationError, setValidationError] = useState('');
 
   // Find previous maximum counter readings for the selected equipment/vehicle
@@ -65,6 +67,21 @@ export const CreateWOModal = ({ isOpen, onClose }) => {
       return;
     }
 
+    const plannedComponents = [];
+    if (selectedPlannedMaterial) {
+      const matObj = materials.find(m => m.id === selectedPlannedMaterial);
+      if (matObj) {
+        plannedComponents.push({
+          materialId: matObj.id,
+          description: matObj.name,
+          qtyPlanned: Number(plannedMaterialQty || 1),
+          qtyIssued: 0,
+          unit: matObj.unit,
+          unitPrice: matObj.unitPrice
+        });
+      }
+    }
+
     const success = createWorkOrder({
       title,
       type,
@@ -76,6 +93,7 @@ export const CreateWOModal = ({ isOpen, onClose }) => {
       plannedCost: Number(plannedCost),
       hourmeter: newHourmeter,
       odometer: newOdometer,
+      components: plannedComponents,
       startDate: new Date().toISOString().split('T')[0],
       targetFinishDate: new Date(Date.now() + 86400000 * 2).toISOString().split('T')[0],
       plannerGroup: 'GRP-MAINT',
@@ -257,6 +275,41 @@ export const CreateWOModal = ({ isOpen, onClose }) => {
                 </div>
               </div>
             )}
+          </div>
+
+          {/* 📦 Planned Material Component & RESB Reservation */}
+          <div className="bg-slate-950/60 p-3.5 rounded-xl border border-slate-800 space-y-2">
+            <span className="font-bold text-amber-400 flex items-center space-x-1">
+              <Package className="w-4 h-4" />
+              <span>Reserva de Almacén (RESB) - Repuestos Planificados</span>
+            </span>
+            <div className="grid grid-cols-3 gap-3 text-xs">
+              <div className="col-span-2">
+                <label className="text-slate-400 block mb-1">Repuesto Maestro a Reservar</label>
+                <select
+                  value={selectedPlannedMaterial}
+                  onChange={(e) => setSelectedPlannedMaterial(e.target.value)}
+                  className="w-full bg-slate-800 border border-slate-700 rounded-lg px-2.5 py-1.5 text-white"
+                >
+                  <option value="">-- Ninguno / Asignación Posterior --</option>
+                  {materials.map(m => (
+                    <option key={m.id} value={m.id}>
+                      {m.id} - {m.name} (Disp: {m.stock} {m.unit})
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label className="text-slate-400 block mb-1">Cant. Reserva</label>
+                <input
+                  type="number"
+                  min="1"
+                  value={plannedMaterialQty}
+                  onChange={(e) => setPlannedMaterialQty(Number(e.target.value))}
+                  className="w-full bg-slate-800 border border-slate-700 rounded-lg px-2.5 py-1.5 text-white font-mono font-bold"
+                />
+              </div>
+            </div>
           </div>
 
           <div className="grid grid-cols-3 gap-4">

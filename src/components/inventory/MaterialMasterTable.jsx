@@ -27,10 +27,10 @@ export const MaterialMasterTable = ({ onOpenCreateMaterial, onOpenMIGOForMateria
   // Filter materials based on global search & filters
   const filteredMaterials = materials.filter(m => {
     const matchesSearch =
-      m.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      m.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      m.storageBin.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      m.supplier.toLowerCase().includes(searchTerm.toLowerCase());
+      (m.id && m.id.toLowerCase().includes(searchTerm.toLowerCase())) ||
+      (m.name && m.name.toLowerCase().includes(searchTerm.toLowerCase())) ||
+      (m.storageBin && m.storageBin.toLowerCase().includes(searchTerm.toLowerCase())) ||
+      (m.supplier && m.supplier.toLowerCase().includes(searchTerm.toLowerCase()));
 
     const matchesType = selectedType === 'ALL' || m.type === selectedType;
     const matchesLocation = selectedLocation === 'ALL' || m.storageLocation === selectedLocation;

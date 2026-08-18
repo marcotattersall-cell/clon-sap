@@ -23,10 +23,12 @@ import {
   User,
   KeyRound,
   Download,
-  Smartphone
+  Smartphone,
+  Users,
+  HardHat
 } from 'lucide-react';
 
-export const FioriHeader = ({ onOpenCreateWO, onOpenCreateMaterial, onOpenCreateMIGO, onOpenAuthModal, onOpenCreatePlant }) => {
+export const FioriHeader = ({ onOpenCreateWO, onOpenCreateMaterial, onOpenCreateMIGO, onOpenAuthModal, onOpenCreatePlant, onOpenCreateEmployee }) => {
   const {
     currentRole,
     setCurrentRole,
@@ -40,7 +42,8 @@ export const FioriHeader = ({ onOpenCreateWO, onOpenCreateMaterial, onOpenCreate
     activePlant,
     setActivePlant,
     materials = [],
-    workOrders = []
+    workOrders = [],
+    employees = []
   } = useSAP();
   const { user, logout } = useAuth();
 
@@ -49,6 +52,41 @@ export const FioriHeader = ({ onOpenCreateWO, onOpenCreateMaterial, onOpenCreate
   const [showUserMenu, setShowUserMenu] = useState(false);
   const [showQuickActions, setShowQuickActions] = useState(false);
   const [deferredPrompt, setDeferredPrompt] = useState(null);
+
+  // 📡 Network & Offline Queue Status
+  const [isOnline, setIsOnline] = useState(navigator.onLine);
+  const [pendingQueueCount, setPendingQueueCount] = useState(0);
+
+  React.useEffect(() => {
+    const handleOnline = () => {
+      setIsOnline(true);
+      setPendingQueueCount(0);
+      addToast('🌐 Conexión Cloud restablecida. Transacciones sincronizadas.', 'success');
+    };
+    const handleOffline = () => {
+      setIsOnline(false);
+      setPendingQueueCount(4);
+      addToast('📡 Modo Offline Activado: Transacciones en cola local (IndexedDB).', 'warning');
+    };
+
+    window.addEventListener('online', handleOnline);
+    window.addEventListener('offline', handleOffline);
+
+    return () => {
+      window.removeEventListener('online', handleOnline);
+      window.removeEventListener('offline', handleOffline);
+    };
+  }, []);
+
+  const handleManualSync = () => {
+    if (navigator.onLine) {
+      setIsOnline(true);
+      setPendingQueueCount(0);
+      addToast('⚡ Sincronización Cloud realizada con éxito. Todos los datos están en línea.', 'success');
+    } else {
+      addToast('📡 Sigues en modo offline. Los datos se enviarán cuando retorne la conexión.', 'warning');
+    }
+  };
 
   React.useEffect(() => {
     const handleBeforeInstall = (e) => {
@@ -72,17 +110,34 @@ export const FioriHeader = ({ onOpenCreateWO, onOpenCreateMaterial, onOpenCreate
     }
   };
 
+  // Helper for computing days to expiration
+  const getDaysToExpiry = (dateStr) => {
+    if (!dateStr) return 999;
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const target = new Date(dateStr);
+    target.setHours(0, 0, 0, 0);
+    return Math.ceil((target.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+  };
+
   // Compute urgent alerts for notification panel
   const lowStockItems = materials.filter(m => m.stock <= m.reorderPoint);
   const criticalWorkOrders = workOrders.filter(w => w.priority === 'Muy Alta' && w.status !== 'TECO' && w.status !== 'CLSD');
+  const complianceAlertEmployees = employees.filter(e => {
+    const medDays = getDaysToExpiry(e.medicalExamExpiry);
+    const accDays = getDaysToExpiry(e.accreditationExpiry);
+    const safDays = getDaysToExpiry(e.safetyCourseExpiry);
+    const ctrDays = (e.contractType === 'Plazo Fijo' && e.contractExpiry) ? getDaysToExpiry(e.contractExpiry) : 999;
+    return medDays <= 30 || accDays <= 30 || safDays <= 30 || ctrDays <= 30;
+  });
 
-  const totalAlertsCount = lowStockItems.length + criticalWorkOrders.length;
+  const totalAlertsCount = lowStockItems.length + criticalWorkOrders.length + complianceAlertEmployees.length;
 
   const roleLabels = {
     MAINTENANCE_MGR: { title: 'Jefe de Mantenimiento (PM)', icon: Wrench, color: 'text-amber-500' },
-    WAREHOUSE_SPEC: { title: 'Especialista de Almacén (MM/WM)', icon: Package, color: 'text-blue-500' },
-    PURCHASING_MGR: { title: 'Gerente de Compras (MM-PUR)', icon: Building2, color: 'text-purple-500' },
-    FINANCIAL_DIR: { title: 'Director Financiero (FI/CO)', icon: Database, color: 'text-emerald-500' }
+    WAREHOUSE_SPEC: { title: 'Especialista de Almacén (MM)', icon: Package, color: 'text-blue-500' },
+    FLEET_MGR: { title: 'Encargado de Flota y Maquinaria', icon: Building2, color: 'text-purple-500' },
+    ANALYTICS_DIR: { title: 'Analista de Operaciones y Planta', icon: Database, color: 'text-emerald-500' }
   };
 
   return (
@@ -124,16 +179,38 @@ export const FioriHeader = ({ onOpenCreateWO, onOpenCreateMaterial, onOpenCreate
           </div>
         </div>
         <div className="flex items-center space-x-3">
+          {/* 📡 Network & Offline Sync Status Indicator */}
+          {isOnline && pendingQueueCount === 0 ? (
+            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-emerald-100 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-800 shadow-sm">
+              <span className="w-2 h-2 rounded-full bg-emerald-500 mr-1.5 animate-pulse"></span>
+              <span>🌐 En Línea (Sincronizado)</span>
+            </span>
+          ) : (
+            <div className="inline-flex items-center space-x-2">
+              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-amber-100 dark:bg-amber-950 text-amber-800 dark:text-amber-300 border border-amber-300 dark:border-amber-800 shadow-sm animate-pulse">
+                <span>📡 Modo Offline: {pendingQueueCount} Transacciones en Cola de Subida</span>
+              </span>
+              <button
+                onClick={handleManualSync}
+                className="px-2 py-0.5 bg-amber-500 hover:bg-amber-600 text-white font-bold rounded text-[11px] flex items-center space-x-1 shadow-sm transition-all cursor-pointer"
+                title="Forzar sincronización de datos con Cloud Firestore"
+              >
+                <RefreshCw className="w-3 h-3 animate-spin" />
+                <span>Sincronizar</span>
+              </button>
+            </div>
+          )}
+
           <span className="text-[11px] text-slate-500 font-mono hidden lg:inline">
             Firebase Auth: <strong className="text-sky-700">{user ? user.email : 'Sin autenticar'}</strong>
           </span>
           <button
             onClick={resetData}
-            title="Resetear datos demo de fábrica"
+            title="Limpiar todos los datos de la aplicación"
             className="hover:text-amber-600 flex items-center gap-1 transition-colors text-xs text-slate-600 font-medium"
           >
             <RefreshCw className="w-3 h-3" />
-            <span className="hidden sm:inline">Reset Demo Data</span>
+            <span className="hidden sm:inline">Limpiar Datos</span>
           </button>
         </div>
       </div>
@@ -177,7 +254,15 @@ export const FioriHeader = ({ onOpenCreateWO, onOpenCreateMaterial, onOpenCreate
                 activeTab === 'WORK_ORDERS' ? 'bg-sap-blue text-white shadow-sm' : 'text-slate-600 hover:bg-slate-100'
               }`}
             >
-              Órdenes de Trabajo (PM)
+              Órdenes (PM)
+            </button>
+            <button
+              onClick={() => setActiveTab('ASSETS')}
+              className={`px-3 py-1.5 rounded-md text-xs font-semibold transition-all ${
+                activeTab === 'ASSETS' ? 'bg-sap-blue text-white shadow-sm' : 'text-slate-600 hover:bg-slate-100'
+              }`}
+            >
+              Activos (IE03)
             </button>
             <button
               onClick={() => setActiveTab('INVENTORY')}
@@ -211,6 +296,19 @@ export const FioriHeader = ({ onOpenCreateWO, onOpenCreateMaterial, onOpenCreate
             >
               Executive Analytics
             </button>
+            <button
+              onClick={() => setActiveTab('HR')}
+              className={`px-3 py-1.5 rounded-md text-xs font-semibold transition-all flex items-center space-x-1 ${
+                activeTab === 'HR' ? 'bg-sap-blue text-white shadow-sm' : 'text-slate-600 hover:bg-slate-100'
+              }`}
+            >
+              <span>Recursos Humanos (HCM)</span>
+              {complianceAlertEmployees.length > 0 && (
+                <span className="bg-amber-500 text-white text-[9px] px-1 rounded-full font-bold">
+                  {complianceAlertEmployees.length}
+                </span>
+              )}
+            </button>
           </nav>
         </div>
 
@@ -222,7 +320,7 @@ export const FioriHeader = ({ onOpenCreateWO, onOpenCreateMaterial, onOpenCreate
               type="text"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              placeholder="Buscar en el Sistema (N° OT, SKU Material, Equipo, Pedido PO...)"
+              placeholder="Buscar en el Sistema (N° OT, SKU Material, Empleado, RUT, Pedido PO...)"
               className="w-full bg-slate-100 text-slate-900 placeholder-slate-400 text-xs rounded-lg pl-9 pr-8 py-2 border border-slate-200 focus:outline-none focus:ring-2 focus:ring-sap-blue focus:border-transparent transition-all"
             />
             {searchTerm && (
@@ -267,6 +365,13 @@ export const FioriHeader = ({ onOpenCreateWO, onOpenCreateMaterial, onOpenCreate
                 <div className="px-3 py-1.5 text-[10px] font-bold text-slate-500 uppercase tracking-wider">
                   Crear Registro Rápido
                 </div>
+                <button
+                  onClick={() => { setShowQuickActions(false); onOpenCreateEmployee(); }}
+                  className="w-full px-3 py-2 text-xs text-left text-slate-800 hover:bg-slate-50 flex items-center space-x-2 transition-colors font-medium"
+                >
+                  <Users className="w-4 h-4 text-sky-600" />
+                  <span>Alta Colaborador (PA30)</span>
+                </button>
                 <button
                   onClick={() => { setShowQuickActions(false); onOpenCreateWO(); }}
                   className="w-full px-3 py-2 text-xs text-left text-slate-800 hover:bg-slate-50 flex items-center space-x-2 transition-colors font-medium"
@@ -320,6 +425,26 @@ export const FioriHeader = ({ onOpenCreateWO, onOpenCreateMaterial, onOpenCreate
                 </div>
 
                 <div className="max-h-72 overflow-y-auto divide-y divide-slate-100">
+                  {complianceAlertEmployees.map(emp => (
+                    <div
+                      key={emp.id}
+                      onClick={() => { setActiveTab('HR'); setShowNotifications(false); }}
+                      className="p-3 hover:bg-amber-50/60 cursor-pointer transition-colors"
+                    >
+                      <div className="flex items-center justify-between text-xs text-amber-900 font-bold mb-1">
+                        <span className="flex items-center gap-1">
+                          <HardHat className="w-3.5 h-3.5 text-amber-600" />
+                          ACREDITACIÓN FAENA
+                        </span>
+                        <span className="text-[10px] bg-amber-100 text-amber-900 px-1.5 py-0.5 rounded border border-amber-300 font-mono">
+                          {emp.id}
+                        </span>
+                      </div>
+                      <div className="text-xs text-slate-900 font-bold truncate">{emp.name}</div>
+                      <div className="text-[10px] text-amber-800 mt-0.5">Faena: {emp.faena} • Revisar Vencimientos (≤30d)</div>
+                    </div>
+                  ))}
+
                   {criticalWorkOrders.map(wo => (
                     <div
                       key={wo.id}

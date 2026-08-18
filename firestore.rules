@@ -1,0 +1,50 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Helper functions for security rules
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    // Regla estricta para perfiles de usuario
+    match /users/{userId} {
+      allow read, write: if isAuthenticated();
+    }
+
+    // Reglas de seguridad estrictas para colecciones operativas Clon SAP ERP (PM / MM)
+    // Exigen sesión de usuario autenticada obligatoria tanto para lectura como para escritura
+    match /plants/{document} {
+      allow read, write: if isAuthenticated();
+    }
+
+    match /materials/{document} {
+      allow read, write: if isAuthenticated();
+    }
+
+    match /assets/{document} {
+      allow read, write: if isAuthenticated();
+    }
+
+    match /notifications/{document} {
+      allow read, write: if isAuthenticated();
+    }
+
+    match /workOrders/{document} {
+      allow read, write: if isAuthenticated();
+    }
+
+    match /purchaseOrders/{document} {
+      allow read, write: if isAuthenticated();
+    }
+
+    match /migoDocuments/{document} {
+      allow read, write: if isAuthenticated();
+    }
+
+    // Regla de salvaguarda global para cualquier subcolección
+    match /{document=**} {
+      allow read, write: if isAuthenticated();
+    }
+  }
+}

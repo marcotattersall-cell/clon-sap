@@ -24,8 +24,8 @@ export const LoginScreen = () => {
     loginWithEmail,
     registerWithEmail,
     loginWithGoogle,
-    authError,
-    isRealFirebaseConfigured
+    loginDemoUser,
+    authError
   } = useAuth();
 
   const { setCurrentRole, addToast } = useSAP();
@@ -96,15 +96,16 @@ export const LoginScreen = () => {
     }
   };
 
-  const handleQuickDemoLogin = async (demoEmail, demoRole) => {
-    setEmail(demoEmail);
-    setPassword('password123');
+  const handleQuickDemoLogin = async (roleKey) => {
     setIsSubmitting(true);
-    const res = await loginWithEmail(demoEmail, 'password123');
+    setLocalError('');
+    const res = await loginDemoUser(roleKey);
     setIsSubmitting(false);
     if (res.success) {
-      setCurrentRole(demoRole);
-      addToast(`Acceso Demo iniciado como: ${res.user.displayName}`, 'success');
+      setCurrentRole(res.user.role);
+      addToast(`Acceso Demo Autenticado: ${res.user.displayName}`, 'success');
+    } else {
+      setLocalError(res.error);
     }
   };
 
@@ -193,15 +194,46 @@ export const LoginScreen = () => {
                 <ArrowRight className="w-4 h-4 text-slate-400 group-hover:translate-x-1 transition-transform" />
               </button>
 
-              {/* Direct 1-Click Instant Entrance Button */}
-              <button
-                type="button"
-                onClick={() => handleQuickDemoLogin('marco.vidal@enterprise.com', role)}
-                className="w-full bg-emerald-600 hover:bg-emerald-500 text-white p-3 rounded-xl shadow-md flex items-center justify-center space-x-2 transition-all transform hover:-translate-y-0.5 font-bold text-xs"
-              >
-                <ShieldCheck className="w-4 h-4 text-emerald-200" />
-                <span>⚡ Ingresar Directamente al Sistema ERP (Acceso 1-Click)</span>
-              </button>
+              {/* Error Banner */}
+              {(localError || authError) && (
+                <div className="mb-3 p-3 bg-rose-500/10 border border-rose-500/30 rounded-xl text-rose-400 text-xs font-semibold flex items-center space-x-2 animate-in fade-in">
+                  <AlertCircle className="w-4 h-4 shrink-0" />
+                  <span>{localError || authError}</span>
+                </div>
+              )}
+
+              {/* Direct 1-Click Instant Demo Roles */}
+              <div className="space-y-1.5 mt-2">
+                <span className="block text-[10px] font-extrabold text-slate-400 uppercase tracking-wider text-center">
+                  ⚡ Acceso Rápido Autenticado (Demo Roles)
+                </span>
+                <div className="grid grid-cols-3 gap-1.5">
+                  <button
+                    type="button"
+                    onClick={() => handleQuickDemoLogin('MAINTENANCE_MGR')}
+                    className="bg-sky-900/40 hover:bg-sky-800/60 border border-sky-700/60 text-sky-200 p-2 rounded-xl text-[11px] font-bold flex flex-col items-center justify-center text-center transition-all hover:scale-[1.02]"
+                  >
+                    <Wrench className="w-4 h-4 mb-1 text-sky-400" />
+                    <span>Jefe PM</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleQuickDemoLogin('WAREHOUSE_SPEC')}
+                    className="bg-amber-900/40 hover:bg-amber-800/60 border border-amber-700/60 text-amber-200 p-2 rounded-xl text-[11px] font-bold flex flex-col items-center justify-center text-center transition-all hover:scale-[1.02]"
+                  >
+                    <Package className="w-4 h-4 mb-1 text-amber-400" />
+                    <span>Almacén MM</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleQuickDemoLogin('PURCHASING_MGR')}
+                    className="bg-emerald-900/40 hover:bg-emerald-800/60 border border-emerald-700/60 text-emerald-200 p-2 rounded-xl text-[11px] font-bold flex flex-col items-center justify-center text-center transition-all hover:scale-[1.02]"
+                  >
+                    <Building2 className="w-4 h-4 mb-1 text-emerald-400" />
+                    <span>Compras PO</span>
+                  </button>
+                </div>
+              </div>
             </div>
 
             {/* Divider */}
@@ -353,28 +385,7 @@ export const LoginScreen = () => {
               </button>
             </form>
 
-            {/* Quick Demo Access Bar */}
-            <div className="pt-3 border-t border-slate-200 dark:border-slate-800 text-[11px] text-slate-500">
-              <span className="font-bold text-slate-700 dark:text-slate-300 block mb-1.5 text-center">
-                Acceso Demo Rápido de Prueba (1-Clic):
-              </span>
-              <div className="flex gap-2">
-                <button
-                  type="button"
-                  onClick={() => handleQuickDemoLogin('carlos.ruiz@sap.enterprise.com', 'MAINTENANCE_MGR')}
-                  className="flex-1 py-2 px-2 rounded-lg bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 hover:bg-slate-200 dark:hover:bg-slate-700/80 text-slate-800 dark:text-slate-200 font-semibold text-center transition-colors truncate"
-                >
-                  Carlos Ruiz (PM)
-                </button>
-                <button
-                  type="button"
-                  onClick={() => handleQuickDemoLogin('ana.morales@sap.enterprise.com', 'WAREHOUSE_SPEC')}
-                  className="flex-1 py-2 px-2 rounded-lg bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 hover:bg-slate-200 dark:hover:bg-slate-700/80 text-slate-800 dark:text-slate-200 font-semibold text-center transition-colors truncate"
-                >
-                  Ana Morales (MM)
-                </button>
-              </div>
-            </div>
+            
           </div>
         </div>
       </main>

@@ -1,6 +1,6 @@
 import React from 'react';
 import { useSAP } from '../../context/SAPContext';
-import { LayoutGrid, Wrench, Package, ArrowRightLeft, Truck, BarChart3 } from 'lucide-react';
+import { LayoutGrid, Wrench, Cpu, Package, Truck, BarChart3, Users } from 'lucide-react';
 
 export const MobileBottomNav = () => {
   const { activeTab, setActiveTab } = useSAP();
@@ -8,7 +8,8 @@ export const MobileBottomNav = () => {
   const navItems = [
     { id: 'LAUNCHPAD', label: 'Inicio', icon: LayoutGrid },
     { id: 'WORK_ORDERS', label: 'Órdenes', icon: Wrench },
-    { id: 'FLEET', label: 'Flota', icon: Truck },
+    { id: 'HR', label: 'Personal', icon: Users },
+    { id: 'ASSETS', label: 'Activos', icon: Cpu },
     { id: 'INVENTORY', label: 'Inventario', icon: Package },
     { id: 'ANALYTICS', label: 'Analítica', icon: BarChart3 }
   ];

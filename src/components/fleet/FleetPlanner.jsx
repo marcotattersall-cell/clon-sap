@@ -17,123 +17,31 @@ import {
   ChevronRight
 } from 'lucide-react';
 
+import { CreateAssetModal } from '../modals/CreateAssetModal';
+
 export const FleetPlanner = ({ onOpenCreateWOForVehicle }) => {
   const { assets, workOrders, createWorkOrder, addToast } = useSAP();
 
   const [searchTerm, setSearchTerm] = useState('');
   const [categoryFilter, setCategoryFilter] = useState('ALL');
   const [statusFilter, setStatusFilter] = useState('ALL');
+  const [isCreateAssetOpen, setIsCreateAssetOpen] = useState(false);
 
-  // Master Fleet Assets categorized by Maintenance Schema (250 hrs vs 10,000 km)
-  const masterFleet = [
-    // 🚜 MAQUINARIA PESADA - CICLO DE MANTENCIÓN: 250 HORAS (HORÓMETRO)
-    {
-      id: 'EQ-1002',
-      name: 'Excavadora Hidráulica Caterpillar 320 (EX-02)',
-      category: 'HEAVY_MACHINERY',
-      equipmentType: 'Excavadora',
-      costCenter: 'CC-4200',
-      baseHourmeter: 470.0,
-      hourmeterInterval: 250,
-      baseOdometer: 12450,
-      operator: 'Mario Rossi (Operador Pesado)',
-      plate: 'MAQ-EX-320',
-      lastServiceDate: '2026-07-10'
-    },
-    {
-      id: 'EQ-1006',
-      name: 'Rodillo Compactador Tándem Hamm HD 110',
-      category: 'HEAVY_MACHINERY',
-      equipmentType: 'Rodillo Compactador',
-      costCenter: 'CC-4200',
-      baseHourmeter: 735.0,
-      hourmeterInterval: 250,
-      baseOdometer: 8200,
-      operator: 'Esteban Morales',
-      plate: 'MAQ-ROD-110',
-      lastServiceDate: '2026-06-25'
-    },
-    {
-      id: 'EQ-1007',
-      name: 'Cargador Frontal Komatsu WA380',
-      category: 'HEAVY_MACHINERY',
-      equipmentType: 'Cargador Frontal',
-      costCenter: 'CC-4200',
-      baseHourmeter: 985.0,
-      hourmeterInterval: 250,
-      baseOdometer: 19400,
-      operator: 'Gonzalo Silva',
-      plate: 'MAQ-CARG-380',
-      lastServiceDate: '2026-07-02'
-    },
-    {
-      id: 'EQ-1008',
-      name: 'Retroexcavadora JCB 3CX Turbo 4x4',
-      category: 'HEAVY_MACHINERY',
-      equipmentType: 'Retroexcavadora',
-      costCenter: 'CC-4200',
-      baseHourmeter: 262.5, // Excedido > 250 hrs!
-      hourmeterInterval: 250,
-      baseOdometer: 15300,
-      operator: 'Hernán Gutiérrez',
-      plate: 'MAQ-RET-3CX',
-      lastServiceDate: '2026-05-15'
-    },
-
-    // 🚛 VEHÍCULOS DE CARRETERA & CAMIONETAS - CICLO DE MANTENCIÓN: 10,000 KM (KILOMETRAJE)
-    {
-      id: 'EQ-1001',
-      name: 'Camión de Carretera Volvo FMX 440 Tolva (V-101)',
-      category: 'ROAD_VEHICLE',
-      equipmentType: 'Camión de Carretera',
-      costCenter: 'CC-4100',
-      baseOdometer: 128450,
-      odometerInterval: 10000,
-      baseHourmeter: 4850.5,
-      operator: 'Carlos Mendoza',
-      plate: 'GH-8942-K',
-      lastServiceDate: '2026-06-12'
-    },
-    {
-      id: 'EQ-1004',
-      name: 'Camioneta 4x4 Ford Ranger Almacén & Logística (V-204)',
-      category: 'ROAD_VEHICLE',
-      equipmentType: 'Camioneta 4x4',
-      costCenter: 'CC-4100',
-      baseOdometer: 98400,
-      odometerInterval: 10000,
-      baseHourmeter: 2150.0,
-      operator: 'Manuel Almacén',
-      plate: 'K-8812-FL',
-      lastServiceDate: '2026-04-10'
-    },
-    {
-      id: 'EQ-1009',
-      name: 'Camión Aljibe Mercedes-Benz Atego 1729',
-      category: 'ROAD_VEHICLE',
-      equipmentType: 'Camión de Carretera',
-      costCenter: 'CC-4100',
-      baseOdometer: 150350, // Excedido > 150,000 km!
-      odometerInterval: 10000,
-      baseHourmeter: 5200.0,
-      operator: 'Jaime Paredes',
-      plate: 'MB-1729-ALJ',
-      lastServiceDate: '2026-05-01'
-    },
-    {
-      id: 'EQ-1010',
-      name: 'Camioneta 4x4 Toyota Hilux Inspección Terreno',
-      category: 'ROAD_VEHICLE',
-      equipmentType: 'Camioneta 4x4',
-      costCenter: 'CC-4100',
-      baseOdometer: 42100,
-      odometerInterval: 10000,
-      baseHourmeter: 1450.0,
-      operator: 'Ana Morales (Ingeniera PM)',
-      plate: 'TH-4410-INSP',
-      lastServiceDate: '2026-08-01'
-    }
-  ];
+  // Master Fleet Assets dynamically derived from context assets
+  const masterFleet = assets.map(a => ({
+    id: a.id,
+    name: a.name,
+    category: (a.category && (a.category.includes('Camión') || a.category.includes('Camioneta') || a.category.includes('Vehículo'))) ? 'ROAD_VEHICLE' : 'HEAVY_MACHINERY',
+    equipmentType: a.category || 'Equipo',
+    costCenter: a.costCenter || 'CC-4100',
+    baseHourmeter: Number(a.baseHourmeter || a.hourmeter || 0),
+    hourmeterInterval: Number(a.hourmeterInterval || 250),
+    baseOdometer: Number(a.baseOdometer || a.odometer || 0),
+    odometerInterval: Number(a.odometerInterval || 10000),
+    operator: a.operator || 'Operador Asignado',
+    plate: a.plate || a.id,
+    lastServiceDate: a.lastMaintenance || 'N/A'
+  }));
 
   // Merge latest readings from IW31 Work Orders and compute progress against the 250 hr / 10,000 km rules
   const fleetData = masterFleet.map(veh => {
@@ -252,7 +160,14 @@ export const FleetPlanner = ({ onOpenCreateWOForVehicle }) => {
           </p>
         </div>
 
-        <div className="flex items-center space-x-3">
+        <div className="flex flex-wrap items-center gap-3">
+          <button
+            onClick={() => setIsCreateAssetOpen(true)}
+            className="bg-emerald-600 hover:bg-emerald-500 text-white px-4 py-2.5 rounded-xl text-xs font-extrabold flex items-center space-x-2 shadow-lg transition-all"
+          >
+            <PlusCircle className="w-4 h-4" />
+            <span>＋ Alta de Flota (IE01)</span>
+          </button>
           <button
             onClick={() => onOpenCreateWOForVehicle && onOpenCreateWOForVehicle()}
             className="bg-sap-blue hover:bg-sap-blue-hover text-white px-4 py-2.5 rounded-xl text-xs font-extrabold flex items-center space-x-2 shadow-lg transition-all"
@@ -508,6 +423,11 @@ export const FleetPlanner = ({ onOpenCreateWOForVehicle }) => {
           );
         })}
       </div>
+
+      <CreateAssetModal
+        isOpen={isCreateAssetOpen}
+        onClose={() => setIsCreateAssetOpen(false)}
+      />
     </div>
   );
 };

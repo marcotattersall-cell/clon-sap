@@ -13,6 +13,9 @@ import { SAPAnalyticsCockpit } from './components/analytics/SAPAnalyticsCockpit'
 import { CreateWOModal } from './components/modals/CreateWOModal';
 import { CreateMaterialModal } from './components/modals/CreateMaterialModal';
 import { CreatePlantModal } from './components/modals/CreatePlantModal';
+import { HRMaster } from './components/hr/HRMaster';
+import { CreateEmployeeModal } from './components/modals/CreateEmployeeModal';
+import { CreateAbsenceModal } from './components/modals/CreateAbsenceModal';
 import { AuthModal } from './components/auth/AuthModal';
 import { LoginScreen } from './components/auth/LoginScreen';
 import { MobileBottomNav } from './components/shell/MobileBottomNav';
@@ -56,6 +59,21 @@ class ErrorBoundary extends React.Component {
     console.error("ErrorBoundary caught an error:", error, errorInfo);
   }
 
+  handleHardReset = () => {
+    if ('caches' in window) {
+      caches.keys().then((names) => {
+        names.forEach((name) => caches.delete(name));
+      });
+    }
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.getRegistrations().then((registrations) => {
+        registrations.forEach((r) => r.unregister());
+      });
+    }
+    this.setState({ hasError: false, error: null });
+    window.location.href = window.location.origin + '?v=' + Date.now();
+  };
+
   render() {
     if (this.state.hasError) {
       return (
@@ -69,21 +87,16 @@ class ErrorBoundary extends React.Component {
           </p>
           <div className="flex space-x-3">
             <button
-              onClick={() => {
-                localStorage.removeItem('sap_work_orders');
-                window.location.reload();
-              }}
-              className="bg-rose-600 hover:bg-rose-500 text-white font-bold text-xs px-4 py-2 rounded-xl shadow"
+              onClick={this.handleHardReset}
+              className="bg-rose-600 hover:bg-rose-500 text-white font-bold text-xs px-4 py-2 rounded-xl shadow transition-colors"
             >
-              Restablecer Caché de Datos
+              Limpiar Caché y Reiniciar Aplicación
             </button>
             <button
-              onClick={() => {
-                this.setState({ hasError: false, error: null });
-              }}
-              className="bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold text-xs px-4 py-2 rounded-xl"
+              onClick={this.handleHardReset}
+              className="bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold text-xs px-4 py-2 rounded-xl transition-colors"
             >
-              Reintentar
+              Reintentar (Cargar Última Versión)
             </button>
           </div>
         </div>
@@ -178,6 +191,8 @@ const SAPAppContent = () => {
   const [isCreateWOOpen, setIsCreateWOOpen] = useState(false);
   const [isCreateMaterialOpen, setIsCreateMaterialOpen] = useState(false);
   const [isCreatePlantOpen, setIsCreatePlantOpen] = useState(false);
+  const [isCreateEmployeeOpen, setIsCreateEmployeeOpen] = useState(false);
+  const [isCreateAbsenceOpen, setIsCreateAbsenceOpen] = useState(false);
   const [isAuthOpen, setIsAuthOpen] = useState(false);
   const [migoInitialMat, setMigoInitialMat] = useState('');
 
@@ -212,6 +227,7 @@ const SAPAppContent = () => {
         onOpenCreateMIGO={() => setActiveTab('MIGO')}
         onOpenAuthModal={() => setIsAuthOpen(true)}
         onOpenCreatePlant={() => setIsCreatePlantOpen(true)}
+        onOpenCreateEmployee={() => setIsCreateEmployeeOpen(true)}
       />
 
       {/* Main Content Area - Full Screen Width with Mobile Bottom Bar Clearance */}
@@ -253,6 +269,13 @@ const SAPAppContent = () => {
           <FleetPlanner onOpenCreateWOForVehicle={() => setIsCreateWOOpen(true)} />
         )}
 
+        {activeTab === 'HR' && (
+          <HRMaster
+            onOpenCreateEmployee={() => setIsCreateEmployeeOpen(true)}
+            onOpenCreateAbsence={() => setIsCreateAbsenceOpen(true)}
+          />
+        )}
+
         {activeTab === 'ANALYTICS' && (
           <SAPAnalyticsCockpit />
         )}
@@ -262,7 +285,7 @@ const SAPAppContent = () => {
       {/* Footer Ribbon */}
       <footer className="bg-slate-50 border-t border-slate-200 py-4 px-6 mb-14 lg:mb-0 text-center text-xs text-slate-600 flex flex-col sm:flex-row items-center justify-between gap-2 no-print">
         <div>
-          <strong>Enterprise Cloud ERP</strong> • Módulos PM / MM / WM / FICO Integrados
+          <strong>Clon SAP Edge ERP</strong> • Módulos Transaccionales: Mantenimiento (PM), Almacén (MM), Recursos Humanos (HCM), Flota y Analítica Integrados
         </div>
         <div className="flex items-center space-x-4 text-[11px] text-slate-500">
           <span>Executive Horizon UI 4.0</span>
@@ -290,6 +313,16 @@ const SAPAppContent = () => {
       <CreatePlantModal
         isOpen={isCreatePlantOpen}
         onClose={() => setIsCreatePlantOpen(false)}
+      />
+
+      <CreateEmployeeModal
+        isOpen={isCreateEmployeeOpen}
+        onClose={() => setIsCreateEmployeeOpen(false)}
+      />
+
+      <CreateAbsenceModal
+        isOpen={isCreateAbsenceOpen}
+        onClose={() => setIsCreateAbsenceOpen(false)}
       />
 
       <AuthModal

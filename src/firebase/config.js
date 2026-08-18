@@ -9,6 +9,11 @@ import {
   updateProfile,
   onAuthStateChanged
 } from 'firebase/auth';
+import {
+  getFirestore,
+  initializeFirestore,
+  persistentLocalCache
+} from 'firebase/firestore';
 
 // Configuración de Firebase para el proyecto clon-sap-2026
 const firebaseConfig = {
@@ -31,6 +36,19 @@ try {
   console.warn('[Firebase SDK] Advertencia de Inicialización:', error);
 }
 
+// Inicializar Firestore con soporte de caché persistente offline
+let dbInstance = null;
+if (app) {
+  try {
+    dbInstance = initializeFirestore(app, {
+      localCache: persistentLocalCache()
+    });
+  } catch (e) {
+    dbInstance = getFirestore(app);
+  }
+}
+
+export const db = dbInstance;
 export const auth = app ? getAuth(app) : null;
 export const googleProvider = new GoogleAuthProvider();
 
@@ -42,3 +60,4 @@ export {
   updateProfile,
   onAuthStateChanged
 };
+

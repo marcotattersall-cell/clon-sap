@@ -18,8 +18,8 @@ export const WarehouseVisualMap = () => {
   racks.forEach(r => {
     for (let i = 1; i <= 4; i++) {
       const binCode = `${r.rack}${i}`;
-      // Find materials stored in this bin
-      const matInBin = materials.filter(m => m.storageBin.startsWith(binCode));
+      // Find materials stored in this bin (with defensive fallback if storageBin is missing)
+      const matInBin = materials.filter(m => m?.storageBin && String(m.storageBin).startsWith(binCode));
       const totalStock = matInBin.reduce((acc, m) => acc + m.stock, 0);
 
       let status = 'empty'; // empty, normal, full, warning

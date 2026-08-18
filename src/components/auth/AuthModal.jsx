@@ -306,26 +306,7 @@ export const AuthModal = ({ isOpen, onClose }) => {
             </button>
           </div>
 
-          {/* Quick Demo Fast-Login helper buttons */}
-          <div className="pt-2 border-t border-slate-200 dark:border-slate-800 text-[10px] text-slate-500">
-            <span className="font-bold text-slate-600 dark:text-slate-400 block mb-1">Acceso Rápido Demo:</span>
-            <div className="flex gap-2">
-              <button
-                type="button"
-                onClick={() => handleQuickDemoLogin('carlos.ruiz@sap.enterprise.com', 'MAINTENANCE_MGR')}
-                className="flex-1 py-1 px-2 rounded bg-slate-100 dark:bg-slate-900 border border-slate-300 dark:border-slate-700 hover:bg-slate-200 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 font-mono truncate"
-              >
-                Carlos Ruiz (PM)
-              </button>
-              <button
-                type="button"
-                onClick={() => handleQuickDemoLogin('ana.morales@sap.enterprise.com', 'WAREHOUSE_SPEC')}
-                className="flex-1 py-1 px-2 rounded bg-slate-100 dark:bg-slate-900 border border-slate-300 dark:border-slate-700 hover:bg-slate-200 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 font-mono truncate"
-              >
-                Ana Morales (MM)
-              </button>
-            </div>
-          </div>
+          
         </form>
       </div>
     </div>

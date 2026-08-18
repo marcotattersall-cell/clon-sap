@@ -1,9 +1,11 @@
 import React, { useState } from 'react';
 import { useSAP } from '../../context/SAPContext';
-import { Package, ArrowRightLeft, ArrowDownRight, ArrowUpRight, FileCheck, CheckCircle2, History, Layers } from 'lucide-react';
+import { Package, ArrowRightLeft, ArrowDownRight, ArrowUpRight, FileCheck, CheckCircle2, History, Layers, QrCode } from 'lucide-react';
+import { QRScannerModal } from '../modals/QRScannerModal';
+import { formatDateDDMMYYYY } from '../../utils/dateUtils';
 
-export const GoodsMovementMIGO = ({ initialMaterialId = '' }) => {
-  const { materials, workOrders, migoDocuments, executeGoodsMovement, addToast } = useSAP();
+const GoodsMovementMIGOComponent = ({ initialMaterialId = '' }) => {
+  const { materials, workOrders, purchaseOrders, migoDocuments, executeGoodsMovement, addToast } = useSAP();
 
   const [movementType, setMovementType] = useState('261'); // 261, 101, 311
   const [selectedMaterial, setSelectedMaterial] = useState(initialMaterialId || (materials[0]?.id || ''));
@@ -11,6 +13,33 @@ export const GoodsMovementMIGO = ({ initialMaterialId = '' }) => {
   const [refDoc, setRefDoc] = useState(workOrders[0]?.id || 'WO-400101');
   const [storageLocation, setStorageLocation] = useState('0001');
   const [targetLocation, setTargetLocation] = useState('0002');
+  const [isQRModalOpen, setIsQRModalOpen] = useState(false);
+
+  const [currentPage, setCurrentPage] = useState(1);
+  const pageSize = 10;
+  const totalPages = Math.ceil(migoDocuments.length / pageSize) || 1;
+  const paginatedDocs = migoDocuments.slice((currentPage - 1) * pageSize, currentPage * pageSize);
+
+  const handleSelectReference = (e) => {
+    const val = e.target.value;
+    setRefDoc(val);
+
+    // Auto-fill material or default parameters if PO or WO selected
+    if (movementType === '101') {
+      const po = purchaseOrders.find(p => p.id === val);
+      if (po && materials.length > 0) {
+        setSelectedMaterial(materials[0].id);
+      }
+    } else if (movementType === '261') {
+      const wo = workOrders.find(w => w.id === val || w.reservationNumber === val);
+      if (wo && wo.components && wo.components.length > 0) {
+        setSelectedMaterial(wo.components[0].materialId || materials[0]?.id);
+        if (wo.components[0].qtyPlanned) {
+          setQuantity(Number(wo.components[0].qtyPlanned));
+        }
+      }
+    }
+  };
 
   const handleSubmitMIGO = (e) => {
     e.preventDefault();
@@ -71,9 +100,19 @@ export const GoodsMovementMIGO = ({ initialMaterialId = '' }) => {
               </select>
             </div>
 
-            {/* Material Selector */}
+            {/* Material Selector with QR Scan Button */}
             <div>
-              <label className="block text-slate-600 dark:text-slate-400 font-bold mb-1">Material (SKU)</label>
+              <div className="flex items-center justify-between mb-1">
+                <label className="text-slate-600 dark:text-slate-400 font-bold">Material (SKU)</label>
+                <button
+                  type="button"
+                  onClick={() => setIsQRModalOpen(true)}
+                  className="px-2.5 py-1 bg-sap-blue/10 hover:bg-sap-blue/20 text-sap-blue font-bold rounded-lg text-xs flex items-center space-x-1 border border-sap-blue/30 transition-all"
+                >
+                  <QrCode className="w-3.5 h-3.5" />
+                  <span>Escanear QR</span>
+                </button>
+              </div>
               <select
                 value={selectedMaterial}
                 onChange={(e) => setSelectedMaterial(e.target.value)}
@@ -114,16 +153,48 @@ export const GoodsMovementMIGO = ({ initialMaterialId = '' }) => {
               />
             </div>
 
-            {/* Reference Document */}
+            {/* Dynamic Reference Document Selector */}
             <div>
-              <label className="block text-slate-600 dark:text-slate-400 font-bold mb-1">Documento de Referencia (OT / PO)</label>
-              <input
-                type="text"
-                value={refDoc}
-                onChange={(e) => setRefDoc(e.target.value)}
-                placeholder="Ej. WO-400101 o PO-800901"
-                className="w-full bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-200 font-mono p-2.5 rounded-xl border border-slate-300 dark:border-slate-700"
-              />
+              <label className="block text-slate-600 dark:text-slate-400 font-bold mb-1">
+                Documento de Referencia ({movementType === '101' ? 'Orden de Compra ME21N' : movementType === '261' ? 'Reserva RESB / Orden PM' : 'Traspaso'})
+              </label>
+
+              {movementType === '101' ? (
+                <select
+                  value={refDoc}
+                  onChange={handleSelectReference}
+                  className="w-full bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-200 font-mono font-bold p-2.5 rounded-xl border border-slate-300 dark:border-slate-700"
+                >
+                  <option value="">-- Seleccionar Pedido de Compras PO --</option>
+                  {purchaseOrders.map(p => (
+                    <option key={p.id} value={p.id}>
+                      {p.id} - {p.vendor} ({p.status})
+                    </option>
+                  ))}
+                  <option value="PO-45008912">PO-45008912 - Caterpillar Finning Chile</option>
+                </select>
+              ) : movementType === '261' ? (
+                <select
+                  value={refDoc}
+                  onChange={handleSelectReference}
+                  className="w-full bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-200 font-mono font-bold p-2.5 rounded-xl border border-slate-300 dark:border-slate-700"
+                >
+                  <option value="">-- Seleccionar Orden PM / Reserva RESB --</option>
+                  {workOrders.map(w => (
+                    <option key={w.id} value={w.id}>
+                      {w.id} ({w.reservationNumber || 'RESB'}) - {w.title}
+                    </option>
+                  ))}
+                </select>
+              ) : (
+                <input
+                  type="text"
+                  value={refDoc}
+                  onChange={(e) => setRefDoc(e.target.value)}
+                  placeholder="Ej. WO-400101 o PO-800901"
+                  className="w-full bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-200 font-mono p-2.5 rounded-xl border border-slate-300 dark:border-slate-700"
+                />
+              )}
             </div>
 
             <button
@@ -158,7 +229,7 @@ export const GoodsMovementMIGO = ({ initialMaterialId = '' }) => {
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-200 dark:divide-slate-800">
-                {migoDocuments.map(doc => (
+                {paginatedDocs.map(doc => (
                   <tr key={doc.documentId} className="hover:bg-blue-50/50 dark:hover:bg-slate-800/50 transition-colors">
                     <td className="font-mono font-bold text-slate-800 dark:text-slate-200">
                       {doc.documentId}
@@ -185,7 +256,7 @@ export const GoodsMovementMIGO = ({ initialMaterialId = '' }) => {
                       {doc.refDocument}
                     </td>
                     <td className="text-xs text-slate-500">
-                      {doc.timestamp}
+                      {formatDateDDMMYYYY(doc.timestamp)}
                     </td>
                     <td className="text-xs text-slate-500">
                       {doc.user}
@@ -195,8 +266,49 @@ export const GoodsMovementMIGO = ({ initialMaterialId = '' }) => {
               </tbody>
             </table>
           </div>
+
+          {/* Pagination Controls */}
+          {totalPages > 1 && (
+            <div className="flex items-center justify-between mt-4 px-2 text-xs font-semibold text-slate-600 dark:text-slate-400 border-t border-slate-200 dark:border-slate-800 pt-3">
+              <span>Página {currentPage} de {totalPages} ({migoDocuments.length} documentos MIGO)</span>
+              <div className="flex space-x-2">
+                <button
+                  onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                  disabled={currentPage === 1}
+                  className="px-3 py-1 bg-slate-200 dark:bg-slate-800 hover:bg-slate-300 rounded-lg disabled:opacity-50 transition-all"
+                >
+                  ◀ Anterior
+                </button>
+                <button
+                  onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                  disabled={currentPage === totalPages}
+                  className="px-3 py-1 bg-slate-200 dark:bg-slate-800 hover:bg-slate-300 rounded-lg disabled:opacity-50 transition-all"
+                >
+                  Siguiente ▶
+                </button>
+              </div>
+            </div>
+          )}
         </div>
       </div>
+
+      {/* QR Scanner Camera Modal */}
+      <QRScannerModal
+        isOpen={isQRModalOpen}
+        onClose={() => setIsQRModalOpen(false)}
+        onScanSuccess={(code) => {
+          const matched = materials.find(m => m.id === code || m.id.toLowerCase() === code.toLowerCase());
+          if (matched) {
+            setSelectedMaterial(matched.id);
+            addToast(`📷 QR Detectado: Material ${matched.name} (${matched.id})`, 'success');
+          } else {
+            setSelectedMaterial(code);
+            addToast(`📷 QR Detectado: Código ${code}`, 'info');
+          }
+        }}
+      />
     </div>
   );
 };
+
+export const GoodsMovementMIGO = React.memo(GoodsMovementMIGOComponent);
