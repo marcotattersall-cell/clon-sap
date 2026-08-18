@@ -253,14 +253,6 @@ export const WorkOrderMaster = ({ onOpenCreateWO, onOpenMIGOForWO }) => {
             </select>
           </div>
         </div>
-
-        <button
-          onClick={onOpenCreateWO}
-          className="bg-sap-blue hover:bg-sap-blue-hover text-white px-4 py-2 rounded-xl text-xs font-extrabold flex items-center space-x-1.5 shadow-xs transition-all"
-        >
-          <Plus className="w-4 h-4" />
-          <span>Nueva Orden IW31</span>
-        </button>
       </div>
 
       {/* ----------------- VIEW MODE 1: KANBAN MINIMALISTA ----------------- */}
