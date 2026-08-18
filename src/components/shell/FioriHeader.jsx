@@ -336,15 +336,6 @@ export const FioriHeader = ({ onOpenCreateWO, onOpenCreateMaterial, onOpenCreate
 
         {/* Right: Quick Actions, Firebase User & Auth Controls */}
         <div className="flex items-center space-x-2">
-          {/* Native PWA Install App Button */}
-          <button
-            onClick={handleInstallPWA}
-            title="Instalar App Nativa en macOS o Android"
-            className="bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold px-3 py-1.5 rounded-lg flex items-center space-x-1.5 shadow-sm transition-all animate-in fade-in"
-          >
-            <Download className="w-3.5 h-3.5" />
-            <span className="hidden md:inline">Instalar App Nativa</span>
-          </button>
 
           {/* Quick Action Menu Button */}
           <div className="relative">
@@ -550,6 +541,14 @@ export const FioriHeader = ({ onOpenCreateWO, onOpenCreateMaterial, onOpenCreate
                     <span className="font-semibold text-slate-800">{user.plant || '0001 (Planta Central)'}</span>
                   </div>
                 </div>
+
+                <button
+                  onClick={() => { setShowUserMenu(false); handleInstallPWA(); }}
+                  className="w-full px-4 py-2 text-xs text-left text-emerald-700 hover:bg-emerald-50 flex items-center space-x-2 transition-colors font-medium"
+                >
+                  <Download className="w-4 h-4 text-emerald-600" />
+                  <span>Instalar App Nativa (PWA)</span>
+                </button>
 
                 <button
                   onClick={() => { setShowUserMenu(false); onOpenAuthModal(); }}
