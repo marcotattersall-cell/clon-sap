@@ -147,7 +147,7 @@ export const WorkOrderMaster = ({ onOpenCreateWO, onOpenMIGOForWO }) => {
       </div>
 
       {/* KPI Cards Strip */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
         <div
           onClick={() => setSelectedStatusFilter('ALL')}
           className="fiori-card p-4 bg-white rounded-2xl border border-slate-200 shadow-sm cursor-pointer hover:border-sap-blue transition-all flex items-center justify-between"
@@ -265,7 +265,7 @@ export const WorkOrderMaster = ({ onOpenCreateWO, onOpenMIGOForWO }) => {
 
       {/* ----------------- VIEW MODE 1: KANBAN MINIMALISTA ----------------- */}
       {viewMode === 'KANBAN' && (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
           {kanbanColumns.map(col => {
             const columnOrders = filteredWorkOrders.filter(w => {
               if (col.status === 'TECO') return w.status === 'TECO' || w.status === 'CLSD';

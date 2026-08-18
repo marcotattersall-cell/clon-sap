@@ -239,11 +239,11 @@ export const FioriHeader = ({ onOpenCreateWO, onOpenCreateMaterial, onOpenCreate
             </div>
           </button>
 
-            {/* Quick Navigation Tabs */}
-          <nav className="hidden lg:flex items-center space-x-1 pl-4 border-l border-slate-200">
+          {/* Quick Navigation Tabs */}
+          <nav className="hidden lg:flex items-center space-x-1 pl-2 xl:pl-4 border-l border-slate-200">
             <button
               onClick={() => setActiveTab('LAUNCHPAD')}
-              className={`px-3 py-1.5 rounded-md text-xs font-semibold transition-all ${
+              className={`px-2 py-1 xl:px-3 xl:py-1.5 rounded-md text-[11px] xl:text-xs font-semibold transition-all ${
                 activeTab === 'LAUNCHPAD' ? 'bg-sap-blue text-white shadow-sm' : 'text-slate-600 hover:bg-slate-100'
               }`}
             >
@@ -251,7 +251,7 @@ export const FioriHeader = ({ onOpenCreateWO, onOpenCreateMaterial, onOpenCreate
             </button>
             <button
               onClick={() => setActiveTab('WORK_ORDERS')}
-              className={`px-3 py-1.5 rounded-md text-xs font-semibold transition-all ${
+              className={`px-2 py-1 xl:px-3 xl:py-1.5 rounded-md text-[11px] xl:text-xs font-semibold transition-all ${
                 activeTab === 'WORK_ORDERS' ? 'bg-sap-blue text-white shadow-sm' : 'text-slate-600 hover:bg-slate-100'
               }`}
             >
@@ -259,7 +259,7 @@ export const FioriHeader = ({ onOpenCreateWO, onOpenCreateMaterial, onOpenCreate
             </button>
             <button
               onClick={() => setActiveTab('ASSETS')}
-              className={`px-3 py-1.5 rounded-md text-xs font-semibold transition-all ${
+              className={`px-2 py-1 xl:px-3 xl:py-1.5 rounded-md text-[11px] xl:text-xs font-semibold transition-all ${
                 activeTab === 'ASSETS' ? 'bg-sap-blue text-white shadow-sm' : 'text-slate-600 hover:bg-slate-100'
               }`}
             >
@@ -267,7 +267,7 @@ export const FioriHeader = ({ onOpenCreateWO, onOpenCreateMaterial, onOpenCreate
             </button>
             <button
               onClick={() => setActiveTab('FLEET')}
-              className={`px-3 py-1.5 rounded-md text-xs font-semibold transition-all ${
+              className={`px-2 py-1 xl:px-3 xl:py-1.5 rounded-md text-[11px] xl:text-xs font-semibold transition-all ${
                 activeTab === 'FLEET' ? 'bg-sap-blue text-white shadow-sm' : 'text-slate-600 hover:bg-slate-100'
               }`}
             >
@@ -279,7 +279,7 @@ export const FioriHeader = ({ onOpenCreateWO, onOpenCreateMaterial, onOpenCreate
               <>
                 <button
                   onClick={() => setActiveTab('INVENTORY')}
-                  className={`px-3 py-1.5 rounded-md text-xs font-semibold transition-all ${
+                  className={`px-2 py-1 xl:px-3 xl:py-1.5 rounded-md text-[11px] xl:text-xs font-semibold transition-all ${
                     activeTab === 'INVENTORY' ? 'bg-sap-blue text-white shadow-sm' : 'text-slate-600 hover:bg-slate-100'
                   }`}
                 >
@@ -287,7 +287,7 @@ export const FioriHeader = ({ onOpenCreateWO, onOpenCreateMaterial, onOpenCreate
                 </button>
                 <button
                   onClick={() => setActiveTab('MIGO')}
-                  className={`px-3 py-1.5 rounded-md text-xs font-semibold transition-all ${
+                  className={`px-2 py-1 xl:px-3 xl:py-1.5 rounded-md text-[11px] xl:text-xs font-semibold transition-all ${
                     activeTab === 'MIGO' ? 'bg-sap-blue text-white shadow-sm' : 'text-slate-600 hover:bg-slate-100'
                   }`}
                 >
@@ -295,19 +295,21 @@ export const FioriHeader = ({ onOpenCreateWO, onOpenCreateMaterial, onOpenCreate
                 </button>
                 <button
                   onClick={() => setActiveTab('ANALYTICS')}
-                  className={`px-3 py-1.5 rounded-md text-xs font-semibold transition-all ${
+                  className={`px-2 py-1 xl:px-3 xl:py-1.5 rounded-md text-[11px] xl:text-xs font-semibold transition-all ${
                     activeTab === 'ANALYTICS' ? 'bg-sap-blue text-white shadow-sm' : 'text-slate-600 hover:bg-slate-100'
                   }`}
                 >
-                  Executive Analytics
+                  <span className="hidden xl:inline">Executive Analytics</span>
+                  <span className="xl:hidden">Analytics</span>
                 </button>
                 <button
                   onClick={() => setActiveTab('HR')}
-                  className={`px-3 py-1.5 rounded-md text-xs font-semibold transition-all flex items-center space-x-1 ${
+                  className={`px-2 py-1 xl:px-3 xl:py-1.5 rounded-md text-[11px] xl:text-xs font-semibold transition-all flex items-center space-x-1 ${
                     activeTab === 'HR' ? 'bg-sap-blue text-white shadow-sm' : 'text-slate-600 hover:bg-slate-100'
                   }`}
                 >
-                  <span>Recursos Humanos (HCM)</span>
+                  <span className="hidden xl:inline">Recursos Humanos (HCM)</span>
+                  <span className="xl:hidden">RRHH (HCM)</span>
                   {complianceAlertEmployees.length > 0 && (
                     <span className="bg-amber-500 text-white text-[9px] px-1 rounded-full font-bold">
                       {complianceAlertEmployees.length}
@@ -320,7 +322,7 @@ export const FioriHeader = ({ onOpenCreateWO, onOpenCreateMaterial, onOpenCreate
         </div>
 
         {/* Middle: Universal Search Bar */}
-        <div className="flex-1 max-w-xl relative">
+        <div className="flex-1 max-w-xs xl:max-w-md relative hidden md:block">
           <div className="relative">
             <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
             <input
