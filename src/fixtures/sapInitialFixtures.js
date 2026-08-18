@@ -32,8 +32,9 @@ export const DEFAULT_ASSETS = [
     accreditationExpiry: '2026-08-30', // Por vencer (≤30d)
     circulationPermitExpiry: '2027-03-31',
     soapExpiry: '2027-03-31',
+    technicalReviewExpiry: '2026-11-15',
     customExpirations: [
-      { id: 'CUST-101-1', title: 'Revisión Técnica', expiryDate: '2026-11-15' }
+      { id: 'CUST-101-1', title: 'Certificado de Operatividad', expiryDate: '2026-12-15' }
     ]
   },
   {
@@ -50,6 +51,7 @@ export const DEFAULT_ASSETS = [
     accreditationExpiry: '2026-08-10', // Vencido
     circulationPermitExpiry: '2027-03-31',
     soapExpiry: '2027-03-31',
+    technicalReviewExpiry: '2026-09-30',
     customExpirations: [
       { id: 'CUST-102-1', title: 'Certificado de Gases', expiryDate: '2026-10-20' }
     ]
@@ -68,6 +70,7 @@ export const DEFAULT_ASSETS = [
     accreditationExpiry: '2026-12-31',
     circulationPermitExpiry: '2027-03-31',
     soapExpiry: '2027-03-31',
+    technicalReviewExpiry: '2026-08-25', // Por vencer (≤30d)
     customExpirations: [
       { id: 'CUST-103-1', title: 'Inspección de Extintores', expiryDate: '2026-12-01' }
     ]
@@ -86,6 +89,7 @@ export const DEFAULT_ASSETS = [
     accreditationExpiry: '2027-05-15',
     circulationPermitExpiry: '2027-03-31',
     soapExpiry: '2027-03-31',
+    technicalReviewExpiry: '2027-04-15',
     customExpirations: []
   }
 ];

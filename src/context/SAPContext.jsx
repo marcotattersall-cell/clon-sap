@@ -563,6 +563,7 @@ export const SAPProvider = ({ children }) => {
       accreditationExpiry: expirationData.accreditationExpiry || asset.accreditationExpiry || '',
       circulationPermitExpiry: expirationData.circulationPermitExpiry || asset.circulationPermitExpiry || '',
       soapExpiry: expirationData.soapExpiry || asset.soapExpiry || '',
+      technicalReviewExpiry: expirationData.technicalReviewExpiry || asset.technicalReviewExpiry || '',
       customExpirations: Array.isArray(expirationData.customExpirations) ? expirationData.customExpirations : (asset.customExpirations || [])
     };
 

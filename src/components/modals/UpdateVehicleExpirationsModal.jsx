@@ -8,6 +8,7 @@ export const UpdateVehicleExpirationsModal = ({ isOpen, onClose, vehicle }) => {
   const [accreditationExpiry, setAccreditationExpiry] = useState('');
   const [circulationPermitExpiry, setCirculationPermitExpiry] = useState('');
   const [soapExpiry, setSoapExpiry] = useState('');
+  const [technicalReviewExpiry, setTechnicalReviewExpiry] = useState('');
   const [customExpirations, setCustomExpirations] = useState([]);
 
   // New Custom Expiration Input State
@@ -20,6 +21,7 @@ export const UpdateVehicleExpirationsModal = ({ isOpen, onClose, vehicle }) => {
       setAccreditationExpiry(vehicle.accreditationExpiry || '');
       setCirculationPermitExpiry(vehicle.circulationPermitExpiry || '');
       setSoapExpiry(vehicle.soapExpiry || '');
+      setTechnicalReviewExpiry(vehicle.technicalReviewExpiry || '');
       setCustomExpirations(Array.isArray(vehicle.customExpirations) ? vehicle.customExpirations : []);
       setNewCustomTitle('');
       setNewCustomDate('');
@@ -59,6 +61,7 @@ export const UpdateVehicleExpirationsModal = ({ isOpen, onClose, vehicle }) => {
       accreditationExpiry,
       circulationPermitExpiry,
       soapExpiry,
+      technicalReviewExpiry,
       customExpirations
     });
 
@@ -168,6 +171,20 @@ export const UpdateVehicleExpirationsModal = ({ isOpen, onClose, vehicle }) => {
                 className="w-full bg-white border border-slate-300 rounded-xl p-2.5 text-xs text-slate-900 focus:ring-2 focus:ring-sky-500 font-mono font-bold"
               />
             </div>
+
+            {/* 4. Revisión Técnica */}
+            <div className="space-y-1">
+              <label className="block text-slate-800 font-bold">
+                4. Fecha de Vencimiento de la Revisión Técnica <span className="text-rose-500">*</span>
+              </label>
+              <input
+                type="date"
+                required
+                value={technicalReviewExpiry}
+                onChange={(e) => setTechnicalReviewExpiry(e.target.value)}
+                className="w-full bg-white border border-slate-300 rounded-xl p-2.5 text-xs text-slate-900 focus:ring-2 focus:ring-sky-500 font-mono font-bold"
+              />
+            </div>
           </div>
 
           {/* Custom Expirations Section */}
@@ -179,7 +196,7 @@ export const UpdateVehicleExpirationsModal = ({ isOpen, onClose, vehicle }) => {
                   <span>Otros Vencimientos Personalizados</span>
                 </h4>
                 <p className="text-[11px] text-amber-800 mt-0.5">
-                  Agrega otros documentos específicos (ej: Revisión Técnica, Certificado de Gases, Póliza de Seguro, Extintor, etc.).
+                  Agrega otros documentos específicos (ej: Certificado de Gases, Póliza de Seguro, Extintor, etc.).
                 </p>
               </div>
 
@@ -203,7 +220,7 @@ export const UpdateVehicleExpirationsModal = ({ isOpen, onClose, vehicle }) => {
                     </label>
                     <input
                       type="text"
-                      placeholder="Ej: Revisión Técnica / Certificado de Gases"
+                      placeholder="Ej: Certificado de Gases / Póliza de Seguro"
                       value={newCustomTitle}
                       onChange={(e) => setNewCustomTitle(e.target.value)}
                       className="w-full bg-slate-50 border border-slate-300 rounded-lg p-2 text-xs text-slate-900 focus:ring-2 focus:ring-amber-500 font-semibold"

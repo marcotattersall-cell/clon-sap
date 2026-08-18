@@ -58,6 +58,7 @@ export const FleetPlanner = ({ onOpenCreateWOForVehicle }) => {
     const acc = calculateDaysRemaining(asset.accreditationExpiry);
     const perm = calculateDaysRemaining(asset.circulationPermitExpiry);
     const soap = calculateDaysRemaining(asset.soapExpiry);
+    const tech = calculateDaysRemaining(asset.technicalReviewExpiry);
 
     let customStatusList = [];
     if (Array.isArray(asset.customExpirations)) {
@@ -71,22 +72,24 @@ export const FleetPlanner = ({ onOpenCreateWOForVehicle }) => {
       acc.status,
       perm.status,
       soap.status,
+      tech.status,
       ...customStatusList.map(c => c.res.status)
     ];
 
     if (allStatuses.includes('EXPIRED')) {
-      return { overallStatus: 'EXPIRED', label: 'Documento Vencido', color: 'bg-rose-600 text-white font-bold', acc, perm, soap, customStatusList };
+      return { overallStatus: 'EXPIRED', label: 'Documento Vencido', color: 'bg-rose-600 text-white font-bold', acc, perm, soap, tech, customStatusList };
     }
     if (allStatuses.includes('ALERT_30')) {
       const minDays = Math.min(
         acc.status === 'ALERT_30' ? acc.days : 999,
         perm.status === 'ALERT_30' ? perm.days : 999,
         soap.status === 'ALERT_30' ? soap.days : 999,
+        tech.status === 'ALERT_30' ? tech.days : 999,
         ...customStatusList.filter(c => c.res.status === 'ALERT_30').map(c => c.res.days)
       );
-      return { overallStatus: 'ALERT_30', label: `Vence en ≤${minDays}d`, color: 'bg-amber-500 text-white font-bold', acc, perm, soap, customStatusList };
+      return { overallStatus: 'ALERT_30', label: `Vence en ≤${minDays}d`, color: 'bg-amber-500 text-white font-bold', acc, perm, soap, tech, customStatusList };
     }
-    return { overallStatus: 'OK', label: 'Documentación al Día', color: 'bg-emerald-100 text-emerald-800 border border-emerald-300 font-bold', acc, perm, soap, customStatusList };
+    return { overallStatus: 'OK', label: 'Documentación al Día', color: 'bg-emerald-100 text-emerald-800 border border-emerald-300 font-bold', acc, perm, soap, tech, customStatusList };
   };
 
   // Master Fleet Assets dynamically derived from context assets
@@ -106,6 +109,7 @@ export const FleetPlanner = ({ onOpenCreateWOForVehicle }) => {
     accreditationExpiry: a.accreditationExpiry || '',
     circulationPermitExpiry: a.circulationPermitExpiry || '',
     soapExpiry: a.soapExpiry || '',
+    technicalReviewExpiry: a.technicalReviewExpiry || '',
     customExpirations: Array.isArray(a.customExpirations) ? a.customExpirations : []
   }));
 
@@ -726,6 +730,23 @@ export const FleetPlanner = ({ onOpenCreateWOForVehicle }) => {
                         'bg-emerald-50 text-emerald-700 border border-emerald-200'
                       }`}>
                         {exp.soap.status === 'EXPIRED' ? '🔴 Vencido' : exp.soap.status === 'ALERT_30' ? `🟡 ${exp.soap.days}d` : `🟢 ${exp.soap.days}d`}
+                      </span>
+                    </div>
+
+                    {/* 4. Revisión Técnica */}
+                    <div className="bg-white p-2 rounded-lg border border-slate-200 flex items-center justify-between text-xs">
+                      <div>
+                        <span className="block font-bold text-slate-800 text-[11px]">4. Revisión Técnica</span>
+                        <span className="text-[10px] text-slate-500 font-mono">
+                          {vehicle.technicalReviewExpiry ? formatDateDDMMYYYY(vehicle.technicalReviewExpiry) : 'No Ingresado'}
+                        </span>
+                      </div>
+                      <span className={`font-mono text-xs font-bold px-2 py-0.5 rounded ${
+                        exp.tech.status === 'EXPIRED' ? 'bg-rose-100 text-rose-800 border border-rose-300' :
+                        exp.tech.status === 'ALERT_30' ? 'bg-amber-100 text-amber-900 border border-amber-300' :
+                        'bg-emerald-50 text-emerald-700 border border-emerald-200'
+                      }`}>
+                        {exp.tech.status === 'EXPIRED' ? '🔴 Vencido' : exp.tech.status === 'ALERT_30' ? `🟡 ${exp.tech.days}d` : `🟢 ${exp.tech.days}d`}
                       </span>
                     </div>
                   </div>
