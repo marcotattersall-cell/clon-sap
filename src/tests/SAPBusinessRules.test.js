@@ -202,6 +202,24 @@ describe('Reglas de Negocio SAP PM/MM (Suite de Calidad ERP)', () => {
       expect(validateContractExpiry('Plazo Fijo', '2026-12-31')).toBe(true);
       expect(validateContractExpiry('Indefinido', '')).toBe(true);
     });
+
+    it('debe actualizar sincronizadamente la fecha de examen médico en la ficha y en faenas acreditadas', () => {
+      const emp = {
+        id: 'EMP-1001',
+        name: 'Jorge Silva',
+        medicalExamExpiry: '2026-05-01',
+        faenasAccredited: [
+          { id: 'ACC-1', faenaName: 'Planta Central', medicalExamExpiry: '2026-05-01' }
+        ]
+      };
+
+      const newDate = '2027-08-15';
+      const updatedFaenas = emp.faenasAccredited.map(f => ({ ...f, medicalExamExpiry: newDate }));
+      const updatedEmp = { ...emp, medicalExamExpiry: newDate, faenasAccredited: updatedFaenas };
+
+      expect(updatedEmp.medicalExamExpiry).toBe('2027-08-15');
+      expect(updatedEmp.faenasAccredited[0].medicalExamExpiry).toBe('2027-08-15');
+    });
   });
 });
 

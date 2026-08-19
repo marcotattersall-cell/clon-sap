@@ -496,9 +496,26 @@ export const SAPProvider = ({ children }) => {
       return false;
     }
 
+    let updatedFaenas = Array.isArray(emp.faenasAccredited) && emp.faenasAccredited.length > 0
+      ? [...emp.faenasAccredited]
+      : [];
+
+    if (updatedFaenas.length > 0) {
+      updatedFaenas[0] = {
+        ...updatedFaenas[0],
+        medicalExamExpiry: updatedFields.medicalExamExpiry || updatedFaenas[0].medicalExamExpiry,
+        accreditationExpiry: updatedFields.accreditationExpiry || updatedFaenas[0].accreditationExpiry,
+        safetyCourseExpiry: updatedFields.safetyCourseExpiry || updatedFaenas[0].safetyCourseExpiry
+      };
+    }
+
     const updatedEmp = {
       ...emp,
       ...updatedFields,
+      medicalExamExpiry: updatedFields.medicalExamExpiry || emp.medicalExamExpiry,
+      accreditationExpiry: updatedFields.accreditationExpiry || emp.accreditationExpiry,
+      safetyCourseExpiry: updatedFields.safetyCourseExpiry || emp.safetyCourseExpiry,
+      faenasAccredited: updatedFaenas,
       baseSalary: Number(updatedFields.baseSalary) || emp.baseSalary,
       contractExpiry: updatedFields.contractType === 'Plazo Fijo' ? updatedFields.contractExpiry : null
     };
@@ -538,7 +555,13 @@ export const SAPProvider = ({ children }) => {
       safetyCourseExpiry: accreditationData.safetyCourseExpiry || '2027-10-01'
     };
     const updatedAccredList = [...currentAccred, newAccredObj];
-    const updatedEmp = { ...emp, faenasAccredited: updatedAccredList };
+    const updatedEmp = {
+      ...emp,
+      medicalExamExpiry: accreditationData.medicalExamExpiry || emp.medicalExamExpiry,
+      accreditationExpiry: accreditationData.accreditationExpiry || emp.accreditationExpiry,
+      safetyCourseExpiry: accreditationData.safetyCourseExpiry || emp.safetyCourseExpiry,
+      faenasAccredited: updatedAccredList
+    };
     setEmployees(prev => prev.map(e => e.id === employeeId ? updatedEmp : e));
     upsertDocument('employees', employeeId, updatedEmp);
     addToast(`✅ Nueva acreditación en faena [${newAccredObj.faenaName}] asignada a ${emp.name}.`, 'success');
@@ -550,32 +573,49 @@ export const SAPProvider = ({ children }) => {
     const emp = employees.find(e => e.id === employeeId);
     if (!emp) return false;
 
-    let updatedFaenas = emp.faenasAccredited ? [...emp.faenasAccredited] : [];
-    if (targetFaenaId && updatedFaenas.length > 0) {
-      updatedFaenas = updatedFaenas.map(f => {
-        if (f.id === targetFaenaId || f.faenaName === targetFaenaId) {
-          return {
-            ...f,
-            medicalExamExpiry: newDates.medicalExamExpiry || f.medicalExamExpiry,
-            accreditationExpiry: newDates.accreditationExpiry || f.accreditationExpiry,
-            safetyCourseExpiry: newDates.safetyCourseExpiry || f.safetyCourseExpiry
-          };
-        }
-        return f;
-      });
-    } else if (updatedFaenas.length > 0) {
-      // Update first/primary faena as default
+    let updatedFaenas = Array.isArray(emp.faenasAccredited) && emp.faenasAccredited.length > 0
+      ? emp.faenasAccredited.map(f => ({ ...f }))
+      : [{
+          id: 'PRIMARY',
+          faenaName: emp.faena || 'Faena Principal',
+          medicalExamExpiry: emp.medicalExamExpiry || '',
+          accreditationExpiry: emp.accreditationExpiry || '',
+          safetyCourseExpiry: emp.safetyCourseExpiry || ''
+        }];
+
+    let matched = false;
+    updatedFaenas = updatedFaenas.map((f, idx) => {
+      const isTarget = targetFaenaId
+        ? (f.id === targetFaenaId || f.faenaName === targetFaenaId || targetFaenaId === 'PRIMARY' || targetFaenaId === 'MAIN' || idx === 0)
+        : idx === 0;
+
+      if (isTarget && !matched) {
+        matched = true;
+        return {
+          ...f,
+          medicalExamExpiry: newDates.medicalExamExpiry !== undefined ? newDates.medicalExamExpiry : f.medicalExamExpiry,
+          accreditationExpiry: newDates.accreditationExpiry !== undefined ? newDates.accreditationExpiry : f.accreditationExpiry,
+          safetyCourseExpiry: newDates.safetyCourseExpiry !== undefined ? newDates.safetyCourseExpiry : f.safetyCourseExpiry
+        };
+      }
+      return f;
+    });
+
+    if (!matched && updatedFaenas.length > 0) {
       updatedFaenas[0] = {
         ...updatedFaenas[0],
-        medicalExamExpiry: newDates.medicalExamExpiry || updatedFaenas[0].medicalExamExpiry,
-        accreditationExpiry: newDates.accreditationExpiry || updatedFaenas[0].accreditationExpiry,
-        safetyCourseExpiry: newDates.safetyCourseExpiry || updatedFaenas[0].safetyCourseExpiry
+        medicalExamExpiry: newDates.medicalExamExpiry !== undefined ? newDates.medicalExamExpiry : updatedFaenas[0].medicalExamExpiry,
+        accreditationExpiry: newDates.accreditationExpiry !== undefined ? newDates.accreditationExpiry : updatedFaenas[0].accreditationExpiry,
+        safetyCourseExpiry: newDates.safetyCourseExpiry !== undefined ? newDates.safetyCourseExpiry : updatedFaenas[0].safetyCourseExpiry
       };
     }
 
     const updatedEmp = {
       ...emp,
       ...newDates,
+      medicalExamExpiry: newDates.medicalExamExpiry || emp.medicalExamExpiry,
+      accreditationExpiry: newDates.accreditationExpiry || emp.accreditationExpiry,
+      safetyCourseExpiry: newDates.safetyCourseExpiry || emp.safetyCourseExpiry,
       faenasAccredited: updatedFaenas
     };
 

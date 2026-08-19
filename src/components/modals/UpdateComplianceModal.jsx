@@ -27,7 +27,9 @@ export const UpdateComplianceModal = ({ isOpen, onClose, employee }) => {
 
   useEffect(() => {
     if (employee) {
-      const selectedObj = faenasList.find(f => f.id === selectedFaenaId) || faenasList[0];
+      const activeId = faenasList[0]?.id || 'PRIMARY';
+      setSelectedFaenaId(activeId);
+      const selectedObj = faenasList.find(f => f.id === activeId) || faenasList[0];
       setDates({
         medicalExamExpiry: selectedObj?.medicalExamExpiry || employee.medicalExamExpiry || '',
         accreditationExpiry: selectedObj?.accreditationExpiry || employee.accreditationExpiry || '',
@@ -36,7 +38,20 @@ export const UpdateComplianceModal = ({ isOpen, onClose, employee }) => {
         contractExpiry: employee.contractExpiry || ''
       });
     }
-  }, [employee, selectedFaenaId]);
+  }, [employee]);
+
+  const handleFaenaSelect = (faenaId) => {
+    setSelectedFaenaId(faenaId);
+    const selectedObj = faenasList.find(f => f.id === faenaId) || faenasList[0];
+    if (selectedObj) {
+      setDates(prev => ({
+        ...prev,
+        medicalExamExpiry: selectedObj.medicalExamExpiry || employee.medicalExamExpiry || '',
+        accreditationExpiry: selectedObj.accreditationExpiry || employee.accreditationExpiry || '',
+        safetyCourseExpiry: selectedObj.safetyCourseExpiry || employee.safetyCourseExpiry || ''
+      }));
+    }
+  };
 
   if (!isOpen || !employee) return null;
 
@@ -145,7 +160,7 @@ export const UpdateComplianceModal = ({ isOpen, onClose, employee }) => {
             ) : (
               <select
                 value={selectedFaenaId}
-                onChange={(e) => setSelectedFaenaId(e.target.value)}
+                onChange={(e) => handleFaenaSelect(e.target.value)}
                 className="w-full bg-white border border-amber-300 rounded-lg p-2 text-xs text-slate-900 font-bold focus:ring-2 focus:ring-amber-500"
               >
                 {faenasList.map(f => (
