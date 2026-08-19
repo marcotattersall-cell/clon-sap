@@ -202,7 +202,7 @@ const SAPAppContent = () => {
       <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col items-center justify-center font-sans">
         <Loader2 className="w-8 h-8 text-sap-blue animate-spin mb-3" />
         <div className="text-xs font-bold tracking-widest uppercase text-slate-400">
-          Cargando Sistema Enterprise ERP...
+          Cargando Sistema Operam ERP...
         </div>
       </div>
     );
@@ -285,7 +285,7 @@ const SAPAppContent = () => {
       {/* Footer Ribbon */}
       <footer className="bg-slate-50 border-t border-slate-200 py-4 px-6 mb-14 lg:mb-0 text-center text-xs text-slate-600 flex flex-col sm:flex-row items-center justify-between gap-2 no-print">
         <div>
-          <strong>Clon SAP Edge ERP</strong> • Módulos Transaccionales: Mantenimiento (PM), Almacén (MM), Recursos Humanos (HCM), Flota y Analítica Integrados
+          <strong>Operam ERP Enterprise Platform</strong> • Módulos Transaccionales: Mantenimiento (PM), Almacén (MM), Recursos Humanos (HCM), Flota y Analítica Integrados
         </div>
         <div className="flex items-center space-x-4 text-[11px] text-slate-500">
           <span>Executive Horizon UI 4.0</span>

@@ -1,5 +1,5 @@
 /**
- * Fixtures Iniciales para Siembra (Seeding) de Datos Maestros en Clon SAP ERP (PM / MM)
+ * Fixtures Iniciales para Siembra (Seeding) de Datos Maestros en Operam ERP (PM / MM)
  * Aísla las constantes de prueba iniciales para mantener el contexto limpio y liviano.
  */
 

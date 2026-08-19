@@ -46,7 +46,7 @@ export const LoginScreen = () => {
     setIsSubmitting(false);
     if (res.success) {
       setCurrentRole(res.user.role || role);
-      addToast(`Bienvenido a Enterprise Cloud ERP: ${res.user.displayName}`, 'success');
+      addToast(`Bienvenido a Operam ERP Industrial: ${res.user.displayName}`, 'success');
     } else {
       setLocalError(res.error);
     }
@@ -153,7 +153,7 @@ export const LoginScreen = () => {
               <img src="/sap_logo.jpg" alt="Enterprise Logo" className="w-full h-full object-cover rounded-xl" />
             </div>
             <h2 className="text-xl font-black tracking-tight text-slate-100">
-              Autenticación Enterprise ERP
+              Autenticación Operam ERP
             </h2>
             <p className="text-xs text-slate-400 mt-1 max-w-xs mx-auto">
               Inicia sesión con tu cuenta corporativa de Google o credenciales de acceso para entrar al sistema.

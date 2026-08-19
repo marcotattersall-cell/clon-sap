@@ -231,7 +231,7 @@ export const FioriHeader = ({ onOpenCreateWO, onOpenCreateMaterial, onOpenCreate
             />
             <div className="text-left leading-tight hidden xs:block">
               <div className="font-bold text-sm tracking-tight text-slate-900 group-hover:text-sap-blue transition-colors">
-                Enterprise ERP
+                Operam ERP
               </div>
               <div className="text-[10px] text-slate-500 font-medium">
                 {activeTab === 'LAUNCHPAD' ? 'Home Launchpad' : `Módulo: ${activeTab}`}
