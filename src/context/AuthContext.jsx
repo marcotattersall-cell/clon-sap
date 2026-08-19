@@ -208,9 +208,9 @@ export const AuthProvider = ({ children }) => {
   const loginDemoUser = async (roleKey = 'MAINTENANCE_MGR') => {
     setAuthError(null);
     const demoCredentials = {
-      'MAINTENANCE_MGR': { email: 'admin.pm@enterprise-sap.com', pass: 'SapEnterprise2026!', name: 'Marco Vidal (Jefe PM)', role: 'MAINTENANCE_MGR', plant: '0001 (Planta Central)' },
-      'WAREHOUSE_SPEC': { email: 'almacen.mm@enterprise-sap.com', pass: 'SapEnterprise2026!', name: 'Gonzalo Silva (Especialista Almacén)', role: 'WAREHOUSE_SPEC', plant: '0001 (Planta Central)' },
-      'PURCHASING_MGR': { email: 'compras.po@enterprise-sap.com', pass: 'SapEnterprise2026!', name: 'Patricia Lagos (Gerente Compras)', role: 'PURCHASING_MGR', plant: '0002 (Centro Antofagasta)' }
+      'MAINTENANCE_MGR': { email: 'admin.pm@operam-erp.com', pass: 'OperamEnterprise2026!', name: 'Marco Vidal (Jefe PM)', role: 'MAINTENANCE_MGR', plant: '0001 (Planta Central)' },
+      'WAREHOUSE_SPEC': { email: 'almacen.mm@operam-erp.com', pass: 'OperamEnterprise2026!', name: 'Gonzalo Silva (Especialista Almacén)', role: 'WAREHOUSE_SPEC', plant: '0001 (Planta Central)' },
+      'PURCHASING_MGR': { email: 'compras.po@operam-erp.com', pass: 'OperamEnterprise2026!', name: 'Patricia Lagos (Gerente Compras)', role: 'PURCHASING_MGR', plant: '0002 (Centro Antofagasta)' }
     };
 
     const target = demoCredentials[roleKey] || demoCredentials['MAINTENANCE_MGR'];

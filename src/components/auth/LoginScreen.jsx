@@ -332,7 +332,7 @@ export const LoginScreen = () => {
                   <input
                     type="email"
                     required
-                    placeholder="carlos.ruiz@sap.enterprise.com"
+                    placeholder="carlos.ruiz@operam-erp.com"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     className="w-full text-xs rounded-lg border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 pl-9 pr-3 py-2.5 focus:ring-2 focus:ring-sap-blue focus:outline-none"

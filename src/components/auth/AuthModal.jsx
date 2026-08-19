@@ -201,7 +201,7 @@ export const AuthModal = ({ isOpen, onClose }) => {
               <input
                 type="email"
                 required
-                placeholder="usuario@empresa.sap.com"
+                placeholder="usuario@operam-erp.com"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 className="w-full text-xs rounded border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 pl-9 pr-3 py-2 focus:ring-1 focus:ring-sap-blue focus:outline-none"
