@@ -39,6 +39,10 @@ export const processIoTTelemetry = async (telemetryPayload, existingAssets = [],
   let alertReason = '';
 
   // 2. Reglas de Negocio Industriales Autónomas (Preventivas / Correctivas)
+  const isTransportVehicle = asset.category?.includes('Transporte') || asset.category?.includes('Flota') || asset.category?.includes('Camión');
+  const odometerMilestoneReached = isTransportVehicle && odometer !== undefined && (Math.floor(newOdometer / 10000) > Math.floor((asset.odometer || 0) / 10000));
+  const hourmeterMilestoneReached = !isTransportVehicle && hourmeter !== undefined && (Math.floor(newHourmeter / 250) > Math.floor((asset.hourmeter || 0) / 250));
+
   if (engineTemp && Number(engineTemp) > 102) {
     newStatus = 'MAINTENANCE';
     triggeredAlert = true;
@@ -51,6 +55,14 @@ export const processIoTTelemetry = async (telemetryPayload, existingAssets = [],
     newStatus = 'MAINTENANCE';
     triggeredAlert = true;
     alertReason = `Degradación Crítica de Salud Operativa: ${newHealthScore}%`;
+  } else if (odometerMilestoneReached) {
+    newStatus = 'OPERATIVE';
+    triggeredAlert = true;
+    alertReason = `Pauta Preventiva Programada PM01 (Hito 10.000 km alcanzado: ${newOdometer} km)`;
+  } else if (hourmeterMilestoneReached) {
+    newStatus = 'OPERATIVE';
+    triggeredAlert = true;
+    alertReason = `Pauta Preventiva Programada PM01 (Hito 250 hrs alcanzado: ${newHourmeter} hrs)`;
   }
 
   // 3. Crear registro de lectura IoT enriquecido con Vector Clock
@@ -93,6 +105,73 @@ export const processIoTTelemetry = async (telemetryPayload, existingAssets = [],
 
   // 6. Si se gatilló una condición anómala, crear Orden de Mantenimiento Preventivo/Correctivo autónoma
   if (triggeredAlert && autoCreateWO) {
+    // Vincular Repuestos Planificados desde el Maestro de Materiales según el tipo de anomalía detectada
+    let suggestedComponents = [];
+
+    if (engineTemp && Number(engineTemp) > 102) {
+      suggestedComponents = [
+        {
+          materialId: 'MAT-1005',
+          description: 'Sensor de Temperatura y Presión Digital M12',
+          qtyPlanned: 1,
+          qtyIssued: 0,
+          unit: 'UN',
+          unitPrice: 165.00
+        },
+        {
+          materialId: 'MAT-1002',
+          description: 'Aceite Sintético Multigrado 15W40 (Tambor 208L)',
+          qtyPlanned: 1,
+          qtyIssued: 0,
+          unit: 'TBO',
+          unitPrice: 420.00
+        }
+      ];
+    } else if (vibrationRms && Number(vibrationRms) > 6.5) {
+      suggestedComponents = [
+        {
+          materialId: 'MAT-1003',
+          description: 'Bomba Hidráulica de Pistones Axiales Komatsu',
+          qtyPlanned: 1,
+          qtyIssued: 0,
+          unit: 'UN',
+          unitPrice: 3450.00
+        },
+        {
+          materialId: 'MAT-1004',
+          description: 'Correa Mecánica Dentada Industrial V-Belt',
+          qtyPlanned: 2,
+          qtyIssued: 0,
+          unit: 'UN',
+          unitPrice: 24.90
+        }
+      ];
+    } else {
+      suggestedComponents = [
+        {
+          materialId: 'MAT-1001',
+          description: 'Filtro de Aceite Hidráulico CAT H-200',
+          qtyPlanned: 2,
+          qtyIssued: 0,
+          unit: 'UN',
+          unitPrice: 85.50
+        },
+        {
+          materialId: 'MAT-1002',
+          description: 'Aceite Sintético Multigrado 15W40 (Tambor 208L)',
+          qtyPlanned: 1,
+          qtyIssued: 0,
+          unit: 'TBO',
+          unitPrice: 420.00
+        }
+      ];
+    }
+
+    const componentTotalCost = suggestedComponents.reduce((sum, c) => sum + (c.qtyPlanned * (c.unitPrice || 0)), 0);
+    const plannedHours = 4.0;
+    const laborCost = plannedHours * 65.0; // Rate h/mecanico
+    const totalPlannedCost = Number((laborCost + componentTotalCost).toFixed(2));
+
     const autoWO = {
       id: `WO-IOT-${Date.now().toString().slice(-6)}`,
       title: `[IoT AUTO-TRIGGER] ${alertReason} - ${asset.name}`,
@@ -102,20 +181,21 @@ export const processIoTTelemetry = async (telemetryPayload, existingAssets = [],
       equipmentId: asset.id,
       costCenter: 'CC-4100',
       assignedTech: 'Técnico de Guardia IoT',
-      plannedHours: 4.0,
+      plannedHours,
       actualHours: 0,
-      plannedCost: 450.00,
+      plannedCost: totalPlannedCost,
       actualCost: 0,
       hourmeter: newHourmeter,
       odometer: newOdometer,
       startDate: new Date().toISOString().split('T')[0],
       targetFinishDate: new Date(Date.now() + 86400000).toISOString().split('T')[0],
       operations: [
-        { id: 1, text: `Inspección de sensor por alerta IoT: ${alertReason}`, duration: 2.0, assigned: 'Técnico de Guardia IoT', status: 'Pending' }
+        { id: 1, text: `Inspección de sensor y diagnóstico por alerta IoT: ${alertReason}`, duration: 2.0, assigned: 'Técnico de Guardia IoT', status: 'Pending' },
+        { id: 2, text: `Reemplazo de componentes y prueba de estanqueidad/operatividad`, duration: 2.0, assigned: 'Técnico de Guardia IoT', status: 'Pending' }
       ],
-      components: [],
+      components: suggestedComponents,
       logs: [
-        { id: `LOG-${Date.now()}`, timestamp: new Date().toLocaleString('es-CL'), user: 'BOT IOT GATEWAY', previousStatus: 'N/A', newStatus: 'CRTE', text: `Orden generada automáticamente por telemetría IoT. Razon: ${alertReason}`, comment: 'Auto-Trigger IoT' }
+        { id: `LOG-${Date.now()}`, timestamp: new Date().toLocaleString('es-CL'), user: 'BOT IOT GATEWAY', previousStatus: 'N/A', newStatus: 'CRTE', text: `Orden generada automáticamente por telemetría IoT con ${suggestedComponents.length} repuestos vinculados del Maestro de Materiales MM. Razón: ${alertReason}`, comment: 'Auto-Trigger IoT con Reserva de Materiales MM' }
       ]
     };
 
@@ -127,7 +207,7 @@ export const processIoTTelemetry = async (telemetryPayload, existingAssets = [],
     updatedAsset,
     triggeredAlert,
     message: triggeredAlert
-      ? `📡 Telemetría procesada para ${asset.id}. ⚠️ ¡ALERTA CRÍTICA REGISTRADA! Se generó una Orden de Trabajo PM02 automáticamente.`
+      ? `📡 Telemetría procesada para ${asset.id}. ⚠️ ¡ALERTA CRÍTICA REGISTRADA! Se generó la Orden PM02 con repuestos MM vinculados automáticamente.`
       : `📡 Telemetría procesada para ${asset.id}. Horómetro: ${newHourmeter} hrs, Salud: ${newHealthScore}%.`
   };
 };

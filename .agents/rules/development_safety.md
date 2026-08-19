@@ -1,8 +1,11 @@
 # Reglas de Seguridad y Resguardo del Código
 
-## 1. Verificación Obligatoria de Compilación (Zero Blank Screen Policy)
-- Después de **CADA** modificación de código en cualquier archivo `.jsx` o `.js`, se DEBE ejecutar `npm run build`.
-- No se declarará ningún cambio finalizado ni desplegado sin antes verificar que `npm run build` haya finalizado con código de salida `0`.
+## 1. Protocolo Obligatorio de Post-Iteración (Zero Regression Policy)
+Después de **CADA** iteración o modificación de código en la aplicación, se DEBEN ejecutar los siguientes pasos sin excepción antes de dar por finalizado el trabajo:
+1. **Ejecutar Pruebas Automatizadas (`npm test`):** Verificar que el suite de pruebas (`vitest run`) ejecute con 100% de éxito (reglas PM/MM, sincronización CRDT y pruebas de estrés).
+2. **Verificar Compilación de Producción (`npm run build`):** Confirmar que la compilación finalize con código de salida `0` sin errores de transpilación o pantalla en blanco.
+3. **Ejecutar Auditoría Estática (`npm run lint`):** Correr `oxlint` para asegurar cero errores sintácticos.
+4. **Generar Documento Walkthrough (`walkthrough.md`):** Actualizar o crear el resumen de la iteración con los cambios realizados y los resultados de las pruebas.
 
 ## 2. Auditoría de Variables de Estado en JSX
 - Antes de guardar cualquier archivo `.jsx`, auditar que todas las variables y funciones utilizadas en el JSX (ej: `useState`, `useContext`, `props`, `handlers`) estén explícitamente declaradas dentro del scope del componente.

@@ -366,24 +366,44 @@ export const AssetHierarchyTree = () => {
                     </div>
                   </div>
 
-                  {/* Gauge 3: Horometer Accumulator */}
-                  <div className="p-4 rounded-xl border bg-slate-50 dark:bg-slate-800/60 border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-200 space-y-2">
-                    <div className="flex items-center justify-between text-xs font-bold">
-                      <span className="flex items-center gap-1.5">
-                        <Clock className="w-4 h-4 text-sky-500" />
-                        Horómetro de Motor (hrs)
-                      </span>
-                      <span className="text-[10px] px-1.5 py-0.5 rounded bg-sky-100 text-sky-800 dark:bg-sky-950 dark:text-sky-300 font-mono">
-                        Acumulado
-                      </span>
+                  {/* Gauge 3: Accumulator (Horometer for Machinery vs Odometer for Trucks/Transport) */}
+                  {selectedAsset?.category?.includes('Transporte') || selectedAsset?.category?.includes('Flota') || selectedAsset?.category?.includes('Camión') ? (
+                    <div className="p-4 rounded-xl border bg-slate-50 dark:bg-slate-800/60 border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-200 space-y-2">
+                      <div className="flex items-center justify-between text-xs font-bold">
+                        <span className="flex items-center gap-1.5">
+                          <Gauge className="w-4 h-4 text-sky-500" />
+                          Odómetro de Ruta (km)
+                        </span>
+                        <span className="text-[10px] px-1.5 py-0.5 rounded bg-sky-100 text-sky-800 dark:bg-sky-950 dark:text-sky-300 font-mono">
+                          Camión / Flota
+                        </span>
+                      </div>
+                      <div className="text-2xl font-black font-mono text-sky-600 dark:text-sky-400">
+                        {(selectedAsset.odometer || 0).toLocaleString('es-CL')} km
+                      </div>
+                      <div className="text-[10px] text-slate-500 dark:text-slate-400">
+                        Próxima Pauta PM: {(Math.ceil((selectedAsset.odometer || 10000) / 10000) * 10000).toLocaleString('es-CL')} km (Intervalo 10.000 km)
+                      </div>
                     </div>
-                    <div className="text-2xl font-black font-mono text-sky-600 dark:text-sky-400">
-                      {selectedAsset.hourmeter || 4250} hrs
+                  ) : (
+                    <div className="p-4 rounded-xl border bg-slate-50 dark:bg-slate-800/60 border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-200 space-y-2">
+                      <div className="flex items-center justify-between text-xs font-bold">
+                        <span className="flex items-center gap-1.5">
+                          <Clock className="w-4 h-4 text-sky-500" />
+                          Horómetro de Motor (hrs)
+                        </span>
+                        <span className="text-[10px] px-1.5 py-0.5 rounded bg-sky-100 text-sky-800 dark:bg-sky-950 dark:text-sky-300 font-mono">
+                          Maquinaria
+                        </span>
+                      </div>
+                      <div className="text-2xl font-black font-mono text-sky-600 dark:text-sky-400">
+                        {selectedAsset.hourmeter || 4250} hrs
+                      </div>
+                      <div className="text-[10px] text-slate-500 dark:text-slate-400">
+                        Próxima Pauta PM: {(Math.ceil((selectedAsset.hourmeter || 250) / 250) * 250)} hrs (Intervalo 250 hrs)
+                      </div>
                     </div>
-                    <div className="text-[10px] text-slate-500 dark:text-slate-400">
-                      Próxima Pauta PM: {(Math.ceil((selectedAsset.hourmeter || 4250) / 250) * 250)} hrs
-                    </div>
-                  </div>
+                  )}
                 </div>
               </div>
 
