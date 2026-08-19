@@ -118,12 +118,12 @@ export const AuthModal = ({ isOpen, onClose }) => {
         {/* Header Ribbon */}
         <div className="bg-slate-900 text-white px-5 py-4 flex items-center justify-between border-b border-slate-800">
           <div className="flex items-center space-x-3">
-            <div className="w-8 h-8 rounded bg-sap-blue flex items-center justify-center font-black text-xs">
-              SAP
+            <div className="w-8 h-8 rounded bg-sap-blue flex items-center justify-center font-black text-[10px]">
+              OPM
             </div>
             <div>
               <h3 className="font-bold text-sm leading-tight text-slate-100">
-                Autenticación Firebase S/4HANA
+                Autenticación Firebase Operam ERP
               </h3>
               <p className="text-[11px] text-slate-400 font-mono">
                 {isRealFirebaseConfigured ? 'Conectado a Firebase Cloud Auth' : 'Firebase Demo Mode (Offline Active)'}

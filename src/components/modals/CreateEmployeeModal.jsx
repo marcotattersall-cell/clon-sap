@@ -65,7 +65,7 @@ export const CreateEmployeeModal = ({ isOpen, onClose }) => {
               <UserPlus className="w-5 h-5 text-sky-200" />
             </div>
             <div>
-              <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-sky-200">SAP HCM • Transacción PA30</span>
+              <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-sky-200">Operam HCM • Transacción PA30</span>
               <h3 className="text-lg font-black leading-tight">Alta de Personal y Ficha HCM</h3>
             </div>
           </div>
@@ -200,7 +200,7 @@ export const CreateEmployeeModal = ({ isOpen, onClose }) => {
               </div>
 
               <div>
-                <label className="block text-slate-700 font-bold mb-1">Centro Operativo SAP</label>
+                <label className="block text-slate-700 font-bold mb-1">Centro Operativo Industrial</label>
                 <select
                   value={formData.plantId}
                   onChange={(e) => setFormData({ ...formData, plantId: e.target.value })}
@@ -336,7 +336,7 @@ export const CreateEmployeeModal = ({ isOpen, onClose }) => {
               className="bg-sap-blue hover:bg-sap-blue-hover text-white font-bold px-6 py-2.5 rounded-xl shadow-lg transition-all flex items-center space-x-2 text-xs"
             >
               <UserPlus className="w-4 h-4" />
-              <span>Registrar Colaborador en SAP HCM</span>
+              <span>Registrar Colaborador en Operam HCM</span>
             </button>
           </div>
         </form>

@@ -120,9 +120,9 @@ export const LoginScreen = () => {
       <header className="px-6 py-4 border-b border-slate-800/80 bg-slate-900/90 backdrop-blur flex items-center justify-between relative z-10">
         <div className="flex items-center space-x-3">
           <img
-            src="/sap_logo.jpg"
-            alt="SAP Logo"
-            className="w-10 h-10 rounded-lg object-cover border border-slate-700 shadow"
+            src="/favicon.svg"
+            alt="Operam ERP Logo"
+            className="w-10 h-10 rounded-lg object-contain bg-white/10 p-1 border border-slate-700 shadow"
           />
           <div>
             <div className="font-extrabold text-sm text-slate-100 tracking-tight">

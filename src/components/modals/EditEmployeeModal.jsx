@@ -113,7 +113,7 @@ export const EditEmployeeModal = ({ isOpen, onClose, employee }) => {
               <Edit className="w-5 h-5 text-sky-200" />
             </div>
             <div>
-              <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-sky-200">Maestro de Personal • SAP HCM (PA30)</span>
+              <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-sky-200">Maestro de Personal • Operam HCM (PA30)</span>
               <h3 className="text-base font-black leading-tight">Modificar Ficha de Colaborador [{employee.id}]</h3>
             </div>
           </div>
@@ -229,7 +229,7 @@ export const EditEmployeeModal = ({ isOpen, onClose, employee }) => {
 
             {/* Centro / Planta SAP */}
             <div>
-              <label className="block text-slate-700 font-bold mb-1">Centro SAP (Plant)</label>
+              <label className="block text-slate-700 font-bold mb-1">Centro Operativo (Plant)</label>
               <select
                 value={formData.plantId}
                 onChange={(e) => setFormData({ ...formData, plantId: e.target.value })}

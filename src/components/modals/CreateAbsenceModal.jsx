@@ -47,7 +47,7 @@ export const CreateAbsenceModal = ({ isOpen, onClose }) => {
               <Calendar className="w-5 h-5 text-sky-200" />
             </div>
             <div>
-              <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-sky-200">Gestión de Tiempos • PT (SAP HCM)</span>
+              <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-sky-200">Gestión de Tiempos • PT (Operam HCM)</span>
               <h3 className="text-base font-black leading-tight">Solicitud de Licencia / Ausentismo</h3>
             </div>
           </div>

@@ -668,7 +668,7 @@ export const SAPProvider = ({ children }) => {
       totalDeductions,
       netSalaryTotal,
       status: 'Pagado',
-      processedBy: 'Operador SAP HCM'
+      processedBy: 'Operador Operam HCM'
     };
 
     setPayrollRuns(prev => [formattedRun, ...prev]);

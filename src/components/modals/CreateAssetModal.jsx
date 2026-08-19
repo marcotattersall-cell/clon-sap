@@ -91,7 +91,7 @@ export const CreateAssetModal = ({ isOpen, onClose }) => {
           {/* Categoría y Ubicación Técnica */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-1">
-              <label className="font-semibold text-slate-300">Categoría SAP PM</label>
+              <label className="font-semibold text-slate-300">Categoría PM</label>
               <select
                 value={category}
                 onChange={(e) => setCategory(e.target.value)}

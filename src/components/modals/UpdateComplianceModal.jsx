@@ -66,7 +66,7 @@ export const UpdateComplianceModal = ({ isOpen, onClose, employee }) => {
               <HardHat className="w-5 h-5 text-amber-100" />
             </div>
             <div>
-              <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-amber-200">Acreditación de Faenas & Contratos • SAP HCM</span>
+              <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-amber-200">Acreditación de Faenas & Contratos • Operam HCM</span>
               <h3 className="text-base font-black leading-tight">Renovar Acreditación o Extender Contrato</h3>
             </div>
           </div>

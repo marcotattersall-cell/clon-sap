@@ -118,7 +118,7 @@ export const WorkOrderMaster = ({ onOpenCreateWO, onOpenMIGOForWO }) => {
         <div>
           <div className="flex items-center space-x-2 text-xs font-bold uppercase tracking-wider text-sap-blue mb-1">
             <Wrench className="w-4 h-4 text-sap-blue" />
-            <span>Módulo SAP PM • Gestión de Mantenimiento Industrial</span>
+            <span>Módulo Operam PM • Gestión de Mantenimiento Industrial</span>
           </div>
           <h1 className="text-xl sm:text-2xl font-black tracking-tight text-slate-900">
             Control & Ejecución de Órdenes de Trabajo (IW31 / IW32)
@@ -380,7 +380,7 @@ export const WorkOrderMaster = ({ onOpenCreateWO, onOpenMIGOForWO }) => {
                   <th className="p-3.5">Técnico Resp.</th>
                   <th className="p-3.5">Prioridad</th>
                   <th className="p-3.5">Fecha Término</th>
-                  <th className="p-3.5 text-center">Estado SAP</th>
+                  <th className="p-3.5 text-center">Estado PM</th>
                   <th className="p-3.5 text-right">Acción</th>
                 </tr>
               </thead>
@@ -460,7 +460,7 @@ export const WorkOrderMaster = ({ onOpenCreateWO, onOpenMIGOForWO }) => {
                     <span className="font-mono font-bold text-xs text-sky-300 bg-sky-950 px-2 py-0.5 rounded border border-sky-800">
                       {activeWO.id}
                     </span>
-                    <span className="text-[10px] font-mono text-slate-300">Transacción SAP IW32</span>
+                    <span className="text-[10px] font-mono text-slate-300">Transacción IW32</span>
                   </div>
                   <h3 className="text-base font-black leading-tight mt-0.5">
                     {activeWO.title}
