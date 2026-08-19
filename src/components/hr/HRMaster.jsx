@@ -702,12 +702,13 @@ export const HRMaster = ({ onOpenCreateEmployee, onOpenCreateAbsence }) => {
                               <MapPin className="w-3 h-3 text-sky-600 shrink-0" />
                               {f.faenaName}
                             </span>
-                            <span className={`px-1.5 py-0.2 rounded text-[9px] font-bold border ${
+                            <span className={`inline-flex items-center space-x-1 px-1.5 py-0.5 rounded-full text-[9px] font-bold border ${
                               isFBlocked ? 'bg-rose-50 text-rose-700 border-rose-200' :
                               isFAlert ? 'bg-amber-50 text-amber-800 border-amber-200' :
                               'bg-emerald-50 text-emerald-700 border-emerald-200'
                             }`}>
-                              {isFBlocked ? '🔴 Bloqueado' : isFAlert ? '🟡 Alerta (≤30d)' : '🟢 Habilitado'}
+                              <span className={`w-1.5 h-1.5 rounded-full ${isFBlocked ? 'bg-rose-500' : isFAlert ? 'bg-amber-500' : 'bg-emerald-500'}`} />
+                              <span>{isFBlocked ? 'Bloqueado' : isFAlert ? 'Alerta (≤30d)' : 'Habilitado'}</span>
                             </span>
                           </div>
 

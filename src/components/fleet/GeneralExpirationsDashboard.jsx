@@ -324,9 +324,9 @@ export const GeneralExpirationsDashboard = () => {
               className="text-xs bg-white border border-slate-200 rounded-xl px-3 py-1.5 font-bold text-slate-700 focus:ring-2 focus:ring-sky-600"
             >
               <option value="ALL">Todos los Estados</option>
-              <option value="EXPIRED">🔴 Vencidos ({expiredCount})</option>
-              <option value="ALERT_30">🟡 Por Vencer ≤30 Días ({alertCount})</option>
-              <option value="OK">🟢 Vigentes ({okCount})</option>
+              <option value="EXPIRED">Vencidos ({expiredCount})</option>
+              <option value="ALERT_30">Por Vencer ≤30 Días ({alertCount})</option>
+              <option value="OK">Vigentes ({okCount})</option>
             </select>
           </div>
         </div>
@@ -345,22 +345,22 @@ export const GeneralExpirationsDashboard = () => {
       </div>
 
       {/* Main Timeline Table */}
-      <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm">
-        <div className="p-4 bg-slate-900 text-white flex items-center justify-between">
+      <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-xs">
+        <div className="p-4 bg-slate-50 border-b border-slate-200 flex items-center justify-between text-slate-900">
           <div className="flex items-center space-x-2">
-            <Calendar className="w-4 h-4 text-sky-400" />
-            <h3 className="font-extrabold text-xs uppercase tracking-wider">
+            <Calendar className="w-4 h-4 text-sky-600" />
+            <h3 className="font-extrabold text-xs uppercase tracking-wider text-slate-800">
               Monitor Cronológico de Vencimientos ({filteredList.length} Registros)
             </h3>
           </div>
-          <span className="text-[11px] text-slate-300 font-mono">
+          <span className="text-[11px] text-slate-500 font-mono">
             Ordenado por proximidad de vencimiento
           </span>
         </div>
 
         <div className="overflow-x-auto">
           <table className="w-full text-left text-xs divide-y divide-slate-200">
-            <thead className="bg-slate-100 text-slate-700 font-bold uppercase tracking-wider">
+            <thead className="bg-slate-100/80 text-slate-600 font-bold uppercase tracking-wider text-[11px]">
               <tr>
                 <th className="p-3.5">Origen / Entidad</th>
                 <th className="p-3.5">Detalle / Identificación</th>
@@ -384,15 +384,15 @@ export const GeneralExpirationsDashboard = () => {
                   return (
                     <tr
                       key={item.id}
-                      className={`hover:bg-slate-50 transition-colors ${
-                        item.status === 'EXPIRED' ? 'bg-rose-50/30' : item.status === 'ALERT_30' ? 'bg-amber-50/20' : ''
+                      className={`hover:bg-slate-50/80 transition-colors ${
+                        item.status === 'EXPIRED' ? 'bg-rose-50/40' : item.status === 'ALERT_30' ? 'bg-amber-50/30' : ''
                       }`}
                     >
                       <td className="p-3.5">
-                        <span className={`inline-flex items-center space-x-1 px-2.5 py-1 rounded-lg text-[10px] font-extrabold border ${
+                        <span className={`inline-flex items-center space-x-1 px-2.5 py-1 rounded-md text-[10px] font-bold border ${
                           isFleet
-                            ? 'bg-sky-100 text-sky-800 border-sky-200'
-                            : 'bg-amber-100 text-amber-900 border-amber-200'
+                            ? 'bg-sky-50 text-sky-800 border-sky-200'
+                            : 'bg-amber-50 text-amber-900 border-amber-200'
                         }`}>
                           {isFleet ? <Truck className="w-3 h-3 mr-1 text-sky-600" /> : <Users className="w-3 h-3 mr-1 text-amber-600" />}
                           <span>{isFleet ? 'Flota' : 'HCM Personal'}</span>
@@ -414,7 +414,7 @@ export const GeneralExpirationsDashboard = () => {
 
                       <td className="p-3.5 text-center font-mono font-extrabold">
                         {item.days <= 0 ? (
-                          <span className="text-rose-600 font-black underline">Vencido</span>
+                          <span className="text-rose-600 font-bold">Vencido</span>
                         ) : (
                           <span className={item.days <= 30 ? 'text-amber-700' : 'text-slate-700'}>
                             {item.days} días
@@ -423,12 +423,17 @@ export const GeneralExpirationsDashboard = () => {
                       </td>
 
                       <td className="p-3.5 text-center">
-                        <span className={`px-2.5 py-1 rounded-full text-[10px] font-extrabold border ${
-                          item.status === 'EXPIRED' ? 'bg-rose-600 text-white border-rose-700 shadow-xs animate-pulse' :
-                          item.status === 'ALERT_30' ? 'bg-amber-500 text-white border-amber-600' :
-                          'bg-emerald-100 text-emerald-800 border-emerald-300'
+                        <span className={`inline-flex items-center space-x-1.5 px-2.5 py-1 rounded-full text-xs font-semibold border ${
+                          item.status === 'EXPIRED' ? 'bg-rose-50 text-rose-700 border-rose-200' :
+                          item.status === 'ALERT_30' ? 'bg-amber-50 text-amber-800 border-amber-200' :
+                          'bg-emerald-50 text-emerald-700 border-emerald-200'
                         }`}>
-                          {item.status === 'EXPIRED' ? '🔴 Vencido' : item.status === 'ALERT_30' ? `🟡 Alerta (≤30d)` : '🟢 Vigente'}
+                          <span className={`w-1.5 h-1.5 rounded-full ${
+                            item.status === 'EXPIRED' ? 'bg-rose-500 animate-pulse' :
+                            item.status === 'ALERT_30' ? 'bg-amber-500' :
+                            'bg-emerald-500'
+                          }`} />
+                          <span>{item.status === 'EXPIRED' ? 'Vencido' : item.status === 'ALERT_30' ? 'Alerta (≤30d)' : 'Vigente'}</span>
                         </span>
                       </td>
 

@@ -337,7 +337,7 @@ export const AssetHierarchyTree = () => {
                       {selectedAsset.lastIoTTelemetry?.engineTemp ? `${selectedAsset.lastIoTTelemetry.engineTemp}°C` : '92.4°C'}
                     </div>
                     <div className="text-[10px] text-slate-500 dark:text-slate-400">
-                      {(selectedAsset.lastIoTTelemetry?.engineTemp || 92) > 102 ? '⚠️ ALERTA SOBRECALENTAMIENTO' : '🟢 Rango Térmico Normal'}
+                      {(selectedAsset.lastIoTTelemetry?.engineTemp || 92) > 102 ? '⚠️ ALERTA SOBRECALENTAMIENTO' : 'Rango Térmico Normal'}
                     </div>
                   </div>
 
@@ -362,7 +362,7 @@ export const AssetHierarchyTree = () => {
                       {selectedAsset.lastIoTTelemetry?.vibrationRms ? `${selectedAsset.lastIoTTelemetry.vibrationRms} mm/s` : '3.8 mm/s'}
                     </div>
                     <div className="text-[10px] text-slate-500 dark:text-slate-400">
-                      {(selectedAsset.lastIoTTelemetry?.vibrationRms || 3.8) > 6.5 ? '⚠️ ANOMALÍA ESTRUCTURAL' : '🟢 Amplitud Armónica OK'}
+                      {(selectedAsset.lastIoTTelemetry?.vibrationRms || 3.8) > 6.5 ? '⚠️ ANOMALÍA ESTRUCTURAL' : 'Amplitud Armónica OK'}
                     </div>
                   </div>
 
@@ -457,7 +457,7 @@ export const AssetHierarchyTree = () => {
                                 </span>
                               ) : (
                                 <span className="px-1.5 py-0.5 rounded text-[10px] font-bold bg-emerald-500/20 text-emerald-500 border border-emerald-500/30">
-                                  🟢 Norma OK
+                                  Norma OK
                                 </span>
                               )}
                             </td>

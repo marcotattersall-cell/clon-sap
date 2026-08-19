@@ -182,18 +182,18 @@ export const FioriHeader = ({ onOpenCreateWO, onOpenCreateMaterial, onOpenCreate
         <div className="flex items-center space-x-3">
           {/* 📡 Network & Offline Sync Status Indicator */}
           {isOnline && pendingQueueCount === 0 ? (
-            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-emerald-100 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-800 shadow-sm">
-              <span className="w-2 h-2 rounded-full bg-emerald-500 mr-1.5 animate-pulse"></span>
-              <span>🌐 En Línea (Sincronizado)</span>
+            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-emerald-50 text-emerald-700 border border-emerald-200/80">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 mr-1.5 animate-pulse"></span>
+              <span>En Línea (Sincronizado)</span>
             </span>
           ) : (
             <div className="inline-flex items-center space-x-2">
-              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-amber-100 dark:bg-amber-950 text-amber-800 dark:text-amber-300 border border-amber-300 dark:border-amber-800 shadow-sm animate-pulse">
-                <span>📡 Modo Offline: {pendingQueueCount} Transacciones en Cola de Subida</span>
+              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-amber-50 text-amber-800 border border-amber-200 animate-pulse">
+                <span>Modo Offline: {pendingQueueCount} pendientes</span>
               </span>
               <button
                 onClick={handleManualSync}
-                className="px-2 py-0.5 bg-amber-500 hover:bg-amber-600 text-white font-bold rounded text-[11px] flex items-center space-x-1 shadow-sm transition-all cursor-pointer"
+                className="px-2 py-0.5 bg-amber-500 hover:bg-amber-600 text-white font-medium rounded text-[11px] flex items-center space-x-1 shadow-sm transition-all cursor-pointer"
                 title="Forzar sincronización de datos con Cloud Firestore"
               >
                 <RefreshCw className="w-3 h-3 animate-spin" />
@@ -202,15 +202,12 @@ export const FioriHeader = ({ onOpenCreateWO, onOpenCreateMaterial, onOpenCreate
             </div>
           )}
 
-          <span className="text-[11px] text-slate-500 font-mono hidden lg:inline">
-            Firebase Auth: <strong className="text-sky-700">{user ? user.email : 'Sin autenticar'}</strong>
-          </span>
           <button
             onClick={resetData}
             title="Limpiar todos los datos de la aplicación"
-            className="hover:text-amber-600 flex items-center gap-1 transition-colors text-xs text-slate-600 font-medium"
+            className="hover:text-amber-600 flex items-center gap-1 transition-colors text-xs text-slate-500 font-medium"
           >
-            <RefreshCw className="w-3 h-3" />
+            <RefreshCw className="w-3 h-3 text-slate-400" />
             <span className="hidden sm:inline">Limpiar Datos</span>
           </button>
         </div>

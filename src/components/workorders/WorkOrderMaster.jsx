@@ -254,10 +254,10 @@ export const WorkOrderMaster = ({ onOpenCreateWO, onOpenMIGOForWO }) => {
               className="bg-white border border-slate-200 rounded-xl px-3 py-1.5 text-xs font-bold text-slate-800 focus:ring-2 focus:ring-sap-blue"
             >
               <option value="ALL">Todas las Prioridades</option>
-              <option value="Muy Alta">🔴 Muy Alta</option>
-              <option value="Alta">🟡 Alta</option>
-              <option value="Media">🔵 Media</option>
-              <option value="Baja">🟢 Baja</option>
+              <option value="Muy Alta">Muy Alta</option>
+              <option value="Alta">Alta</option>
+              <option value="Media">Media</option>
+              <option value="Baja">Baja</option>
             </select>
           </div>
         </div>
