@@ -38,6 +38,13 @@ const mapAuthErrorMessage = (code) => {
   }
 };
 
+// Slugify Helper para generar tenantId de Multi-Tenancy
+export const slugifyTenantId = (companyName) => {
+  if (!companyName || typeof companyName !== 'string') return 'tenant_demo';
+  const clean = companyName.toLowerCase().trim().replace(/[^a-z0-9]/g, '_').replace(/_+/g, '_').replace(/^_+|_+$/g, '');
+  return clean ? `tenant_${clean}` : 'tenant_demo';
+};
+
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(DEFAULT_SAP_USER);
   const [loading, setLoading] = useState(true);
@@ -120,8 +127,8 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  // Register New User with Email and Password
-  const registerWithEmail = async ({ email, password, displayName, role = 'MAINTENANCE_MGR', plant = '0001 (Planta Central)' }) => {
+  // Register New User with Email, Password and Company Name (Multi-Tenancy)
+  const registerWithEmail = async ({ email, password, displayName, companyName = 'Empresa Demo', role = 'MAINTENANCE_MGR', plant = '0001 (Planta Central)' }) => {
     setAuthError(null);
     if (!email || !password) {
       const errorMsg = 'Debe ingresar un correo y contraseña válidos.';
@@ -130,6 +137,8 @@ export const AuthProvider = ({ children }) => {
     }
 
     try {
+      const tenantId = slugifyTenantId(companyName);
+
       if (auth && isRealFirebaseConfigured) {
         const userCredential = await createUserWithEmailAndPassword(auth, email.trim(), password);
         const fbUser = userCredential.user;
@@ -142,6 +151,8 @@ export const AuthProvider = ({ children }) => {
           uid: fbUser.uid,
           email: fbUser.email,
           displayName: displayName || email.split('@')[0],
+          companyName: companyName || 'Empresa Demo',
+          tenantId,
           photoURL: `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(displayName || email)}`,
           emailVerified: fbUser.emailVerified,
           role,

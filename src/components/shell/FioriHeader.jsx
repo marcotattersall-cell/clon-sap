@@ -225,9 +225,9 @@ export const FioriHeader = ({ onOpenCreateWO, onOpenCreateMaterial, onOpenCreate
             className="flex items-center space-x-2.5 group focus:outline-none"
           >
             <img
-              src="/sap_logo.jpg"
-              alt="Enterprise ERP Logo"
-              className="w-9 h-9 rounded-lg object-cover border border-slate-200 shadow-sm group-hover:scale-105 transition-transform"
+              src="/favicon.svg"
+              alt="Operam ERP Logo"
+              className="w-9 h-9 rounded-lg object-cover border border-slate-200 shadow-sm group-hover:scale-105 transition-transform bg-slate-900 p-1"
             />
             <div className="text-left leading-tight hidden xs:block">
               <div className="font-bold text-sm tracking-tight text-slate-900 group-hover:text-sap-blue transition-colors">

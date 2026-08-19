@@ -34,6 +34,7 @@ export const LoginScreen = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [displayName, setDisplayName] = useState('');
+  const [companyName, setCompanyName] = useState('');
   const [role, setRole] = useState('MAINTENANCE_MGR');
   const [plant, setPlant] = useState('0001 (Planta Central)');
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -83,13 +84,14 @@ export const LoginScreen = () => {
         email,
         password,
         displayName,
+        companyName: companyName || 'Empresa Demo',
         role,
         plant
       });
       setIsSubmitting(false);
       if (res.success) {
         setCurrentRole(res.user.role);
-        addToast(`Usuario registrado en Firebase con éxito: ${res.user.displayName}`, 'success');
+        addToast(`Usuario de ${companyName || 'Empresa Demo'} registrado con éxito: ${res.user.displayName}`, 'success');
       } else {
         setLocalError(res.error);
       }
@@ -149,8 +151,8 @@ export const LoginScreen = () => {
           
           {/* Card Top Title Banner */}
           <div className="bg-slate-900 text-white p-6 border-b border-slate-800 text-center relative">
-            <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-white p-1 mb-3 shadow-lg border border-slate-700">
-              <img src="/sap_logo.jpg" alt="Enterprise Logo" className="w-full h-full object-cover rounded-xl" />
+            <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-slate-950 p-2 mb-3 shadow-lg border border-slate-700">
+              <img src="/favicon.svg" alt="Operam ERP Logo" className="w-full h-full object-contain" />
             </div>
             <h2 className="text-xl font-black tracking-tight text-slate-100">
               Autenticación Operam ERP
@@ -283,20 +285,40 @@ export const LoginScreen = () => {
             {/* Form */}
             <form onSubmit={handleSubmit} className="space-y-4">
               {mode === 'register' && (
-                <div>
-                  <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
-                    Nombre Completo
-                  </label>
-                  <div className="relative">
-                    <User className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
-                    <input
-                      type="text"
-                      required
-                      placeholder="Ej. Ing. Roberto Gómez"
-                      value={displayName}
-                      onChange={(e) => setDisplayName(e.target.value)}
-                      className="w-full text-xs rounded-lg border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 pl-9 pr-3 py-2.5 focus:ring-2 focus:ring-sap-blue focus:outline-none"
-                    />
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+                      Nombre Completo
+                    </label>
+                    <div className="relative">
+                      <User className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+                      <input
+                        type="text"
+                        required
+                        placeholder="Ej. Ing. Roberto Gómez"
+                        value={displayName}
+                        onChange={(e) => setDisplayName(e.target.value)}
+                        className="w-full text-xs rounded-lg border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 pl-9 pr-3 py-2.5 focus:ring-2 focus:ring-sap-blue focus:outline-none"
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1 flex items-center justify-between">
+                      <span>Empresa / Organización (SaaS Multi-Tenant)</span>
+                      <span className="text-[10px] text-sap-blue font-mono font-bold">Aislamiento Total</span>
+                    </label>
+                    <div className="relative">
+                      <Building2 className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+                      <input
+                        type="text"
+                        required
+                        placeholder="Ej. Constructora del Norte SpA"
+                        value={companyName}
+                        onChange={(e) => setCompanyName(e.target.value)}
+                        className="w-full text-xs rounded-lg border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 pl-9 pr-3 py-2.5 focus:ring-2 focus:ring-sap-blue focus:outline-none font-semibold"
+                      />
+                    </div>
                   </div>
                 </div>
               )}

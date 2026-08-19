@@ -1,10 +1,12 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import { useAuth } from './AuthContext';
 import {
   subscribeCollection,
   upsertDocument,
   seedCollectionIfEmpty,
   executeAtomicGoodsMovement,
-  recordAuditLog
+  recordAuditLog,
+  DEFAULT_TENANT_ID
 } from '../services/firestoreService';
 import {
   DEFAULT_PLANTS,
@@ -22,6 +24,9 @@ import {
 const SAPContext = createContext(null);
 
 export const SAPProvider = ({ children }) => {
+  const { user } = useAuth();
+  const activeTenantId = user?.tenantId || DEFAULT_TENANT_ID;
+
   const [plants, setPlants] = useState(DEFAULT_PLANTS);
   const [activePlant, setActivePlant] = useState(DEFAULT_PLANTS[0]);
 
@@ -43,36 +48,36 @@ export const SAPProvider = ({ children }) => {
   const [globalToasts, setGlobalToasts] = useState([]);
   const [tecoModalData, setTecoModalData] = useState(null);
 
-  // Firestore Real-Time Subscriptions & Auto-Seeding
+  // Firestore Real-Time Subscriptions & Auto-Seeding per Tenant
   useEffect(() => {
-    // 1. Seed demo data to Firestore if collections are empty
-    seedCollectionIfEmpty('plants', DEFAULT_PLANTS);
-    seedCollectionIfEmpty('materials', DEFAULT_MATERIALS);
-    seedCollectionIfEmpty('assets', DEFAULT_ASSETS);
-    seedCollectionIfEmpty('notifications', DEFAULT_NOTIFICATIONS);
-    seedCollectionIfEmpty('workOrders', DEFAULT_WORK_ORDERS);
-    seedCollectionIfEmpty('purchaseOrders', DEFAULT_PURCHASE_ORDERS);
-    seedCollectionIfEmpty('migoDocuments', DEFAULT_MIGO_DOCUMENTS);
-    seedCollectionIfEmpty('employees', DEFAULT_EMPLOYEES);
-    seedCollectionIfEmpty('absences', DEFAULT_ABSENCES);
-    seedCollectionIfEmpty('payrollRuns', DEFAULT_PAYROLL_RUNS);
+    // 1. Seed demo data to Firestore if tenant collections are empty
+    seedCollectionIfEmpty('plants', DEFAULT_PLANTS, activeTenantId);
+    seedCollectionIfEmpty('materials', DEFAULT_MATERIALS, activeTenantId);
+    seedCollectionIfEmpty('assets', DEFAULT_ASSETS, activeTenantId);
+    seedCollectionIfEmpty('notifications', DEFAULT_NOTIFICATIONS, activeTenantId);
+    seedCollectionIfEmpty('workOrders', DEFAULT_WORK_ORDERS, activeTenantId);
+    seedCollectionIfEmpty('purchaseOrders', DEFAULT_PURCHASE_ORDERS, activeTenantId);
+    seedCollectionIfEmpty('migoDocuments', DEFAULT_MIGO_DOCUMENTS, activeTenantId);
+    seedCollectionIfEmpty('employees', DEFAULT_EMPLOYEES, activeTenantId);
+    seedCollectionIfEmpty('absences', DEFAULT_ABSENCES, activeTenantId);
+    seedCollectionIfEmpty('payrollRuns', DEFAULT_PAYROLL_RUNS, activeTenantId);
 
-    // 2. Real-Time Snapshot Listeners (Non-blocking async sync)
+    // 2. Real-Time Snapshot Listeners per Tenant
     const unsubPlants = subscribeCollection('plants', (items) => {
       if (items && items.length > 0) setPlants(items);
-    });
+    }, null, [], activeTenantId);
 
     const unsubMaterials = subscribeCollection('materials', (items) => {
       if (items && items.length > 0) setMaterials(items);
-    });
+    }, null, [], activeTenantId);
 
     const unsubAssets = subscribeCollection('assets', (items) => {
       if (items && items.length > 0) setAssets(items);
-    });
+    }, null, [], activeTenantId);
 
     const unsubNotifs = subscribeCollection('notifications', (items) => {
       if (items && items.length > 0) setNotifications(items);
-    });
+    }, null, [], activeTenantId);
 
     const unsubWorkOrders = subscribeCollection('workOrders', (items) => {
       if (items && items.length > 0) {
@@ -84,31 +89,31 @@ export const SAPProvider = ({ children }) => {
         }));
         setWorkOrders(formatted);
       }
-    });
+    }, null, [], activeTenantId);
 
     const unsubPO = subscribeCollection('purchaseOrders', (items) => {
       if (items && items.length > 0) setPurchaseOrders(items);
-    });
+    }, null, [], activeTenantId);
 
     const unsubMigo = subscribeCollection('migoDocuments', (items) => {
       if (items && items.length > 0) setMigoDocuments(items);
-    });
+    }, null, [], activeTenantId);
 
     const unsubEmployees = subscribeCollection('employees', (items) => {
       if (items && items.length > 0) setEmployees(items);
-    });
+    }, null, [], activeTenantId);
 
     const unsubAbsences = subscribeCollection('absences', (items) => {
       if (items && items.length > 0) setAbsences(items);
-    });
+    }, null, [], activeTenantId);
 
     const unsubPayroll = subscribeCollection('payrollRuns', (items) => {
       if (items && items.length > 0) setPayrollRuns(items);
-    });
+    }, null, [], activeTenantId);
 
     const unsubAudit = subscribeCollection('auditLogs', (items) => {
       if (items && items.length > 0) setAuditLogs(items);
-    });
+    }, null, [], activeTenantId);
 
     return () => {
       unsubPlants();
@@ -123,7 +128,7 @@ export const SAPProvider = ({ children }) => {
       unsubPayroll();
       unsubAudit();
     };
-  }, []);
+  }, [activeTenantId]);
 
   // Toast Helper
   const addToast = (message, type = 'info') => {

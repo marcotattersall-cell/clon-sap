@@ -2,7 +2,6 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
-    // Helper functions for security rules
     function isAuthenticated() {
       return request.auth != null;
     }
@@ -12,8 +11,13 @@ service cloud.firestore {
       allow read, write: if isAuthenticated();
     }
 
-    // Reglas de seguridad estrictas para colecciones operativas Clon SAP ERP (PM / MM)
-    // Exigen sesión de usuario autenticada obligatoria tanto para lectura como para escritura
+    // Regla de Seguridad Multi-Tenant Aislada por Ruta (/tenants/{tenantId}/{collectionId}/{document})
+    // Exige sesión autenticada para leer o escribir en la base de datos de cualquier empresa
+    match /tenants/{tenantId}/{collectionId}/{document=**} {
+      allow read, write: if isAuthenticated();
+    }
+
+    // Reglas de compatibilidad legacy para colecciones raíz
     match /plants/{document} {
       allow read, write: if isAuthenticated();
     }
@@ -42,7 +46,7 @@ service cloud.firestore {
       allow read, write: if isAuthenticated();
     }
 
-    // Regla de salvaguarda global para cualquier subcolección
+    // Regla de salvaguarda global
     match /{document=**} {
       allow read, write: if isAuthenticated();
     }

@@ -12,23 +12,42 @@ import {
 import { db } from '../firebase/config';
 import { updateVectorClock } from './crdtSyncService';
 
+export const DEFAULT_TENANT_ID = 'tenant_demo';
+
 /**
- * Suscribe a una colección de Firestore con retroalimentación en tiempo real.
- * Soporta restricciones de consulta (limit, orderBy) para paginación de alto rendimiento.
- *
- * @param {string} collectionName
- * @param {function(Array):void} onUpdate
- * @param {function(Error):void} [onError]
- * @param {Array} [constraints]
- * @returns {function():void} función para cancelar la suscripción
+ * Obtiene la referencia aislada de Firestore por Tenant (Multi-Tenancy).
+ * Genera la ruta: /tenants/{tenantId}/{collectionName}
  */
-export const subscribeCollection = (collectionName, onUpdate, onError, constraints = []) => {
+export const getTenantCollectionRef = (collectionName, tenantId = DEFAULT_TENANT_ID) => {
+  const activeTenant = tenantId || DEFAULT_TENANT_ID;
+  if (collectionName === 'users') {
+    return collection(db, 'users');
+  }
+  return collection(db, 'tenants', activeTenant, collectionName);
+};
+
+/**
+ * Obtiene la referencia aislada a un documento específico por Tenant (Multi-Tenancy).
+ * Genera la ruta: /tenants/{tenantId}/{collectionName}/{docId}
+ */
+export const getTenantDocRef = (collectionName, docId, tenantId = DEFAULT_TENANT_ID) => {
+  const activeTenant = tenantId || DEFAULT_TENANT_ID;
+  if (collectionName === 'users') {
+    return doc(db, 'users', String(docId));
+  }
+  return doc(db, 'tenants', activeTenant, collectionName, String(docId));
+};
+
+/**
+ * Suscribe a una colección de Firestore aislada por Tenant con retroalimentación en tiempo real.
+ */
+export const subscribeCollection = (collectionName, onUpdate, onError, constraints = [], tenantId = DEFAULT_TENANT_ID) => {
   if (!db) {
     if (onError) onError(new Error('Firestore no está configurado'));
     return () => {};
   }
 
-  const colRef = collection(db, collectionName);
+  const colRef = getTenantCollectionRef(collectionName, tenantId);
   const targetRef = Array.isArray(constraints) && constraints.length > 0 ? query(colRef, ...constraints) : colRef;
   
   const unsubscribe = onSnapshot(
@@ -36,12 +55,13 @@ export const subscribeCollection = (collectionName, onUpdate, onError, constrain
     (snapshot) => {
       const items = snapshot.docs.map(d => ({
         ...d.data(),
-        id: d.id
+        id: d.id,
+        tenantId: tenantId || DEFAULT_TENANT_ID
       }));
       onUpdate(items);
     },
     (err) => {
-      console.warn(`[Firestore Sync] Error al suscribir a ${collectionName}:`, err);
+      console.warn(`[Firestore Multi-Tenant Sync] Error al suscribir a ${collectionName} (${tenantId}):`, err);
       if (onError) onError(err);
     }
   );
@@ -50,9 +70,7 @@ export const subscribeCollection = (collectionName, onUpdate, onError, constrain
 };
 
 /**
- * Ejecuta un movimiento de mercancía MIGO (101, 261, 311) de forma ATÓMICA en Cloud Firestore.
- * Garantiza que la lectura de stock, el descuento/incremento, la actualización de la WO/PO y la creación de la MIGO
- * se ejecuten como una única transacción indivisible (all-or-nothing).
+ * Ejecuta un movimiento de mercancía MIGO de forma ATÓMICA e aislada por Tenant.
  */
 export const executeAtomicGoodsMovement = async ({
   movementType,
@@ -61,16 +79,19 @@ export const executeAtomicGoodsMovement = async ({
   storageLocation,
   targetStorageLocation,
   refDocument,
-  currentUser
+  currentUser,
+  tenantId = DEFAULT_TENANT_ID
 }) => {
   if (!db) return false;
+  const activeTenant = tenantId || currentUser?.tenantId || DEFAULT_TENANT_ID;
+  
   try {
     return await runTransaction(db, async (transaction) => {
-      // 1. Leer el documento del material dentro de la transacción atómica
-      const matRef = doc(db, 'materials', String(materialId));
+      // 1. Leer el documento del material dentro de la transacción atómica del tenant
+      const matRef = getTenantDocRef('materials', String(materialId), activeTenant);
       const matSnap = await transaction.get(matRef);
       if (!matSnap.exists()) {
-        throw new Error(`El material SKU ${materialId} no existe en el maestro.`);
+        throw new Error(`El material SKU ${materialId} no existe en el maestro de ${activeTenant}.`);
       }
 
       const matData = matSnap.data();
@@ -92,7 +113,7 @@ export const executeAtomicGoodsMovement = async ({
 
       // 3. Crear el documento MIGO
       const migoId = `MIGO-${Math.floor(10000000 + Math.random() * 90000000)}`;
-      const migoRef = doc(db, 'migoDocuments', migoId);
+      const migoRef = getTenantDocRef('migoDocuments', migoId, activeTenant);
       const newMigoDoc = {
         id: migoId,
         documentId: migoId,
@@ -105,7 +126,8 @@ export const executeAtomicGoodsMovement = async ({
         targetStorageLocation: targetStorageLocation || null,
         refDocument: refDocument || 'N/A',
         timestamp: new Date().toISOString(),
-        user: currentUser?.displayName || currentUser?.email || 'Operador SAP'
+        user: currentUser?.displayName || currentUser?.email || 'Operador Operam ERP',
+        tenantId: activeTenant
       };
 
       transaction.set(migoRef, newMigoDoc);
@@ -113,18 +135,18 @@ export const executeAtomicGoodsMovement = async ({
       // 4. Actualizar el stock del material de forma atómica
       transaction.update(matRef, { stock: newStock, updatedAt: new Date().toISOString() });
 
-      // 5. Si es MIGO 101 con referencia a PO, actualizar el estado del Pedido a 'Recibido / Entregado'
+      // 5. Si es MIGO 101 con referencia a PO, actualizar el estado del Pedido
       if (movementType === '101' && refDocument) {
-        const poRef = doc(db, 'purchaseOrders', String(refDocument));
+        const poRef = getTenantDocRef('purchaseOrders', String(refDocument), activeTenant);
         const poSnap = await transaction.get(poRef);
         if (poSnap.exists()) {
           transaction.update(poRef, { status: 'Recibido / Entregado', updatedAt: new Date().toISOString() });
         }
       }
 
-      // 6. Si es MIGO 261 con referencia a WO, actualizar componentes y costo acumulado atómicamente
+      // 6. Si es MIGO 261 con referencia a WO, actualizar componentes y costo acumulado
       if (movementType === '261' && refDocument) {
-        const woRef = doc(db, 'workOrders', String(refDocument));
+        const woRef = getTenantDocRef('workOrders', String(refDocument), activeTenant);
         const woSnap = await transaction.get(woRef);
         if (woSnap.exists()) {
           const woData = woSnap.data();
@@ -156,9 +178,9 @@ export const executeAtomicGoodsMovement = async ({
         }
       }
 
-      // 7. Auditoría Inmutable SAP: Registrar entrada en auditLogs
+      // 7. Auditoría Inmutable: Registrar entrada en auditLogs del Tenant
       const auditId = `AUDIT-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
-      const auditRef = doc(db, 'auditLogs', auditId);
+      const auditRef = getTenantDocRef('auditLogs', auditId, activeTenant);
       transaction.set(auditRef, {
         id: auditId,
         entityType: 'MIGO_DOCUMENT',
@@ -166,117 +188,116 @@ export const executeAtomicGoodsMovement = async ({
         action: `CONTABILIZAR_MIGO_${movementType}`,
         details: `Movimiento ${movementType} de ${quantity} ${matData.unit} de ${matData.name} (Ref: ${refDocument || 'N/A'})`,
         user: currentUser?.displayName || currentUser?.email || 'Operador MIGO',
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
+        tenantId: activeTenant
       });
 
       return newMigoDoc;
     });
   } catch (err) {
-    console.error('[Firestore Atomic Transaction] Error en transacción MIGO:', err);
+    console.error(`[Firestore Multi-Tenant Transaction] Error en MIGO para ${activeTenant}:`, err);
     throw err;
   }
 };
 
 /**
- * Guarda o actualiza un documento en una colección.
- *
- * @param {string} collectionName
- * @param {string} docId
- * @param {Object} data
+ * Guarda o actualiza un documento en una colección aislada por Tenant.
  */
-export const upsertDocument = async (collectionName, docId, data, userId = 'OPERATOR') => {
+export const upsertDocument = async (collectionName, docId, data, userId = 'OPERATOR', tenantId = DEFAULT_TENANT_ID) => {
   if (!db) return false;
+  const activeTenant = tenantId || data.tenantId || DEFAULT_TENANT_ID;
+  
   try {
     const id = docId || data.id || `doc-${Date.now()}`;
-    const docRef = doc(db, collectionName, String(id));
+    const docRef = getTenantDocRef(collectionName, String(id), activeTenant);
     const modifiedFields = Object.keys(data);
-    const enrichedData = updateVectorClock({ ...data, id: String(id) }, userId, modifiedFields);
+    const enrichedData = updateVectorClock({ ...data, id: String(id), tenantId: activeTenant }, userId, modifiedFields);
     await setDoc(docRef, { ...enrichedData, updatedAt: new Date().toISOString() }, { merge: true });
     return true;
   } catch (err) {
-    console.error(`[Firestore Service] Error al guardar documento en ${collectionName}:`, err);
+    console.error(`[Firestore Service Multi-Tenant] Error guardando en ${collectionName} (${activeTenant}):`, err);
     return false;
   }
 };
 
 /**
- * Elimina un documento de una colección.
- *
- * @param {string} collectionName
- * @param {string} docId
+ * Elimina un documento de una colección aislada por Tenant.
  */
-export const deleteDocument = async (collectionName, docId) => {
+export const deleteDocument = async (collectionName, docId, tenantId = DEFAULT_TENANT_ID) => {
   if (!db) return false;
   try {
-    const docRef = doc(db, collectionName, String(docId));
+    const docRef = getTenantDocRef(collectionName, String(docId), tenantId);
     await deleteDoc(docRef);
     return true;
   } catch (err) {
-    console.error(`[Firestore Service] Error al eliminar documento en ${collectionName}:`, err);
+    console.error(`[Firestore Service Multi-Tenant] Error eliminando en ${collectionName} (${tenantId}):`, err);
     return false;
   }
 };
 
 /**
- * Si la colección en Firestore está vacía, la puebla de manera inicial con datos por defecto.
- *
- * @param {string} collectionName
- * @param {Array<Object>} defaultItems
+ * Si la colección en Firestore está vacía para el Tenant específico, la puebla con los datos iniciales por defecto.
  */
-export const seedCollectionIfEmpty = async (collectionName, defaultItems = []) => {
+export const seedCollectionIfEmpty = async (collectionName, defaultItems = [], tenantId = DEFAULT_TENANT_ID) => {
   if (!db || !Array.isArray(defaultItems) || defaultItems.length === 0) return;
+  const activeTenant = tenantId || DEFAULT_TENANT_ID;
   
   try {
-    const colRef = collection(db, collectionName);
+    const colRef = getTenantCollectionRef(collectionName, activeTenant);
     const snapshot = await getDocs(colRef);
     
     if (snapshot.empty) {
-      console.log(`[Firestore Seed] Sembrando colección inicial '${collectionName}' (${defaultItems.length} registros)...`);
+      console.log(`[Firestore Tenant Seed] Sembrando '${collectionName}' para Tenant '${activeTenant}' (${defaultItems.length} registros)...`);
       const batch = writeBatch(db);
       defaultItems.forEach(item => {
         const id = String(item.id || item.documentId || `seed-${Date.now()}-${Math.random()}`);
-        const docRef = doc(db, collectionName, id);
-        batch.set(docRef, { ...item, id });
+        const docRef = getTenantDocRef(collectionName, id, activeTenant);
+        batch.set(docRef, { ...item, id, tenantId: activeTenant });
       });
+      await batch.commit();
     }
   } catch (err) {
-    console.warn(`[Firestore Seed] No se pudo verificar o sembrar datos en ${collectionName}:`, err);
+    console.warn(`[Firestore Tenant Seed] No se pudo verificar o sembrar datos en ${collectionName} (${activeTenant}):`, err);
   }
 };
 
 /**
- * Registra un evento inmutable de auditoría SAP (Audit Log) en Cloud Firestore.
+ * Registra un evento inmutable de auditoría (Audit Log) en Cloud Firestore aislado por Tenant.
  */
-export const recordAuditLog = async ({ entityType, entityId, action, details, user }) => {
+export const recordAuditLog = async ({ entityType, entityId, action, details, user, tenantId = DEFAULT_TENANT_ID }) => {
   if (!db) return false;
+  const activeTenant = tenantId || DEFAULT_TENANT_ID;
+  
   try {
     const logId = `AUDIT-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
-    const docRef = doc(db, 'auditLogs', logId);
+    const docRef = getTenantDocRef('auditLogs', logId, activeTenant);
     await setDoc(docRef, {
       id: logId,
       entityType,
       entityId: String(entityId),
       action,
       details: details || '',
-      user: user || 'SISTEMA_SAP',
-      timestamp: new Date().toISOString()
+      user: user || 'SISTEMA_OPERAM',
+      timestamp: new Date().toISOString(),
+      tenantId: activeTenant
     });
     return true;
   } catch (err) {
-    console.error('[Firestore Audit Service] Error al registrar log de auditoría:', err);
+    console.error(`[Firestore Audit Service] Error registrando audit log en ${activeTenant}:`, err);
     return false;
   }
 };
 
-export const getCollectionDocs = async (collectionName) => {
+export const getCollectionDocs = async (collectionName, tenantId = DEFAULT_TENANT_ID) => {
   if (!db) return [];
+  const activeTenant = tenantId || DEFAULT_TENANT_ID;
+  
   try {
-    const colRef = collection(db, collectionName);
+    const colRef = getTenantCollectionRef(collectionName, activeTenant);
     const snapshot = await getDocs(colRef);
-    return snapshot.docs.map(d => ({ ...d.data(), id: d.id }));
+    return snapshot.docs.map(d => ({ ...d.data(), id: d.id, tenantId: activeTenant }));
   } catch (err) {
-    console.warn(`[Firestore Service] Error leyendo colección ${collectionName}:`, err);
+    console.warn(`[Firestore Service Multi-Tenant] Error leyendo colección ${collectionName} (${activeTenant}):`, err);
     return [];
   }
 };
-

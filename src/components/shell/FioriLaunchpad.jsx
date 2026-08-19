@@ -90,7 +90,7 @@ export const FioriLaunchpad = ({ onOpenCreateWO, onOpenCreateMIGO }) => {
           <div>
             <div className="flex items-center space-x-2 text-xs font-bold uppercase tracking-wider text-sap-blue mb-1">
               <Activity className="w-4 h-4 text-sap-blue" />
-              <span>Enterprise Cockpit & Executive Dashboard</span>
+              <span>Operam ERP Industrial Cockpit & Executive Dashboard</span>
             </div>
             <h1 className="text-xl sm:text-2xl font-black tracking-tight text-slate-900">
               Bienvenido al Sistema de Gestión Integrado
