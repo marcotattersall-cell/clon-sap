@@ -2,7 +2,22 @@ import * as firestoreService from './firestoreService';
 import * as supabaseService from './supabaseService';
 import { isSupabaseConfigured, isUseSupabaseActive } from '../supabase/config';
 
+import { hasPermission } from '../utils/rbacRules';
+
 export const DEFAULT_TENANT_ID = firestoreService.DEFAULT_TENANT_ID;
+
+/**
+ * Validar autorización RBAC en capa de servicio (Zero-Trust)
+ */
+export const validateServiceRBACPermission = (userRole, permissionKey) => {
+  if (!userRole) return true; // Si no se especifica rol explícito en cliente ligero, permite compatibilidad
+  const allowed = hasPermission(userRole, permissionKey);
+  if (!allowed) {
+    console.error(`[RBAC Guard] Acceso denegado en servicio para rol '${userRole}' al solicitar '${permissionKey}'`);
+    throw new Error(`[RBAC_DENIED] El rol '${userRole}' no cuenta con autorización para la acción '${permissionKey}'.`);
+  }
+  return true;
+};
 
 /**
  * Determina dinámicamente si se debe usar el servicio de Supabase o el de Firestore/Local
@@ -15,13 +30,22 @@ export const subscribeCollection = (collectionName, onUpdate, onError, constrain
   return getActiveDbService().subscribeCollection(collectionName, onUpdate, onError, constraints, tenantId);
 };
 
-export const upsertDocument = async (collectionName, docId, data, userId = 'OPERATOR', tenantId = DEFAULT_TENANT_ID) => {
+export const upsertDocument = async (collectionName, docId, data, userId = 'OPERATOR', tenantId = DEFAULT_TENANT_ID, userRole = null) => {
+  if (userRole && collectionName === 'materials') {
+    validateServiceRBACPermission(userRole, 'MM_CREATE_MATERIAL');
+  } else if (userRole && collectionName === 'assets') {
+    validateServiceRBACPermission(userRole, 'PM_CREATE_ASSET');
+  }
   return await getActiveDbService().upsertDocument(collectionName, docId, data, userId, tenantId);
 };
 
-export const deleteDocument = async (collectionName, docId, tenantId = DEFAULT_TENANT_ID) => {
+export const deleteDocument = async (collectionName, docId, tenantId = DEFAULT_TENANT_ID, userRole = null) => {
+  if (userRole) {
+    validateServiceRBACPermission(userRole, 'SU01_GLOBAL_USER_MGMT');
+  }
   return await getActiveDbService().deleteDocument(collectionName, docId, tenantId);
 };
+
 
 export const seedCollectionIfEmpty = async (collectionName, defaultItems = [], tenantId = DEFAULT_TENANT_ID) => {
   return await getActiveDbService().seedCollectionIfEmpty(collectionName, defaultItems, tenantId);
