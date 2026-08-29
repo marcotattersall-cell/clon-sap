@@ -135,7 +135,22 @@ export const WorkOrderMaster = ({ onOpenCreateWO, onOpenMIGOForWO }) => {
     return matchesSearch && matchesStatus && matchesPriority;
   });
 
+  const parentRef = useRef(null);
+
+  const rowVirtualizer = useVirtualizer({
+    count: filteredWorkOrders.length,
+    getScrollElement: () => parentRef.current,
+    estimateSize: () => 64,
+    overscan: 5
+  });
+
+  const virtualItems = rowVirtualizer.getVirtualItems();
+  const totalSize = rowVirtualizer.getTotalSize();
+  const paddingTop = virtualItems.length > 0 ? virtualItems[0].start : 0;
+  const paddingBottom = virtualItems.length > 0 ? totalSize - virtualItems[virtualItems.length - 1].end : 0;
+
   const kanbanColumns = [
+
     { status: 'CRTE', label: 'Creada (CRTE)', borderClass: 'border-t-sky-500', badgeClass: 'bg-sky-100 text-sky-800 border-sky-300' },
     { status: 'REL', label: 'Liberada (REL)', borderClass: 'border-t-amber-500', badgeClass: 'bg-amber-100 text-amber-900 border-amber-300' },
     { status: 'PCNF', label: 'En Proceso (PCNF)', borderClass: 'border-t-purple-500', badgeClass: 'bg-purple-100 text-purple-900 border-purple-300' },

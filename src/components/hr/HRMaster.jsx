@@ -184,7 +184,22 @@ export const HRMaster = ({ onOpenCreateEmployee, onOpenCreateAbsence }) => {
     return matchesSearch && matchesDept && matchesPlant && matchesContract && matchesCompliance;
   });
 
+  const parentRef = useRef(null);
+
+  const rowVirtualizer = useVirtualizer({
+    count: filteredEmployees.length,
+    getScrollElement: () => parentRef.current,
+    estimateSize: () => 64,
+    overscan: 5
+  });
+
+  const virtualItems = rowVirtualizer.getVirtualItems();
+  const totalSize = rowVirtualizer.getTotalSize();
+  const paddingTop = virtualItems.length > 0 ? virtualItems[0].start : 0;
+  const paddingBottom = virtualItems.length > 0 ? totalSize - virtualItems[virtualItems.length - 1].end : 0;
+
   // Ejecución autónoma del motor de Machine Learning de Auditoría HCM
+
   const mlAuditedPayrolls = detectPayrollAnomalies(payrollRuns, employees);
   const mlCriticalCount = mlAuditedPayrolls.filter(a => a.anomalyLevel === 'CRITICAL').length;
   const mlWarningCount = mlAuditedPayrolls.filter(a => a.anomalyLevel === 'WARNING').length;
