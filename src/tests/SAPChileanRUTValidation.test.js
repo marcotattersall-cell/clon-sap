@@ -22,7 +22,8 @@ describe('🇨🇱 Módulo 11 - Validación y Formateo de RUT Chileno', () => {
   it('debe rechazar RUTs chilenos matemáticamente inválidos', () => {
     const invalidRUT = validateChileanRUT('6.000.000-5');
     expect(invalidRUT.isValid).toBe(false);
-    expect(invalidRUT.error).toContain('no es válido');
+    expect(invalidRUT.error).toBe('RUT Inválido');
+
   });
 
   it('debe rechazar RUTs con longitud incorrecta', () => {

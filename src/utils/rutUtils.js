@@ -56,18 +56,18 @@ export const validateChileanRUT = (rut) => {
   const cleaned = cleanRUT(rut);
 
   if (!cleaned) {
-    return { isValid: false, formattedRUT: '', error: 'El RUT no puede estar vacío.' };
+    return { isValid: false, formattedRUT: '', error: 'RUT Inválido' };
   }
 
   if (cleaned.length < 8 || cleaned.length > 9) {
-    return { isValid: false, formattedRUT: rut, error: 'El RUT debe tener entre 7 y 8 dígitos más el dígito verificador (ej: 12.345.678-K).' };
+    return { isValid: false, formattedRUT: rut, error: 'RUT Inválido' };
   }
 
   const givenDV = cleaned.slice(-1);
   const body = cleaned.slice(0, -1);
 
   if (!/^\d+$/.test(body)) {
-    return { isValid: false, formattedRUT: rut, error: 'El cuerpo del RUT debe contener solo números.' };
+    return { isValid: false, formattedRUT: rut, error: 'RUT Inválido' };
   }
 
   const expectedDV = calculateDV(body);
@@ -76,7 +76,7 @@ export const validateChileanRUT = (rut) => {
     return {
       isValid: false,
       formattedRUT: formatChileanRUT(rut),
-      error: `El RUT ingresado (${formatChileanRUT(rut)}) no es válido. El dígito verificador correcto para ${body} es "${expectedDV}".`
+      error: 'RUT Inválido'
     };
   }
 
@@ -86,3 +86,4 @@ export const validateChileanRUT = (rut) => {
     error: null
   };
 };
+

@@ -714,9 +714,10 @@ export const SAPProvider = ({ children }) => {
     if (newEmp.rut) {
       const rutCheck = validateChileanRUT(newEmp.rut);
       if (!rutCheck.isValid) {
-        addToast(`❌ [RUT-INVÁLIDO] ${rutCheck.error}`, 'error');
+        addToast('❌ RUT Inválido', 'error');
         return false;
       }
+
       newEmp.rut = rutCheck.formattedRUT;
     }
 
