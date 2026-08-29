@@ -247,13 +247,9 @@ export const GeneralExpirationsDashboard = () => {
         }
       });
     });
-  });
-});
-        }
-      });
-    });
 
     if (emp.contractType === 'Plazo Fijo' && emp.contractExpiry) {
+
       const res = calculateDaysRemaining(emp.contractExpiry);
       hrExpirationsList.push({
         id: `HR-${emp.id}-CONTRACT`,
