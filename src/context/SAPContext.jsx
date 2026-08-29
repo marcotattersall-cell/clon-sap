@@ -607,6 +607,22 @@ export const SAPProvider = ({ children }) => {
   // Add new Asset / Fleet Equipment
   const createAsset = (newAsset) => {
     const nextId = newAsset.id || `EQ-${100 + assets.length + 1}`;
+
+    // ⛔ UNICIDAD DE PATENTE / ID: No se permite registrar patente o ID duplicada en la flota
+    const cleanPlate = (newAsset.plate || '').replaceAll('-', '').toLowerCase().trim();
+    const cleanID = (nextId || '').toLowerCase().trim();
+
+    const existingAsset = assets.some(a => {
+      const aPlate = (a.plate || '').replaceAll('-', '').toLowerCase().trim();
+      const aId = (a.id || '').toLowerCase().trim();
+      return (cleanPlate && aPlate === cleanPlate) || (cleanID && aId === cleanID);
+    });
+
+    if (existingAsset) {
+      addToast(`🚫 [FLOTA-DUPLICADA] La patente o ID "${newAsset.plate || nextId}" ya existe en la flota.`, 'error');
+      return false;
+    }
+
     const formattedAsset = {
       id: nextId,
       name: newAsset.name,
@@ -632,6 +648,7 @@ export const SAPProvider = ({ children }) => {
     addToast(`Nuevo equipo ${nextId} (${formattedAsset.name}) ingresado a la flota con éxito!`, 'success');
     return formattedAsset;
   };
+
 
   // Update Existing Asset Record (IE02 - Modificación de Equipo)
   const updateAsset = (assetId, updatedFields) => {
@@ -690,7 +707,20 @@ export const SAPProvider = ({ children }) => {
 
   // HCM: Create New Employee (PA30)
   const createEmployee = (newEmp) => {
+    // ⛔ UNICIDAD DE RUT: No se permite registrar RUT duplicado en HCM
+    const cleanRUT = (newEmp.rut || '').replaceAll('.', '').replaceAll('-', '').toLowerCase().trim();
+    if (cleanRUT) {
+      const existingRUT = employees.some(e =>
+        (e.rut || '').replaceAll('.', '').replaceAll('-', '').toLowerCase().trim() === cleanRUT
+      );
+      if (existingRUT) {
+        addToast(`🚫 [RUT-DUPLICADO] El RUT ${newEmp.rut} ya se encuentra registrado en el sistema HCM.`, 'error');
+        return false;
+      }
+    }
+
     const nextId = newEmp.id || `EMP-${1000 + employees.length + 1}`;
+
     const initialFaenas = newEmp.faenasAccredited && newEmp.faenasAccredited.length > 0 ? newEmp.faenasAccredited : [
       {
         id: `ACC-${nextId}-1`,
