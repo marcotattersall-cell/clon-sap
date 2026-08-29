@@ -21,8 +21,11 @@ import {
   DEFAULT_ABSENCES,
   DEFAULT_PAYROLL_RUNS
 } from '../fixtures/sapInitialFixtures';
+import { validateChileanRUT, formatChileanRUT } from '../utils/rutUtils';
 
 const SAPContext = createContext(null);
+
+
 
 export const SAPProvider = ({ children }) => {
   const { user } = useAuth();
@@ -707,17 +710,28 @@ export const SAPProvider = ({ children }) => {
 
   // HCM: Create New Employee (PA30)
   const createEmployee = (newEmp) => {
+    // 🇨🇱 VALIDACIÓN DE RUT CHILENO (Módulo 11)
+    if (newEmp.rut) {
+      const rutCheck = validateChileanRUT(newEmp.rut);
+      if (!rutCheck.isValid) {
+        addToast(`❌ [RUT-INVÁLIDO] ${rutCheck.error}`, 'error');
+        return false;
+      }
+      newEmp.rut = rutCheck.formattedRUT;
+    }
+
     // ⛔ UNICIDAD DE RUT: No se permite registrar RUT duplicado en HCM
-    const cleanRUT = (newEmp.rut || '').replaceAll('.', '').replaceAll('-', '').toLowerCase().trim();
-    if (cleanRUT) {
+    const cleanRUTStr = (newEmp.rut || '').replaceAll('.', '').replaceAll('-', '').toLowerCase().trim();
+    if (cleanRUTStr) {
       const existingRUT = employees.some(e =>
-        (e.rut || '').replaceAll('.', '').replaceAll('-', '').toLowerCase().trim() === cleanRUT
+        (e.rut || '').replaceAll('.', '').replaceAll('-', '').toLowerCase().trim() === cleanRUTStr
       );
       if (existingRUT) {
         addToast(`🚫 [RUT-DUPLICADO] El RUT ${newEmp.rut} ya se encuentra registrado en el sistema HCM.`, 'error');
         return false;
       }
     }
+
 
     const nextId = newEmp.id || `EMP-${1000 + employees.length + 1}`;
 

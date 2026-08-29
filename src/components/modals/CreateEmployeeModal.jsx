@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
 import { useSAP } from '../../context/SAPContext';
 import { X, UserPlus, ShieldCheck, Building2, Calendar, FileText, DollarSign, Mail, Phone, HardHat } from 'lucide-react';
+import { formatChileanRUT, validateChileanRUT } from '../../utils/rutUtils';
 
 export const CreateEmployeeModal = ({ isOpen, onClose }) => {
-  const { plants, createEmployee } = useSAP();
+  const { plants, createEmployee, addToast } = useSAP();
 
   const [formData, setFormData] = useState({
     rut: '',
@@ -31,6 +32,13 @@ export const CreateEmployeeModal = ({ isOpen, onClose }) => {
       alert('Por favor ingrese el nombre completo y RUT del colaborador.');
       return;
     }
+
+    const rutVal = validateChileanRUT(formData.rut);
+    if (!rutVal.isValid) {
+      alert(rutVal.error);
+      return;
+    }
+
 
     const success = createEmployee(formData);
     if (success) {
@@ -146,9 +154,10 @@ export const CreateEmployeeModal = ({ isOpen, onClose }) => {
                     required
                     placeholder="15.482.910-3"
                     value={formData.rut}
-                    onChange={(e) => setFormData({ ...formData, rut: e.target.value })}
+                    onChange={(e) => setFormData({ ...formData, rut: formatChileanRUT(e.target.value) })}
                     className="w-full bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-xl p-2.5 text-xs font-mono font-bold"
                   />
+
                 </div>
 
                 <div>

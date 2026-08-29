@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { useSAP } from '../../context/SAPContext';
 import { X, Edit, ShieldCheck, Building2, Calendar, FileText, DollarSign, Mail, Phone, HardHat, AlertCircle, Save } from 'lucide-react';
+import { formatChileanRUT, validateChileanRUT } from '../../utils/rutUtils';
 
 export const EditEmployeeModal = ({ isOpen, onClose, employee }) => {
-  const { plants, updateEmployee, addToast } = useSAP();
+  const { plants = [], updateEmployee, addToast } = useSAP();
 
   const [formData, setFormData] = useState({
     rut: '',
@@ -57,14 +58,12 @@ export const EditEmployeeModal = ({ isOpen, onClose, employee }) => {
       errors.name = 'El nombre completo debe tener al menos 3 caracteres.';
     }
 
-    // 2. Validar RUT (Formato XX.XXX.XXX-X o XXXXXXXX-X)
-    const rutClean = formData.rut.trim();
-    const rutRegex = /^(\d{1,2}\.\d{3}\.\d{3}-[\dkK]|\d{7,8}-[\dkK])$/;
-    if (!rutClean) {
-      errors.rut = 'El RUT es obligatorio.';
-    } else if (!rutRegex.test(rutClean)) {
-      errors.rut = 'Formato de RUT inválido. Ejemplo: 15.482.910-3';
+    // 2. Validar RUT Chileno con Módulo 11
+    const rutVal = validateChileanRUT(formData.rut);
+    if (!rutVal.isValid) {
+      errors.rut = rutVal.error;
     }
+
 
     // 3. Validar Correo Electrónico
     const emailClean = formData.email.trim();
@@ -164,7 +163,8 @@ export const EditEmployeeModal = ({ isOpen, onClose, employee }) => {
                 required
                 placeholder="15.482.910-3"
                 value={formData.rut}
-                onChange={(e) => setFormData({ ...formData, rut: e.target.value })}
+                onChange={(e) => setFormData({ ...formData, rut: formatChileanRUT(e.target.value) })}
+
                 className={`w-full border rounded-lg p-2.5 text-xs text-slate-900 font-mono focus:ring-2 ${
                   validationErrors.rut ? 'border-rose-500 bg-rose-50/50 focus:ring-rose-500' : 'border-slate-300 focus:ring-sap-blue'
                 }`}
