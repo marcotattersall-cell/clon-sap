@@ -27,8 +27,39 @@ export const seedCollectionIfEmpty = async (collectionName, defaultItems = [], t
   return await getActiveDbService().seedCollectionIfEmpty(collectionName, defaultItems, tenantId);
 };
 
+const processedIdempotencyKeys = new Map();
+
+/**
+ * Ejecuta una transacción asegurando idempotencia. Si la clave ya fue procesada,
+ * previene la duplicación y retorna la respuesta previa.
+ */
+export const executeIdempotentTransaction = async (idempotencyKey, transactionFn) => {
+  if (!idempotencyKey) {
+    return await transactionFn();
+  }
+
+  if (processedIdempotencyKeys.has(idempotencyKey)) {
+    const existing = processedIdempotencyKeys.get(idempotencyKey);
+    console.warn(`[IdempotencyGuard] Transacción duplicada bloqueada. Key: ${idempotencyKey}`);
+    return existing;
+  }
+
+  const result = await transactionFn();
+  processedIdempotencyKeys.set(idempotencyKey, result);
+
+  // Expira automáticamente la clave tras 15 minutos (900,000 ms)
+  setTimeout(() => {
+    processedIdempotencyKeys.delete(idempotencyKey);
+  }, 15 * 60 * 1000);
+
+  return result;
+};
+
 export const executeAtomicGoodsMovement = async (params) => {
-  return await getActiveDbService().executeAtomicGoodsMovement(params);
+  const idempotencyKey = params?.idempotencyKey || params?.migoDocumentId;
+  return await executeIdempotentTransaction(idempotencyKey, () =>
+    getActiveDbService().executeAtomicGoodsMovement(params)
+  );
 };
 
 export const recordAuditLog = async (params) => {
@@ -46,3 +77,4 @@ export const getTenantDocRef = (collectionName, docId, tenantId = DEFAULT_TENANT
 export const getTenantCollectionRef = (collectionName, tenantId = DEFAULT_TENANT_ID) => {
   return firestoreService.getTenantCollectionRef(collectionName, tenantId);
 };
+
