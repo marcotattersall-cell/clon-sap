@@ -1,0 +1,13 @@
+[
+  {
+    "id": "WO-400101-tena",
+    "title": "Mantenimiento Preventivo 250 HRS - CODELCO Chile",
+    "type": "PM02",
+    "priority": "Alta",
+    "status": "REL",
+    "equipmentId": "EQ-TENA-101",
+    "assignedTech": "Jorge Silva San Martín",
+    "plannedCost": 1500,
+    "tenantId": "tenant_codelco"
+  }
+]

@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
+import { useVirtualizer } from '@tanstack/react-virtual';
 import { useSAP } from '../../context/SAPContext';
 import {
   Users,
@@ -25,11 +26,17 @@ import {
   Layers,
   MapPin,
   Mail,
-  Edit
+  Edit,
+  Cpu,
+  Sparkles,
+  Zap,
+  Activity,
+  Trash2
 } from 'lucide-react';
 import { UpdateComplianceModal } from '../modals/UpdateComplianceModal';
 import { EditEmployeeModal } from '../modals/EditEmployeeModal';
 import { formatDateDDMMYYYY } from '../../utils/dateUtils';
+import { detectPayrollAnomalies } from '../../services/hcmAnomalyDetectionService';
 
 export const HRMaster = ({ onOpenCreateEmployee, onOpenCreateAbsence }) => {
   const {
@@ -38,6 +45,7 @@ export const HRMaster = ({ onOpenCreateEmployee, onOpenCreateAbsence }) => {
     payrollRuns = [],
     plants = [],
     reseedEmployees,
+    deleteEmployee,
     updateEmployeeStatus,
     updateAbsenceStatus,
     processPayrollRun,
@@ -155,28 +163,35 @@ export const HRMaster = ({ onOpenCreateEmployee, onOpenCreateAbsence }) => {
   const totalGrossPayroll = activeEmployees.reduce((acc, e) => acc + (Number(e.baseSalary) || 0), 0);
   const activeLeavesCount = absences.filter(a => a.status === 'Aprobado' || a.status === 'En Proceso').length;
 
-  // Filtered employees list
+  // Filtered employees list  // Calculo de Filtros
   const filteredEmployees = employees.filter(emp => {
-    const matchesSearch =
-      !searchTerm ||
-      emp.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      emp.rut.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      emp.position.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      emp.faena.toLowerCase().includes(searchTerm.toLowerCase());
+    const summary = getEmployeeComplianceSummary(emp);
+    const matchesSearch = !searchTerm ||
+      emp.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      emp.rut?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      emp.position?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      emp.assignedFaena?.toLowerCase().includes(searchTerm.toLowerCase());
 
     const matchesDept = selectedDept === 'ALL' || emp.department === selectedDept;
-    const matchesPlant = selectedPlant === 'ALL' || emp.plantId === selectedPlant;
+    const matchesPlant = selectedPlant === 'ALL' || emp.assignedPlantId === selectedPlant;
     const matchesContract = selectedContractType === 'ALL' || emp.contractType === selectedContractType;
 
-    const complianceSummary = getEmployeeComplianceSummary(emp);
-    const matchesCompliance =
-      complianceFilter === 'ALL' ||
-      (complianceFilter === 'ALERT_30' && complianceSummary.overallStatus === 'ALERT_30') ||
-      (complianceFilter === 'EXPIRED' && complianceSummary.overallStatus === 'EXPIRED') ||
-      (complianceFilter === 'OK' && complianceSummary.overallStatus === 'OK');
+    let matchesCompliance = true;
+    if (complianceFilter === 'ALERT_30') matchesCompliance = summary.overallStatus === 'ALERT_30';
+    if (complianceFilter === 'EXPIRED') matchesCompliance = summary.overallStatus === 'EXPIRED';
+    if (complianceFilter === 'OK') matchesCompliance = summary.overallStatus === 'OK';
 
     return matchesSearch && matchesDept && matchesPlant && matchesContract && matchesCompliance;
   });
+
+  // Ejecución autónoma del motor de Machine Learning de Auditoría HCM
+  const mlAuditedPayrolls = detectPayrollAnomalies(payrollRuns, employees);
+  const mlCriticalCount = mlAuditedPayrolls.filter(a => a.anomalyLevel === 'CRITICAL').length;
+  const mlWarningCount = mlAuditedPayrolls.filter(a => a.anomalyLevel === 'WARNING').length;
+  const mlNormalCount = mlAuditedPayrolls.filter(a => a.anomalyLevel === 'NORMAL').length;
+  const mlAvgConfidence = mlAuditedPayrolls.length > 0
+    ? Math.round(mlAuditedPayrolls.reduce((acc, a) => acc + a.confidenceScore, 0) / mlAuditedPayrolls.length)
+    : 95;;
 
   const handleOpenComplianceModal = (emp) => {
     setComplianceEmployee(emp);
@@ -196,7 +211,7 @@ export const HRMaster = ({ onOpenCreateEmployee, onOpenCreateAbsence }) => {
             Recursos Humanos & Control de Acreditación de Faenas
           </h1>
           <p className="text-xs sm:text-sm text-slate-600 mt-1 max-w-3xl">
-            Administración del maestro de personal (PA20/PA30), semáforo de acreditación y exámenes en faena, gestión de licencias y liquidaciones de sueldo (PY).
+            Administración del maestro de personal (`#rrhh-personal`), semáforo de acreditación y exámenes en faena, gestión de licencias y liquidaciones.
           </p>
         </div>
 
@@ -217,7 +232,7 @@ export const HRMaster = ({ onOpenCreateEmployee, onOpenCreateAbsence }) => {
             className="bg-sap-blue hover:bg-sap-blue-hover text-white text-xs font-bold px-4 py-2.5 rounded-lg shadow-sm flex items-center space-x-2 transition-all"
           >
             <UserPlus className="w-4 h-4" />
-            <span>Alta Empleado (PA30)</span>
+            <span>Alta Empleado (#rrhh-personal)</span>
           </button>
           <button
             onClick={onOpenCreateAbsence}
@@ -305,7 +320,7 @@ export const HRMaster = ({ onOpenCreateEmployee, onOpenCreateAbsence }) => {
           }`}
         >
           <Users className="w-4 h-4" />
-          <span>Maestro de Personal (PA20/PA30)</span>
+          <span>Maestro de Personal (#rrhh-personal)</span>
         </button>
 
         <button
@@ -341,6 +356,23 @@ export const HRMaster = ({ onOpenCreateEmployee, onOpenCreateAbsence }) => {
         >
           <DollarSign className="w-4 h-4" />
           <span>Nómina y Liquidaciones (PY)</span>
+        </button>
+
+        <button
+          onClick={() => setActiveSubTab('PY01_ML_AUDIT')}
+          className={`px-4 py-2 rounded-lg text-xs font-bold transition-all flex items-center space-x-2 border transition-all ${
+            activeSubTab === 'PY01_ML_AUDIT'
+              ? 'bg-purple-600 text-white border-purple-500 shadow-md ring-2 ring-purple-400/40'
+              : 'bg-purple-900/95 text-purple-100 border-purple-700/60 hover:bg-purple-800 shadow-xs'
+          }`}
+        >
+          <Sparkles className="w-4 h-4 text-amber-300 shrink-0" />
+          <span>🤖 Auditoría ML de Nóminas (PY01)</span>
+          {mlCriticalCount > 0 && (
+            <span className="bg-rose-500 text-white text-[10px] px-2 py-0.5 rounded-full font-mono font-bold animate-bounce shadow-xs">
+              {mlCriticalCount}
+            </span>
+          )}
         </button>
 
         <button
@@ -431,7 +463,7 @@ export const HRMaster = ({ onOpenCreateEmployee, onOpenCreateAbsence }) => {
               className="bg-sap-blue hover:bg-sap-blue-hover text-white px-3 py-1.5 rounded-lg font-bold flex items-center space-x-1.5 shadow-xs"
             >
               <UserPlus className="w-3.5 h-3.5" />
-              <span>+ Nuevo Registro (PA30)</span>
+              <span>+ Nuevo Registro (#rrhh-personal)</span>
             </button>
           </div>
 
@@ -451,11 +483,11 @@ export const HRMaster = ({ onOpenCreateEmployee, onOpenCreateAbsence }) => {
             </div>
           )}
 
-          {/* Employee Master Table */}
+          {/* Employee Master Table (Virtualizada) */}
           <div className="bg-white rounded-xl border border-slate-200 overflow-hidden shadow-xs">
-            <div className="overflow-x-auto">
+            <div ref={parentRef} className="overflow-auto max-h-[600px] custom-scrollbar">
               <table className="w-full text-left text-xs divide-y divide-slate-200">
-                <thead className="bg-slate-100 text-slate-700 font-bold uppercase tracking-wider">
+                <thead className="sticky top-0 z-10 bg-slate-100 text-slate-700 font-bold uppercase tracking-wider shadow-xs">
                   <tr>
                     <th className="p-3">ID / RUT</th>
                     <th className="p-3">Colaborador</th>
@@ -469,7 +501,14 @@ export const HRMaster = ({ onOpenCreateEmployee, onOpenCreateAbsence }) => {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100 font-medium text-slate-800">
-                  {filteredEmployees.map(emp => {
+                  {paddingTop > 0 && (
+                    <tr>
+                      <td colSpan={9} style={{ height: `${paddingTop}px` }} />
+                    </tr>
+                  )}
+                  {virtualItems.map(virtualRow => {
+                    const emp = filteredEmployees[virtualRow.index];
+                    if (!emp) return null;
                     const comp = getEmployeeComplianceSummary(emp);
                     return (
                       <tr key={emp.id} className="hover:bg-slate-50 transition-colors">
@@ -571,8 +610,8 @@ export const HRMaster = ({ onOpenCreateEmployee, onOpenCreateAbsence }) => {
                         <td className="p-3 text-right space-x-1">
                           <button
                             onClick={() => handleOpenEditModal(emp)}
-                            title="Editar ficha completa del colaborador (PA30)"
-                            className="bg-sap-blue hover:bg-sap-blue-hover text-white px-2 py-1 rounded text-[11px] font-bold transition-all inline-flex items-center space-x-1"
+                            title="Editar ficha completa del colaborador (#rrhh-personal)"
+                            className="bg-sap-blue hover:bg-sap-blue-hover text-white px-2 py-1 rounded text-[11px] font-bold transition-all inline-flex items-center space-x-1 cursor-pointer"
                           >
                             <Edit className="w-3 h-3" />
                             <span>Editar</span>
@@ -580,14 +619,30 @@ export const HRMaster = ({ onOpenCreateEmployee, onOpenCreateAbsence }) => {
                           <button
                             onClick={() => handleOpenComplianceModal(emp)}
                             title="Renovar fechas de acreditación y exámenes"
-                            className="bg-amber-100 hover:bg-amber-200 text-amber-900 px-2 py-1 rounded text-[11px] font-bold transition-all"
+                            className="bg-amber-100 hover:bg-amber-200 text-amber-900 px-2 py-1 rounded text-[11px] font-bold transition-all cursor-pointer"
                           >
                             Acreditaciones
+                          </button>
+                          <button
+                            onClick={() => {
+                              if (window.confirm(`¿Está seguro de eliminar la ficha de ${emp.name} (${emp.id})?`)) {
+                                deleteEmployee(emp.id);
+                              }
+                            }}
+                            title="Eliminar colaborador"
+                            className="bg-rose-100 hover:bg-rose-600 hover:text-white text-rose-700 p-1 rounded text-[11px] font-bold transition-all inline-flex items-center cursor-pointer"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
                           </button>
                         </td>
                       </tr>
                     );
                   })}
+                  {paddingBottom > 0 && (
+                    <tr>
+                      <td colSpan={9} style={{ height: `${paddingBottom}px` }} />
+                    </tr>
+                  )}
                 </tbody>
               </table>
             </div>
@@ -945,7 +1000,185 @@ export const HRMaster = ({ onOpenCreateEmployee, onOpenCreateAbsence }) => {
         </div>
       )}
 
-      {/* Global Compliance Update Modal */}
+      {/* ----------------- SUB-TAB 5: AUDITORÍA ML DE NÓMINAS (PY01) ----------------- */}
+      {activeSubTab === 'PY01_ML_AUDIT' && (
+        <div className="space-y-5">
+          {/* Header Banner */}
+          <div className="p-5 rounded-2xl bg-slate-900 border border-purple-800/50 text-white shadow-xl relative overflow-hidden">
+            <div className="absolute right-0 top-0 w-96 h-96 bg-purple-600/10 rounded-full blur-3xl pointer-events-none" />
+            <div className="flex flex-wrap items-center justify-between gap-4 relative z-10">
+              <div className="space-y-1">
+                <div className="flex items-center space-x-2 text-purple-400 font-bold text-xs uppercase tracking-wider">
+                  <Sparkles className="w-4 h-4 text-amber-300 animate-spin" />
+                  <span>Módulo HCM — Machine Learning Infe-Engine v2.4</span>
+                </div>
+                <h3 className="text-xl font-black text-slate-100 flex items-center gap-2">
+                  <span>Auditoría Autónoma de Anomalías en Liquidaciones de Sueldo (PY01)</span>
+                </h3>
+                <p className="text-xs text-slate-300 max-w-3xl">
+                  Inferencia estadística multivariable en tiempo real (Z-Score & IQR). Identifica descalces en horas extras, distorsiones de haberes y desviaciones respecto a la media del departamento antes del pago bancario masivo.
+                </p>
+              </div>
+
+              <div className="flex items-center gap-3">
+                <div className="bg-purple-950/80 border border-purple-700/60 px-4 py-2 rounded-xl text-right font-mono">
+                  <div className="text-[10px] text-purple-300 font-bold">Confianza Inferencia ML</div>
+                  <div className="text-lg font-black text-amber-300">{mlAvgConfidence}%</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* ML KPI Metrics Cockpit */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="p-4 rounded-xl bg-white border border-slate-200 shadow-xs space-y-1">
+              <div className="text-xs text-slate-500 font-bold flex items-center justify-between">
+                <span>Nóminas Auditadas</span>
+                <Users className="w-4 h-4 text-slate-400" />
+              </div>
+              <div className="text-2xl font-black text-slate-900 font-mono">{mlAuditedPayrolls.length}</div>
+              <div className="text-[11px] text-slate-500 font-medium">100% analizadas por el modelo</div>
+            </div>
+
+            <div className="p-4 rounded-xl bg-rose-50 border border-rose-200 shadow-xs space-y-1">
+              <div className="text-xs text-rose-700 font-bold flex items-center justify-between">
+                <span>Anomalías Críticas (🔴)</span>
+                <AlertTriangle className="w-4 h-4 text-rose-600" />
+              </div>
+              <div className="text-2xl font-black text-rose-900 font-mono">{mlCriticalCount}</div>
+              <div className="text-[11px] text-rose-700 font-medium">Requieren revisión previa al pago</div>
+            </div>
+
+            <div className="p-4 rounded-xl bg-amber-50 border border-amber-200 shadow-xs space-y-1">
+              <div className="text-xs text-amber-800 font-bold flex items-center justify-between">
+                <span>Advertencias Moderadas (🟡)</span>
+                <ShieldAlert className="w-4 h-4 text-amber-600" />
+              </div>
+              <div className="text-2xl font-black text-amber-900 font-mono">{mlWarningCount}</div>
+              <div className="text-[11px] text-amber-700 font-medium">Ligeras variaciones sobre la media</div>
+            </div>
+
+            <div className="p-4 rounded-xl bg-emerald-50 border border-emerald-200 shadow-xs space-y-1">
+              <div className="text-xs text-emerald-800 font-bold flex items-center justify-between">
+                <span>Parámetros Normales (🟢)</span>
+                <ShieldCheck className="w-4 h-4 text-emerald-600" />
+              </div>
+              <div className="text-2xl font-black text-emerald-900 font-mono">{mlNormalCount}</div>
+              <div className="text-[11px] text-emerald-700 font-medium">Validados dentro del rango estadístico</div>
+            </div>
+          </div>
+
+          {/* ML Audit Table */}
+          <div className="bg-white rounded-xl border border-slate-200 overflow-hidden shadow-xs">
+            <div className="p-4 bg-slate-50 border-b border-slate-200 flex items-center justify-between">
+              <h4 className="font-bold text-slate-900 text-xs uppercase tracking-wider flex items-center gap-2">
+                <Cpu className="w-4 h-4 text-purple-600" />
+                <span>Resultados de Auditoría de Nómina en Tiempo Real</span>
+              </h4>
+              <span className="text-[11px] font-mono text-slate-500 font-semibold">
+                Ordenado por Índice de Riesgo de Anomalía (ML Score)
+              </span>
+            </div>
+
+            <div className="overflow-x-auto">
+              <table className="w-full text-left text-xs divide-y divide-slate-200">
+                <thead className="bg-slate-100 text-slate-700 font-bold uppercase tracking-wider">
+                  <tr>
+                    <th className="p-3">ID Nómina / Colaborador</th>
+                    <th className="p-3">Departamento / Cargo</th>
+                    <th className="p-3">Sueldo Base</th>
+                    <th className="p-3">Horas Extras (Z-Score)</th>
+                    <th className="p-3">Sueldo Líquido</th>
+                    <th className="p-3 text-center">Índice Riesgo ML</th>
+                    <th className="p-3">Hallazgos y Razones Inferencia</th>
+                    <th className="p-3 text-center">Estado Auditoría</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100 font-medium text-slate-800">
+                  {mlAuditedPayrolls
+                    .sort((a, b) => b.anomalyScore - a.anomalyScore)
+                    .map(item => (
+                      <tr key={item.id} className="hover:bg-slate-50 transition-colors">
+                        <td className="p-3">
+                          <div className="font-mono font-bold text-sap-blue">{item.id}</div>
+                          <div className="font-bold text-slate-900">{item.employeeName}</div>
+                        </td>
+
+                        <td className="p-3">
+                          <div className="font-bold text-slate-800">{item.department}</div>
+                          <div className="text-[11px] text-slate-500">{item.position}</div>
+                        </td>
+
+                        <td className="p-3 font-mono font-bold text-slate-700">
+                          ${Number(item.baseSalary || 0).toLocaleString('es-CL')}
+                        </td>
+
+                        <td className="p-3">
+                          <div className="font-bold text-slate-900 font-mono">{item.overtimeHours} hrs</div>
+                          <div className="text-[10px] text-slate-500 font-mono">
+                            Z-Score: <strong className={item.zOvertimeScore >= 1.5 ? 'text-rose-600' : 'text-slate-700'}>
+                              {item.zOvertimeScore > 0 ? `+${item.zOvertimeScore}σ` : `${item.zOvertimeScore}σ`}
+                            </strong>
+                          </div>
+                        </td>
+
+                        <td className="p-3 font-mono font-black text-slate-900">
+                          ${Number(item.totalNet || item.baseSalary || 0).toLocaleString('es-CL')}
+                        </td>
+
+                        <td className="p-3 text-center">
+                          <div className="flex flex-col items-center gap-1">
+                            <span className={`px-2.5 py-1 rounded-full text-xs font-mono font-black border ${
+                              item.anomalyLevel === 'CRITICAL'
+                                ? 'bg-rose-100 text-rose-900 border-rose-300 ring-2 ring-rose-400/40'
+                                : item.anomalyLevel === 'WARNING'
+                                ? 'bg-amber-100 text-amber-900 border-amber-300'
+                                : 'bg-emerald-100 text-emerald-900 border-emerald-300'
+                            }`}>
+                              {item.anomalyScore}% Riesgo
+                            </span>
+                            <span className="text-[10px] text-slate-400 font-semibold uppercase">
+                              {item.anomalyLevel}
+                            </span>
+                          </div>
+                        </td>
+
+                        <td className="p-3">
+                          <div className="space-y-1">
+                            {item.reasons.map((r, idx) => (
+                              <div key={idx} className="text-[11px] font-medium leading-tight">
+                                {r}
+                              </div>
+                            ))}
+                          </div>
+                        </td>
+
+                        <td className="p-3 text-center">
+                          {item.anomalyLevel === 'CRITICAL' ? (
+                            <span className="bg-rose-600 text-white text-[11px] font-bold px-2.5 py-1 rounded-lg shadow-xs inline-flex items-center gap-1">
+                              <AlertTriangle className="w-3 h-3" />
+                              <span>Retenido p/ Revisión</span>
+                            </span>
+                          ) : item.anomalyLevel === 'WARNING' ? (
+                            <span className="bg-amber-500 text-white text-[11px] font-bold px-2.5 py-1 rounded-lg shadow-xs inline-flex items-center gap-1">
+                              <Clock className="w-3 h-3" />
+                              <span>Revisión Sugerida</span>
+                            </span>
+                          ) : (
+                            <span className="bg-emerald-600 text-white text-[11px] font-bold px-2.5 py-1 rounded-lg shadow-xs inline-flex items-center gap-1">
+                              <CheckCircle2 className="w-3 h-3" />
+                              <span>Aprobado por ML</span>
+                            </span>
+                          )}
+                        </td>
+                      </tr>
+                    ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      )}
       <UpdateComplianceModal
         isOpen={isUpdateComplianceOpen}
         onClose={handleCloseComplianceModal}

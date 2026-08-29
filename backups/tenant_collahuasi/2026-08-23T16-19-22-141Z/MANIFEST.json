@@ -1,0 +1,65 @@
+{
+  "tenantId": "tenant_collahuasi",
+  "tenantName": "Compañía Minera Doña Inés de Collahuasi",
+  "slaTier": "MEDIUM",
+  "slaFrequency": "SEMANAL (Domingos 03:00 AM)",
+  "plantLocation": "Planta Cordillera Tarapacá",
+  "backupTimestamp": "2026-08-23T16:19:22.170Z",
+  "backupLocalTime": "23-08-2026, 12:19:22 p. m.",
+  "environment": "Enterprise Production SLA Backup Engine",
+  "totalCollections": 7,
+  "totalRecords": 10,
+  "checksumAlgorithm": "SHA-256",
+  "files": [
+    {
+      "collection": "plants",
+      "filename": "plants.json",
+      "recordsCount": 1,
+      "sizeBytes": 250,
+      "sha256Checksum": "bfce70b9ea1681590563749fcef6d17d4ce45edc8eaaf218e28525d118aa48e5"
+    },
+    {
+      "collection": "assets",
+      "filename": "assets.json",
+      "recordsCount": 2,
+      "sizeBytes": 660,
+      "sha256Checksum": "14b9d469eff6596e1e13ebbf6a8f57981ecf9d16263d5c205135aee99c2e267f"
+    },
+    {
+      "collection": "workOrders",
+      "filename": "workOrders.json",
+      "recordsCount": 1,
+      "sizeBytes": 341,
+      "sha256Checksum": "20777c2d7e96a26f016e2179b62c250136c85816515cbb14ef18c46b469f4663"
+    },
+    {
+      "collection": "materials",
+      "filename": "materials.json",
+      "recordsCount": 2,
+      "sizeBytes": 511,
+      "sha256Checksum": "502d51effdd6a1d753c91a6f024383ad554d0c2e97e5b9e7c490cc73d5bbf3c9"
+    },
+    {
+      "collection": "migoDocuments",
+      "filename": "migoDocuments.json",
+      "recordsCount": 1,
+      "sizeBytes": 300,
+      "sha256Checksum": "637d63d0d320453d3bd62bcb97a9f5192235640b194de8d41ad7240ace2c3184"
+    },
+    {
+      "collection": "employees",
+      "filename": "employees.json",
+      "recordsCount": 2,
+      "sizeBytes": 410,
+      "sha256Checksum": "55a0fee2ec5603c89df15857fc4f507c8e0443ca4d8d8af3413e797c7040a6d6"
+    },
+    {
+      "collection": "purchaseOrders",
+      "filename": "purchaseOrders.json",
+      "recordsCount": 1,
+      "sizeBytes": 169,
+      "sha256Checksum": "a50a77f6a4f2ca2341885941c9cc00eb7feb9fc8369ef0c507bdf9d417aa9164"
+    }
+  ],
+  "integrityStatus": "VERIFIED_OK"
+}

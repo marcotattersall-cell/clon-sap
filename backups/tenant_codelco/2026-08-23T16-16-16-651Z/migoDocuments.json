@@ -1,0 +1,13 @@
+[
+  {
+    "documentId": "MIGO-87672464-tena",
+    "movementType": "261",
+    "materialId": "MAT-1001-tena",
+    "qty": 100,
+    "unit": "LT",
+    "refDocument": "WO-400101-tena",
+    "timestamp": "2026-08-23T16:16:16.678Z",
+    "user": "Operador Operam ERP",
+    "tenantId": "tenant_codelco"
+  }
+]

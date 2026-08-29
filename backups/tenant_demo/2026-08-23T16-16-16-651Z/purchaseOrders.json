@@ -1,0 +1,9 @@
+[
+  {
+    "id": "PO-800101-tena",
+    "vendor": "Finning Caterpillar Chile",
+    "totalCost": 45000,
+    "status": "Entregado",
+    "tenantId": "tenant_demo"
+  }
+]

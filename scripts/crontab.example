@@ -1,0 +1,18 @@
+# =========================================================================
+# 📅 OPERAM ERP ENTERPRISE — PLANIFICACIÓN AUTOMÁTICA DE BACKUPS (CRONTAB SLA)
+# =========================================================================
+# Configuración estándar para servidores Linux / macOS o GCP Cloud Scheduler.
+#
+# Formato: Minuto Hora DíaMes Mes DíaSemana Comando
+# -------------------------------------------------------------------------
+
+# 1. 🚜 ALTO FLUJO (Tier HIGH — BHP, CODELCO): Respaldo Diario a las 02:00 AM
+0 2 * * * cd /path/to/clon-sap && npm run backup:daily >> /var/log/sap_backup_daily.log 2>&1
+
+# 2. 🚛 FLUJO INTERMEDIO (Tier MEDIUM — AMSA, Collahuasi): Respaldo Semanal (Domingos 03:00 AM)
+0 3 * * 0 cd /path/to/clon-sap && npm run backup:weekly >> /var/log/sap_backup_weekly.log 2>&1
+
+# 3. 🏢 BAJO FLUJO (Tier LOW — Demo, Pilotos): Respaldo Mensual (Día 1 a las 04:00 AM)
+0 4 1 * * cd /path/to/clon-sap && npm run backup:monthly >> /var/log/sap_backup_monthly.log 2>&1
+
+# =========================================================================

@@ -1,0 +1,65 @@
+{
+  "tenantId": "tenant_antofagasta_minerals",
+  "tenantName": "Antofagasta Minerals S.A.",
+  "slaTier": "MEDIUM",
+  "slaFrequency": "SEMANAL (Domingos 03:00 AM)",
+  "plantLocation": "Minera Los Pelambres / Centinela",
+  "backupTimestamp": "2026-08-23T16:19:22.164Z",
+  "backupLocalTime": "23-08-2026, 12:19:22 p. m.",
+  "environment": "Enterprise Production SLA Backup Engine",
+  "totalCollections": 7,
+  "totalRecords": 10,
+  "checksumAlgorithm": "SHA-256",
+  "files": [
+    {
+      "collection": "plants",
+      "filename": "plants.json",
+      "recordsCount": 1,
+      "sizeBytes": 252,
+      "sha256Checksum": "2ad4cad394215f3e2bc172fb11c283a47bdf3d53f91e49207dec918968ad1b34"
+    },
+    {
+      "collection": "assets",
+      "filename": "assets.json",
+      "recordsCount": 2,
+      "sizeBytes": 644,
+      "sha256Checksum": "49f893564e8679e5ec79397de4cd90566f60a22dcb0f87682fb91c0fcaf41ddb"
+    },
+    {
+      "collection": "workOrders",
+      "filename": "workOrders.json",
+      "recordsCount": 1,
+      "sizeBytes": 333,
+      "sha256Checksum": "442f48290202fd3dc8612a43248019dcec840df6ce7718f9fa3118fd0be2b8f5"
+    },
+    {
+      "collection": "materials",
+      "filename": "materials.json",
+      "recordsCount": 2,
+      "sizeBytes": 495,
+      "sha256Checksum": "7cc3ccfd3637c64252bb0e9590d47709a5a47ccd67f17ac52d3cf246327dab20"
+    },
+    {
+      "collection": "migoDocuments",
+      "filename": "migoDocuments.json",
+      "recordsCount": 1,
+      "sizeBytes": 310,
+      "sha256Checksum": "8582a0b67f6d8713bc88d3b93b6a971e90d6574ad3308925b16f8e8543b4f0cc"
+    },
+    {
+      "collection": "employees",
+      "filename": "employees.json",
+      "recordsCount": 2,
+      "sizeBytes": 430,
+      "sha256Checksum": "e16b0abadee860e342560a26c1e7c41991f04ada2bf1803a86dd7029930015ac"
+    },
+    {
+      "collection": "purchaseOrders",
+      "filename": "purchaseOrders.json",
+      "recordsCount": 1,
+      "sizeBytes": 179,
+      "sha256Checksum": "e0d603d72c8fbefb309e27ebf5d4fd89e5cd47c1a9d46269c1277907605c106f"
+    }
+  ],
+  "integrityStatus": "VERIFIED_OK"
+}

@@ -1,0 +1,20 @@
+[
+  {
+    "id": "MAT-1001-tena",
+    "name": "Aceite Hidráulico Multigrado 15W40 - Antofagasta Minerals S.A.",
+    "stock": 2500,
+    "unit": "LT",
+    "unitPrice": 12.5,
+    "storageLocation": "0001",
+    "tenantId": "tenant_antofagasta_minerals"
+  },
+  {
+    "id": "MAT-1002-tena",
+    "name": "Filtro de Aceite CAT H-200 - Antofagasta Minerals S.A.",
+    "stock": 45,
+    "unit": "UN",
+    "unitPrice": 85.5,
+    "storageLocation": "0001",
+    "tenantId": "tenant_antofagasta_minerals"
+  }
+]

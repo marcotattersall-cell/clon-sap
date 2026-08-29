@@ -1,0 +1,13 @@
+[
+  {
+    "id": "WO-400101-tena",
+    "title": "Mantenimiento Preventivo 250 HRS - Antofagasta Minerals S.A.",
+    "type": "PM02",
+    "priority": "Alta",
+    "status": "REL",
+    "equipmentId": "EQ-TENA-101",
+    "assignedTech": "Jorge Silva San Martín",
+    "plannedCost": 1500,
+    "tenantId": "tenant_antofagasta_minerals"
+  }
+]

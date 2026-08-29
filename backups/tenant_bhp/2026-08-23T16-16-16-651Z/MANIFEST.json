@@ -1,0 +1,63 @@
+{
+  "tenantId": "tenant_bhp",
+  "tenantName": "BHP Billiton",
+  "plantLocation": "Escondida / Spence",
+  "backupTimestamp": "2026-08-23T16:16:16.680Z",
+  "backupLocalTime": "23-08-2026, 12:16:16 p. m.",
+  "environment": "Enterprise Production Backup Engine",
+  "totalCollections": 7,
+  "totalRecords": 10,
+  "checksumAlgorithm": "SHA-256",
+  "files": [
+    {
+      "collection": "plants",
+      "filename": "plants.json",
+      "recordsCount": 1,
+      "sizeBytes": 205,
+      "sha256Checksum": "d53b942f7be9b26c907a4db7a410a6d92d4ec469fa2146dff166586d122220af"
+    },
+    {
+      "collection": "assets",
+      "filename": "assets.json",
+      "recordsCount": 2,
+      "sizeBytes": 584,
+      "sha256Checksum": "477adbcff09d7d547a4758d87b6da70b32aca780b3622ad5dfdc4ba4038c5842"
+    },
+    {
+      "collection": "workOrders",
+      "filename": "workOrders.json",
+      "recordsCount": 1,
+      "sizeBytes": 303,
+      "sha256Checksum": "bd1d5f02ce6d9331d4496d6e7af19697a7cf66ad4ffee455d17adc9cdf97f480"
+    },
+    {
+      "collection": "materials",
+      "filename": "materials.json",
+      "recordsCount": 2,
+      "sizeBytes": 435,
+      "sha256Checksum": "331789e490add2023c705c9e857f13a2cfc3f2b04f02ce2eada187053447926d"
+    },
+    {
+      "collection": "migoDocuments",
+      "filename": "migoDocuments.json",
+      "recordsCount": 1,
+      "sizeBytes": 293,
+      "sha256Checksum": "99f98068de90b6f99963f00b436e0cb595553622df9e890cbf2f5765ad65d3f6"
+    },
+    {
+      "collection": "employees",
+      "filename": "employees.json",
+      "recordsCount": 2,
+      "sizeBytes": 396,
+      "sha256Checksum": "9cac2392a0cd2851778b88a91063cb10f15a495c8167fe3cd46a58447378c60b"
+    },
+    {
+      "collection": "purchaseOrders",
+      "filename": "purchaseOrders.json",
+      "recordsCount": 1,
+      "sizeBytes": 162,
+      "sha256Checksum": "bf82d79a9718f5fdf3912705db8128fdf59873dec2313f8417e4483e4db7a9e4"
+    }
+  ],
+  "integrityStatus": "VERIFIED_OK"
+}

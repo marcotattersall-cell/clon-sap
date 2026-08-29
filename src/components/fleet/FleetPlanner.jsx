@@ -18,7 +18,8 @@ import {
   Plus,
   RefreshCw,
   XCircle,
-  ChevronRight
+  ChevronRight,
+  Trash2
 } from 'lucide-react';
 
 import { CreateAssetModal } from '../modals/CreateAssetModal';
@@ -27,7 +28,7 @@ import { GeneralExpirationsDashboard } from './GeneralExpirationsDashboard';
 import { formatDateDDMMYYYY } from '../../utils/dateUtils';
 
 export const FleetPlanner = ({ onOpenCreateWOForVehicle }) => {
-  const { assets, workOrders, createWorkOrder, currentRole, addToast } = useSAP();
+  const { assets, workOrders, createWorkOrder, currentRole, addToast, deleteAsset } = useSAP();
 
   const [activeSubTab, setActiveSubTab] = useState('MAINTENANCE'); // MAINTENANCE or EXPIRATIONS
   const [searchTerm, setSearchTerm] = useState('');
@@ -260,14 +261,14 @@ export const FleetPlanner = ({ onOpenCreateWOForVehicle }) => {
                 className="bg-emerald-600 hover:bg-emerald-500 text-white px-4 py-2.5 rounded-xl text-xs font-extrabold flex items-center space-x-2 shadow-lg transition-all"
               >
                 <PlusCircle className="w-4 h-4" />
-                <span>＋ Alta de Flota (IE01)</span>
+                <span>＋ Alta de Flota (#flota-activos)</span>
               </button>
               <button
                 onClick={() => onOpenCreateWOForVehicle && onOpenCreateWOForVehicle()}
                 className="bg-sap-blue hover:bg-sap-blue-hover text-white px-4 py-2.5 rounded-xl text-xs font-extrabold flex items-center space-x-2 shadow-lg transition-all"
               >
                 <PlusCircle className="w-4 h-4" />
-                <span>Crear OT Flota IW31</span>
+                <span>Crear OT (#mnt-ordenes)</span>
               </button>
             </>
           )}
@@ -363,7 +364,7 @@ export const FleetPlanner = ({ onOpenCreateWOForVehicle }) => {
             <div>
               <div className="text-xs font-bold text-rose-700 uppercase tracking-wider">Servicio Vencido</div>
               <div className="text-2xl font-black text-rose-600 mt-1">{overdueCount} Unidades</div>
-              <div className="text-[11px] text-rose-700 mt-0.5">Requiere OT IW31 Inmediata</div>
+              <div className="text-[11px] text-rose-700 mt-0.5">Requiere OT (#mnt-ordenes) Inmediata</div>
             </div>
             <div className="w-12 h-12 rounded-xl bg-rose-50 text-rose-600 flex items-center justify-center font-bold">
               <AlertTriangle className="w-6 h-6" />
@@ -617,17 +618,30 @@ export const FleetPlanner = ({ onOpenCreateWOForVehicle }) => {
 
                 {/* Card Footer */}
                 <div className="pt-3 border-t border-slate-200/80 flex items-center justify-between gap-2">
-                  <button
-                    onClick={() => handleOpenExpirationsModal(vehicle)}
-                    className="text-xs text-sky-700 hover:text-sky-900 font-bold flex items-center space-x-1 hover:underline"
-                  >
-                    <FileCheck className="w-3.5 h-3.5 text-sky-600" />
-                    <span>Gestión de Vencimientos</span>
-                  </button>
+                  <div className="flex items-center space-x-2">
+                    <button
+                      onClick={() => handleOpenExpirationsModal(vehicle)}
+                      className="text-xs text-sky-700 hover:text-sky-900 font-bold flex items-center space-x-1 hover:underline cursor-pointer"
+                    >
+                      <FileCheck className="w-3.5 h-3.5 text-sky-600" />
+                      <span>Vencimientos</span>
+                    </button>
+                    <button
+                      onClick={() => {
+                        if (window.confirm(`¿Está seguro de eliminar el equipo ${vehicle.name} (${vehicle.id}) de la flota?`)) {
+                          deleteAsset(vehicle.id);
+                        }
+                      }}
+                      className="p-1 text-rose-600 hover:text-rose-800 hover:bg-rose-50 rounded-lg transition-colors cursor-pointer"
+                      title="Eliminar vehículo/equipo"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
 
                   <button
                     onClick={() => handleGeneratePreventiveWO(vehicle)}
-                    className={`px-3.5 py-2 rounded-xl text-xs font-extrabold flex items-center space-x-1.5 shadow-sm transition-all ${
+                    className={`px-3.5 py-2 rounded-xl text-xs font-extrabold flex items-center space-x-1.5 shadow-sm transition-all cursor-pointer ${
                       vehicle.status === 'OVERDUE'
                         ? 'bg-rose-600 hover:bg-rose-700 text-white'
                         : vehicle.status === 'WARNING'
@@ -636,7 +650,7 @@ export const FleetPlanner = ({ onOpenCreateWOForVehicle }) => {
                     }`}
                   >
                     <Wrench className="w-3.5 h-3.5" />
-                    <span>⚡ Generar OT IW31</span>
+                    <span>⚡ Generar OT (#mnt-ordenes)</span>
                   </button>
                 </div>
               </div>

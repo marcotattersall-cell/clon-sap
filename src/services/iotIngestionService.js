@@ -4,7 +4,7 @@
  * odómetros, guardar series de tiempo (Time-Series) y desencadenar Avisos/Órdenes PM de forma autónoma.
  */
 
-import { upsertDocument, getCollectionDocs } from './firestoreService';
+import { upsertDocument, getCollectionDocs } from './dbService';
 import { updateVectorClock } from './crdtSyncService';
 
 /**
@@ -224,17 +224,7 @@ export const getTelemetryHistory = async (equipmentId) => {
       .filter(l => l.equipmentId === equipmentId)
       .sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
 
-    if (assetLogs.length > 0) return assetLogs;
-
-    // Default mock historical trend if empty
-    const now = Date.now();
-    return [
-      { id: '1', equipmentId, timestamp: new Date(now - 14400000).toISOString(), engineTemp: 91, vibrationRms: 3.5, hourmeter: 4240, healthScore: 95 },
-      { id: '2', equipmentId, timestamp: new Date(now - 10800000).toISOString(), engineTemp: 93, vibrationRms: 3.7, hourmeter: 4243, healthScore: 95 },
-      { id: '3', equipmentId, timestamp: new Date(now - 7200000).toISOString(), engineTemp: 96, vibrationRms: 4.2, hourmeter: 4246, healthScore: 92 },
-      { id: '4', equipmentId, timestamp: new Date(now - 3600000).toISOString(), engineTemp: 99, vibrationRms: 5.1, hourmeter: 4248, healthScore: 88 },
-      { id: '5', equipmentId, timestamp: new Date(now).toISOString(), engineTemp: 94, vibrationRms: 3.8, hourmeter: 4250, healthScore: 94 }
-    ];
+    return assetLogs;
   } catch (err) {
     console.warn("Error leyendo serie de tiempo de telemetría:", err);
     return [];

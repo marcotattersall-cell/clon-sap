@@ -77,7 +77,7 @@ export const AuthModal = ({ isOpen, onClose }) => {
       setIsSubmitting(false);
       if (res.success) {
         setCurrentRole(res.user.role);
-        addToast(`Usuario ${res.user.displayName} registrado en Firebase con éxito!`, 'success');
+        addToast(`¡Usuario ${res.user.displayName} registrado! Se envió un correo de comprobación a ${email}.`, 'success');
         onClose();
       } else {
         setLocalError(res.error);
@@ -227,37 +227,14 @@ export const AuthModal = ({ isOpen, onClose }) => {
           </div>
 
           {mode === 'register' && (
-            <div className="grid grid-cols-2 gap-3">
-              <div>
-                <label className="block text-[11px] font-bold text-slate-700 dark:text-slate-300 mb-1">
-                  Rol Asignado en el Sistema
-                </label>
-                <select
-                  value={role}
-                  onChange={(e) => setRole(e.target.value)}
-                  className="w-full text-xs rounded border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 px-2 py-2 focus:ring-1 focus:ring-sap-blue focus:outline-none"
-                >
-                  <option value="MAINTENANCE_MGR">Jefe Mantenimiento (PM)</option>
-                  <option value="WAREHOUSE_SPEC">Especialista Almacén (MM/WM)</option>
-                  <option value="PURCHASING_MGR">Gerente Compras (MM-PUR)</option>
-                  <option value="FINANCIAL_DIR">Director Financiero (FI/CO)</option>
-                </select>
+            <div className="p-3 bg-sky-50 dark:bg-sky-950/60 border border-sky-200 dark:border-sky-800 rounded-xl text-sky-900 dark:text-sky-200 text-xs space-y-1">
+              <div className="font-bold flex items-center gap-1.5">
+                <ShieldCheck className="w-4 h-4 text-sky-600 dark:text-sky-400" />
+                <span>Gestión de Roles (#admin-usuarios)</span>
               </div>
-
-              <div>
-                <label className="block text-[11px] font-bold text-slate-700 dark:text-slate-300 mb-1">
-                  Centro de Planta
-                </label>
-                <select
-                  value={plant}
-                  onChange={(e) => setPlant(e.target.value)}
-                  className="w-full text-xs rounded border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 px-2 py-2 focus:ring-1 focus:ring-sap-blue focus:outline-none"
-                >
-                  <option value="0001 (Planta Central)">0001 (Planta Central)</option>
-                  <option value="0002 (Planta Norte)">0002 (Planta Norte)</option>
-                  <option value="0003 (Almacén Sur)">0003 (Almacén Sur)</option>
-                </select>
-              </div>
+              <p className="text-[11px] text-slate-600 dark:text-slate-300 leading-relaxed">
+                Por seguridad corporativa, los permisos de rol (PM/MM/FI) serán asignados por el <strong>Administrador del Sistema</strong>.
+              </p>
             </div>
           )}
 

@@ -1,0 +1,63 @@
+{
+  "tenantId": "tenant_demo",
+  "tenantName": "Demo Operam Enterprise",
+  "plantLocation": "Planta Central Santiago",
+  "backupTimestamp": "2026-08-23T16:15:14.496Z",
+  "backupLocalTime": "23-08-2026, 12:15:14 p. m.",
+  "environment": "Enterprise Production Backup Engine",
+  "totalCollections": 7,
+  "totalRecords": 10,
+  "checksumAlgorithm": "SHA-256",
+  "files": [
+    {
+      "collection": "plants",
+      "filename": "plants.json",
+      "recordsCount": 1,
+      "sizeBytes": 217,
+      "sha256Checksum": "f17396094190ce64ea81ef7a637c9c9cf674abade9261387bae443d3a67c95a0"
+    },
+    {
+      "collection": "assets",
+      "filename": "assets.json",
+      "recordsCount": 2,
+      "sizeBytes": 606,
+      "sha256Checksum": "d8b6f21adaa899d625f1a3bd2150187038b2cc76ddd3b154b2fcabb08e6723ae"
+    },
+    {
+      "collection": "workOrders",
+      "filename": "workOrders.json",
+      "recordsCount": 1,
+      "sizeBytes": 314,
+      "sha256Checksum": "db9901002bdb876827873507364fa80d537b8876a3eb890a125fff77cda640d1"
+    },
+    {
+      "collection": "materials",
+      "filename": "materials.json",
+      "recordsCount": 2,
+      "sizeBytes": 457,
+      "sha256Checksum": "314e11fccca89ae381a4734ecf6e9b6b250473d6ddbd1fd208bdbfd00fae802c"
+    },
+    {
+      "collection": "migoDocuments",
+      "filename": "migoDocuments.json",
+      "recordsCount": 1,
+      "sizeBytes": 294,
+      "sha256Checksum": "8cc1a1e4b93a291285bfb7931ad15c6b380d9693e4afcb9ad0ce38af28a932ca"
+    },
+    {
+      "collection": "employees",
+      "filename": "employees.json",
+      "recordsCount": 2,
+      "sizeBytes": 398,
+      "sha256Checksum": "5597515325a0275a8e863cbd5ffc4a2ad74429587f84896ba2862df986e3a71d"
+    },
+    {
+      "collection": "purchaseOrders",
+      "filename": "purchaseOrders.json",
+      "recordsCount": 1,
+      "sizeBytes": 163,
+      "sha256Checksum": "420aee8603939e3a3ed4871d736ad6fad3b6829fea5609d819506f47de3f46b6"
+    }
+  ],
+  "integrityStatus": "VERIFIED_OK"
+}

@@ -1,0 +1,64 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 480" width="100%" height="100%">
+  <defs>
+    <style>
+      .nebex-cloud {
+        fill: none;
+        stroke: #0F172A;
+        stroke-width: 24;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+      }
+      .nebex-cube {
+        fill: #0F172A;
+      }
+      .nebex-text-title {
+        font-family: 'Outfit', 'Plus Jakarta Sans', 'Inter', system-ui, -apple-system, sans-serif;
+        font-weight: 900;
+        font-size: 72px;
+        fill: #0F172A;
+        letter-spacing: 0.28em;
+        text-anchor: middle;
+      }
+      .nebex-text-sub {
+        font-family: 'Outfit', 'Plus Jakarta Sans', 'Inter', system-ui, -apple-system, sans-serif;
+        font-weight: 600;
+        font-size: 18px;
+        fill: #0F172A;
+        letter-spacing: 0.52em;
+        text-anchor: middle;
+        opacity: 0.88;
+      }
+    </style>
+  </defs>
+
+  <!-- Cloud Contour -->
+  <path class="nebex-cloud" d="
+    M 185,225
+    L 415,225
+    C 465,225 505,185 505,135
+    C 505,88 470,50 424,46
+    C 410,4 366,-30 314,-30
+    C 258,-30 210,8 198,58
+    C 188,52 174,48 160,48
+    C 116,48 80,84 80,128
+    C 80,172 116,208 160,208
+    C 168,208 176,206 185,202
+    Z
+  " transform="translate(0, 45)" />
+
+  <!-- 3D Cube inside cloud -->
+  <g class="nebex-cube" transform="translate(300, 132)">
+    <!-- Top Face -->
+    <polygon points="0,-42  36,-21  0,0  -36,-21" />
+    <!-- Left Face -->
+    <polygon points="-38,-15  -3,6  -3,50  -38,29" />
+    <!-- Right Face -->
+    <polygon points="3,6  38,-15  38,29  3,50" />
+  </g>
+
+  <!-- NEBEX Brand Name -->
+  <text x="300" y="370" class="nebex-text-title" dx="0.14em">NEBEX</text>
+
+  <!-- CLOUD PLATFORM Subtitle -->
+  <text x="300" y="420" class="nebex-text-sub" dx="0.26em">CLOUD PLATFORM</text>
+</svg>

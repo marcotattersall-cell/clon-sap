@@ -1,0 +1,24 @@
+[
+  {
+    "id": "EQ-TENA-101",
+    "name": "Chancador Primario Metso C160 - Compañía Minera Doña Inés de Collahuasi",
+    "category": "Maquinaria Pesada",
+    "location": "Mina Norte",
+    "status": "OPERATIVE",
+    "healthScore": 95,
+    "hourmeter": 4250,
+    "odometer": 185000,
+    "tenantId": "tenant_collahuasi"
+  },
+  {
+    "id": "EQ-TENA-102",
+    "name": "Camión de Extracción CAEX CAT 797F - Compañía Minera Doña Inés de Collahuasi",
+    "category": "Flota Transporte",
+    "location": "Rajo Abierto",
+    "status": "OPERATIVE",
+    "healthScore": 88,
+    "hourmeter": 6100,
+    "odometer": 210000,
+    "tenantId": "tenant_collahuasi"
+  }
+]

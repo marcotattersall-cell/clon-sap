@@ -1,0 +1,10 @@
+[
+  {
+    "id": "tenant_bhp-PLANT-01",
+    "name": "Planta Central BHP Billiton",
+    "address": "Av. Industrial 5000",
+    "city": "Antofagasta",
+    "status": "Activo",
+    "tenantId": "tenant_bhp"
+  }
+]

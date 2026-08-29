@@ -1,17 +1,16 @@
 import React, { useState } from 'react';
 import { useSAP } from '../../context/SAPContext';
 import { useAuth } from '../../context/AuthContext';
+import AxomiraLogo from '../common/AxomiraLogo';
 import {
+  Mail,
   Search,
   Bell,
-  Sun,
-  Moon,
-  UserCheck,
   RefreshCw,
   PlusCircle,
+  FileText,
   Package,
   Wrench,
-  AlertTriangle,
   ChevronDown,
   Layers,
   ShieldAlert,
@@ -20,18 +19,21 @@ import {
   CheckCircle2,
   LogIn,
   LogOut,
-  User,
-  KeyRound,
-  Download,
-  Smartphone,
   Users,
-  HardHat
+  HardHat,
+  Star,
+  Check,
+  X,
+  Boxes,
+  Activity,
+  Zap,
+  LayoutGrid,
+  ArrowRight
 } from 'lucide-react';
 
-export const FioriHeader = ({ onOpenCreateWO, onOpenCreateMaterial, onOpenCreateMIGO, onOpenAuthModal, onOpenCreatePlant, onOpenCreateEmployee }) => {
+export const FioriHeader = ({ onOpenCreateWO, onOpenCreateMaterial, onOpenCreateMIGO, onOpenAuthModal, onOpenCreatePlant, onOpenCreateEmployee, onOpenReportModal }) => {
   const {
     currentRole,
-    setCurrentRole,
     activeTab,
     setActiveTab,
     searchTerm,
@@ -43,19 +45,192 @@ export const FioriHeader = ({ onOpenCreateWO, onOpenCreateMaterial, onOpenCreate
     setActivePlant,
     materials = [],
     workOrders = [],
-    employees = []
+    employees = [],
+    injectMassiveActionSimulation
   } = useSAP();
-  const { user, logout } = useAuth();
+  const { user, logout, switchTenant, sendVerificationEmail, reloadUser } = useAuth();
 
   const [showNotifications, setShowNotifications] = useState(false);
-  const [showRoleMenu, setShowRoleMenu] = useState(false);
   const [showUserMenu, setShowUserMenu] = useState(false);
   const [showQuickActions, setShowQuickActions] = useState(false);
   const [deferredPrompt, setDeferredPrompt] = useState(null);
+  const [isResendingHeaderEmail, setIsResendingHeaderEmail] = useState(false);
+  const [isCheckingHeaderEmail, setIsCheckingHeaderEmail] = useState(false);
 
   // 📡 Network & Offline Queue Status
   const [isOnline, setIsOnline] = useState(navigator.onLine);
   const [pendingQueueCount, setPendingQueueCount] = useState(0);
+
+  // 🚀 Lanzador de Apps Cuadrícula (Estilo Odoo + Fiori Launchpad)
+  const [isAppLauncherOpen, setIsAppLauncherOpen] = useState(false);
+  const [launcherSearch, setLauncherSearch] = useState('');
+
+  const APPS_GRID_ITEMS = [
+    {
+      key: 'LAUNCHPAD',
+      title: 'Home Launchpad',
+      subtitle: 'Cockpit Principal ERP',
+      slug: 'nebex:home:cockpit',
+      alias: '#home',
+      tcode: 'SMSM',
+      icon: Activity,
+      gradient: 'from-slate-700 to-slate-900',
+      badge: '#home'
+    },
+    {
+      key: 'WORK_ORDERS',
+      title: 'Mantenimiento PM',
+      subtitle: 'Órdenes de Trabajo & TECO',
+      slug: 'nebex:mantenimiento:ordenes',
+      alias: '#mnt-ordenes',
+      tcode: 'IW31 / IW32',
+      icon: Wrench,
+      colorClasses: 'bg-amber-500/10 text-amber-400 border-amber-500/20',
+      badge: '#mnt-ordenes'
+    },
+    {
+      key: 'INVENTORY',
+      title: 'Inventario & Stock',
+      subtitle: 'Maestro de Materiales',
+      slug: 'nebex:inventario:materiales',
+      alias: '#inv-materiales',
+      tcode: 'MM01 / MM03',
+      icon: Boxes,
+      colorClasses: 'bg-sky-500/10 text-sky-400 border-sky-500/20',
+      badge: '#inv-materiales'
+    },
+    {
+      key: 'MIGO',
+      title: 'Movimientos de Stock',
+      subtitle: 'Salidas 261 y Entradas 101',
+      slug: 'nebex:inventario:movimientos',
+      alias: '#inv-mov',
+      tcode: 'MIGO',
+      icon: Package,
+      colorClasses: 'bg-blue-500/10 text-blue-400 border-blue-500/20',
+      badge: '#inv-mov'
+    },
+    {
+      key: 'ASSETS',
+      title: 'Maestro Activos',
+      subtitle: 'Jerarquía & IoT Telemetría',
+      slug: 'nebex:flota:activos',
+      alias: '#flota-activos',
+      tcode: 'IE01 / IE03',
+      icon: Layers,
+      colorClasses: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20',
+      badge: '#flota-activos'
+    },
+    {
+      key: 'FLEET',
+      title: 'Gestión de Flota',
+      subtitle: 'Maquinaria & Vencimientos',
+      slug: 'nebex:flota:vencimientos',
+      alias: '#flota-vencimientos',
+      tcode: 'FLEET',
+      icon: Building2,
+      colorClasses: 'bg-indigo-500/10 text-indigo-400 border-indigo-500/20',
+      badge: '#flota-vencimientos'
+    },
+    {
+      key: 'ANALYTICS',
+      title: 'Executive Analytics',
+      subtitle: 'Costos CO/FI & KPIs Planta',
+      slug: 'nebex:analitica:costos',
+      alias: '#analitica-costos',
+      tcode: 'S_ALR',
+      icon: Database,
+      colorClasses: 'bg-cyan-500/10 text-cyan-400 border-cyan-500/20',
+      badge: '#analitica-costos'
+    },
+    {
+      key: 'HR',
+      title: 'Recursos Humanos',
+      subtitle: 'Ficha de Personal & HCM',
+      slug: 'nebex:rrhh:personal',
+      alias: '#rrhh-personal',
+      tcode: 'PA30 / PA20',
+      icon: HardHat,
+      colorClasses: 'bg-orange-500/10 text-orange-400 border-orange-500/20',
+      badge: '#rrhh-personal'
+    },
+    {
+      key: 'USER_MGMT',
+      title: 'Usuarios & Tenants',
+      subtitle: 'Gestión & Matriz RBAC',
+      slug: 'nebex:admin:usuarios',
+      alias: '#admin-usuarios',
+      tcode: 'SU01 / SU10',
+      icon: Users,
+      colorClasses: 'bg-purple-500/10 text-purple-400 border-purple-500/20',
+      badge: '#admin-usuarios'
+    }
+  ];
+
+  // Global Cmd+K / Ctrl+K Listener
+  React.useEffect(() => {
+    const handleKeyDown = (e) => {
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
+        e.preventDefault();
+        setIsAppLauncherOpen(prev => !prev);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
+
+  // ⭐ Mis Accesos Favoritos (Personalización Directa en la Barra Principal)
+  const FAVORITES_STORAGE_KEY = 'sap_user_favorite_tabs';
+
+  const ALL_TAB_CONFIG = {
+    LAUNCHPAD: { title: 'Launchpad', icon: Activity, desc: 'Cockpit principal (nebex:home:cockpit)', slug: 'nebex:home:cockpit', alias: '#home' },
+    WORK_ORDERS: { title: 'Órdenes (#mnt-ordenes)', icon: Wrench, desc: 'Órdenes PM (nebex:mantenimiento:ordenes)', slug: 'nebex:mantenimiento:ordenes', alias: '#mnt-ordenes' },
+    ASSETS: { title: 'Activos (#flota-activos)', icon: Layers, desc: 'Jerarquía de equipos (nebex:flota:activos)', slug: 'nebex:flota:activos', alias: '#flota-activos' },
+    FLEET: { title: 'Flota (#flota-vencimientos)', icon: Building2, desc: 'Maquinaria (nebex:flota:vencimientos)', slug: 'nebex:flota:vencimientos', alias: '#flota-vencimientos' },
+    INVENTORY: { title: 'Inventario (#inv-materiales)', icon: Boxes, desc: 'Materiales (nebex:inventario:materiales)', slug: 'nebex:inventario:materiales', alias: '#inv-materiales' },
+    MIGO: { title: 'Movimientos (#inv-mov)', icon: Package, desc: 'Entradas/Salidas (nebex:inventario:movimientos)', slug: 'nebex:inventario:movimientos', alias: '#inv-mov' },
+    ANALYTICS: { title: 'Analytics (#analitica-costos)', icon: Database, desc: 'Executive Analytics (nebex:analitica:costos)', slug: 'nebex:analitica:costos', alias: '#analitica-costos' },
+    HR: { title: 'Recursos Humanos (#rrhh-personal)', icon: HardHat, desc: 'Ficha personal (nebex:rrhh:personal)', slug: 'nebex:rrhh:personal', alias: '#rrhh-personal' },
+    USER_MGMT: { title: 'Usuarios (#admin-usuarios)', icon: Users, desc: 'Administración (nebex:admin:usuarios)', slug: 'nebex:admin:usuarios', alias: '#admin-usuarios' }
+  };
+
+  const [favoriteTabs, setFavoriteTabs] = useState(() => {
+    try {
+      const saved = localStorage.getItem(FAVORITES_STORAGE_KEY);
+      if (saved) return JSON.parse(saved);
+    } catch (e) {
+      console.warn('Error al cargar favoritos:', e);
+    }
+    return ['LAUNCHPAD', 'WORK_ORDERS', 'ASSETS', 'FLEET', 'MIGO', 'USER_MGMT'];
+  });
+
+  const [isFavModalOpen, setIsFavModalOpen] = useState(false);
+  const [draftFavorites, setDraftFavorites] = useState(favoriteTabs);
+
+  const handleToggleDraftFavorite = (tabKey) => {
+    setDraftFavorites(prev => {
+      if (prev.includes(tabKey)) {
+        if (prev.length <= 1) {
+          addToast('Debes mantener al menos 1 acceso directo en la barra.', 'warning');
+          return prev;
+        }
+        return prev.filter(k => k !== tabKey);
+      } else {
+        return [...prev, tabKey];
+      }
+    });
+  };
+
+  const handleSaveFavorites = () => {
+    setFavoriteTabs(draftFavorites);
+    try {
+      localStorage.setItem(FAVORITES_STORAGE_KEY, JSON.stringify(draftFavorites));
+    } catch (e) {
+      console.warn('Error guardando favoritos:', e);
+    }
+    setIsFavModalOpen(false);
+    addToast('⭐ Barra de accesos principales personalizada exitosamente.', 'success');
+  };
 
   React.useEffect(() => {
     const handleOnline = () => {
@@ -133,16 +308,68 @@ export const FioriHeader = ({ onOpenCreateWO, onOpenCreateMaterial, onOpenCreate
 
   const totalAlertsCount = lowStockItems.length + criticalWorkOrders.length + complianceAlertEmployees.length;
 
-  const roleLabels = {
-    FIELD_MECHANIC: { title: 'Mecánico de Terreno (Operativo)', icon: Wrench, color: 'text-orange-500' },
-    MAINTENANCE_MGR: { title: 'Jefe de Mantenimiento (PM)', icon: Wrench, color: 'text-amber-500' },
-    WAREHOUSE_SPEC: { title: 'Especialista de Almacén (MM)', icon: Package, color: 'text-blue-500' },
-    FLEET_MGR: { title: 'Encargado de Flota y Maquinaria', icon: Building2, color: 'text-purple-500' },
-    ANALYTICS_DIR: { title: 'Analista de Operaciones y Planta', icon: Database, color: 'text-emerald-500' }
-  };
+  const filteredAppsGrid = APPS_GRID_ITEMS.filter(app => {
+    if (!launcherSearch.trim()) return true;
+    const q = launcherSearch.toLowerCase();
+    return (
+      app.title.toLowerCase().includes(q) ||
+      app.subtitle.toLowerCase().includes(q) ||
+      (app.slug && app.slug.toLowerCase().includes(q)) ||
+      (app.alias && app.alias.toLowerCase().includes(q)) ||
+      app.tcode.toLowerCase().includes(q)
+    );
+  });
 
   return (
     <header className="sticky top-0 z-40 bg-white text-slate-900 border-b border-slate-200 shadow-sm w-full">
+      {/* 📧 Unverified Email Warning Banner */}
+      {user && !user.emailVerified && user.provider === 'firebase-password' && (
+        <div className="bg-amber-500 text-slate-950 px-4 py-2 text-xs font-bold flex flex-col sm:flex-row items-center justify-between gap-2 border-b border-amber-600 shadow-inner">
+          <div className="flex items-center space-x-2">
+            <Mail className="w-4 h-4 shrink-0 text-slate-950 animate-pulse" />
+            <span>
+              ⚠️ Tu correo electrónico (<strong>{user.email}</strong>) aún no ha sido verificado. Por favor revisa tu bandeja de entrada o spam.
+            </span>
+          </div>
+          <div className="flex items-center space-x-2 shrink-0">
+            <button
+              onClick={async () => {
+                setIsCheckingHeaderEmail(true);
+                const res = await reloadUser();
+                setIsCheckingHeaderEmail(false);
+                if (res.emailVerified) {
+                  addToast('🎉 ¡Correo electrónico verificado con éxito!', 'success');
+                } else {
+                  addToast('El correo electrónico aún no aparece como verificado.', 'info');
+                }
+              }}
+              disabled={isCheckingHeaderEmail}
+              className="bg-slate-950 hover:bg-slate-900 text-amber-300 text-[11px] font-extrabold px-3 py-1 rounded-lg shadow transition-all flex items-center gap-1.5"
+            >
+              {isCheckingHeaderEmail ? <RefreshCw className="w-3.5 h-3.5 animate-spin" /> : <CheckCircle2 className="w-3.5 h-3.5" />}
+              <span>Comprobar Estado</span>
+            </button>
+
+            <button
+              onClick={async () => {
+                setIsResendingHeaderEmail(true);
+                const res = await sendVerificationEmail();
+                setIsResendingHeaderEmail(false);
+                if (res.success) {
+                  addToast(`✉️ Enlace de comprobación enviado nuevamente a ${user.email}`, 'success');
+                } else {
+                  addToast(res.error || 'No se pudo enviar el correo de verificación.', 'error');
+                }
+              }}
+              disabled={isResendingHeaderEmail}
+              className="bg-amber-700 hover:bg-amber-800 text-white text-[11px] font-extrabold px-3 py-1 rounded-lg shadow transition-all"
+            >
+              {isResendingHeaderEmail ? 'Enviando...' : 'Reenviar Enlace'}
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* Top System Status Ribbon */}
       <div className="bg-slate-100 px-4 sm:px-6 lg:px-8 py-1.5 flex items-center justify-between text-xs text-slate-600 border-b border-slate-200">
         <div className="flex items-center space-x-3">
@@ -203,6 +430,15 @@ export const FioriHeader = ({ onOpenCreateWO, onOpenCreateMaterial, onOpenCreate
           )}
 
           <button
+            onClick={injectMassiveActionSimulation}
+            title="Inyectar 25 transacciones masivas de prueba en vivo"
+            className="bg-amber-500 hover:bg-amber-600 text-white font-bold px-2 py-0.5 rounded text-[11px] flex items-center gap-1 transition-all cursor-pointer shadow-sm animate-pulse"
+          >
+            <Zap className="w-3 h-3 text-white" />
+            <span>+25 Transacciones</span>
+          </button>
+
+          <button
             onClick={resetData}
             title="Limpiar todos los datos de la aplicación"
             className="hover:text-amber-600 flex items-center gap-1 transition-colors text-xs text-slate-500 font-medium"
@@ -213,108 +449,84 @@ export const FioriHeader = ({ onOpenCreateWO, onOpenCreateMaterial, onOpenCreate
         </div>
       </div>
 
-      {/* Main Fiori Header */}
+      {/* Main Fiori Header (Single Unified Navigation Bar) */}
       <div className="px-4 sm:px-6 lg:px-8 py-2.5 flex items-center justify-between gap-4">
-        {/* Left: SAP Shell Brand & App Selector */}
-        <div className="flex items-center space-x-4">
+        {/* Left: SAP Shell Brand, App Grid Launcher & Personalized Nav Bar */}
+        <div className="flex items-center space-x-3">
+          
+          {/* ⠿ BOTÓN LANZADOR DE APPS ESTILO ODOO (Cmd+K) */}
+          <button
+            onClick={() => setIsAppLauncherOpen(true)}
+            className="p-2 rounded-xl bg-slate-100 hover:bg-sap-blue hover:text-white text-slate-700 transition-all border border-slate-200 shadow-sm flex items-center space-x-1.5 cursor-pointer group"
+            title="Abrir Lanzador de Aplicaciones (Atajo: Cmd+K / Ctrl+K)"
+          >
+            <LayoutGrid className="w-5 h-5 text-sap-blue group-hover:text-white transition-colors" />
+            <span className="hidden sm:inline-block text-[10px] font-black uppercase tracking-wider bg-slate-200 group-hover:bg-white/20 group-hover:text-white text-slate-700 px-1.5 py-0.5 rounded font-mono">
+              ⌘K
+            </span>
+          </button>
+
           <button
             onClick={() => setActiveTab('LAUNCHPAD')}
             className="flex items-center space-x-2.5 group focus:outline-none"
           >
-            <img
-              src="/favicon.svg"
-              alt="Operam ERP Logo"
-              className="w-9 h-9 rounded-lg object-cover border border-slate-200 shadow-sm group-hover:scale-105 transition-transform bg-slate-900 p-1"
-            />
+            <AxomiraLogo variant="icon" className="w-8 h-8 text-slate-900 group-hover:scale-105 transition-transform" />
             <div className="text-left leading-tight hidden xs:block">
-              <div className="font-bold text-sm tracking-tight text-slate-900 group-hover:text-sap-blue transition-colors">
-                Operam ERP
+              <div className="font-extrabold text-sm tracking-tight text-slate-900 group-hover:text-sap-blue transition-colors font-mono">
+                AXOMIRA ERP
               </div>
-              <div className="text-[10px] text-slate-500 font-medium">
-                {activeTab === 'LAUNCHPAD' ? 'Home Launchpad' : `Módulo: ${activeTab}`}
+              <div className="text-[9px] text-slate-500 font-semibold tracking-wider uppercase">
+                {activeTab === 'LAUNCHPAD' ? 'Cloud Platform' : `Módulo: ${activeTab}`}
               </div>
             </div>
           </button>
 
-          {/* Quick Navigation Tabs */}
+          {/* ⭐ Unified Custom Favorites Navigation Bar */}
           <nav className="hidden lg:flex items-center space-x-1 pl-2 xl:pl-4 border-l border-slate-200">
-            <button
-              onClick={() => setActiveTab('LAUNCHPAD')}
-              className={`px-2 py-1 xl:px-3 xl:py-1.5 rounded-md text-[11px] xl:text-xs font-semibold transition-all ${
-                activeTab === 'LAUNCHPAD' ? 'bg-sap-blue text-white shadow-sm' : 'text-slate-600 hover:bg-slate-100'
-              }`}
-            >
-              Launchpad
-            </button>
-            <button
-              onClick={() => setActiveTab('WORK_ORDERS')}
-              className={`px-2 py-1 xl:px-3 xl:py-1.5 rounded-md text-[11px] xl:text-xs font-semibold transition-all ${
-                activeTab === 'WORK_ORDERS' ? 'bg-sap-blue text-white shadow-sm' : 'text-slate-600 hover:bg-slate-100'
-              }`}
-            >
-              Órdenes (PM)
-            </button>
-            <button
-              onClick={() => setActiveTab('ASSETS')}
-              className={`px-2 py-1 xl:px-3 xl:py-1.5 rounded-md text-[11px] xl:text-xs font-semibold transition-all ${
-                activeTab === 'ASSETS' ? 'bg-sap-blue text-white shadow-sm' : 'text-slate-600 hover:bg-slate-100'
-              }`}
-            >
-              Activos (IE03)
-            </button>
-            <button
-              onClick={() => setActiveTab('FLEET')}
-              className={`px-2 py-1 xl:px-3 xl:py-1.5 rounded-md text-[11px] xl:text-xs font-semibold transition-all ${
-                activeTab === 'FLEET' ? 'bg-sap-blue text-white shadow-sm' : 'text-slate-600 hover:bg-slate-100'
-              }`}
-            >
-              Flota & Vencimientos
-            </button>
+            {favoriteTabs.map(tabKey => {
+              const config = ALL_TAB_CONFIG[tabKey];
+              if (!config) return null;
 
-            {/* Admin/Management Only Tabs */}
-            {currentRole !== 'FIELD_MECHANIC' && (
-              <>
+              if (currentRole === 'FIELD_MECHANIC' && ['INVENTORY', 'MIGO', 'ANALYTICS', 'HR', 'USER_MGMT'].includes(tabKey)) {
+                return null;
+              }
+
+              const isActive = activeTab === tabKey;
+
+              return (
                 <button
-                  onClick={() => setActiveTab('INVENTORY')}
-                  className={`px-2 py-1 xl:px-3 xl:py-1.5 rounded-md text-[11px] xl:text-xs font-semibold transition-all ${
-                    activeTab === 'INVENTORY' ? 'bg-sap-blue text-white shadow-sm' : 'text-slate-600 hover:bg-slate-100'
+                  key={tabKey}
+                  onClick={() => setActiveTab(tabKey)}
+                  className={`px-2.5 py-1.5 rounded-lg text-[11px] xl:text-xs font-bold transition-all flex items-center space-x-1 ${
+                    isActive
+                      ? 'bg-sap-blue text-white shadow-md'
+                      : tabKey === 'USER_MGMT'
+                        ? 'text-purple-700 hover:bg-purple-50 dark:text-purple-300 font-extrabold'
+                        : 'text-slate-700 hover:bg-slate-100 font-semibold'
                   }`}
+                  title={config.desc}
                 >
-                  Inventario (MM)
-                </button>
-                <button
-                  onClick={() => setActiveTab('MIGO')}
-                  className={`px-2 py-1 xl:px-3 xl:py-1.5 rounded-md text-[11px] xl:text-xs font-semibold transition-all ${
-                    activeTab === 'MIGO' ? 'bg-sap-blue text-white shadow-sm' : 'text-slate-600 hover:bg-slate-100'
-                  }`}
-                >
-                  Movimientos MIGO
-                </button>
-                <button
-                  onClick={() => setActiveTab('ANALYTICS')}
-                  className={`px-2 py-1 xl:px-3 xl:py-1.5 rounded-md text-[11px] xl:text-xs font-semibold transition-all ${
-                    activeTab === 'ANALYTICS' ? 'bg-sap-blue text-white shadow-sm' : 'text-slate-600 hover:bg-slate-100'
-                  }`}
-                >
-                  <span className="hidden xl:inline">Executive Analytics</span>
-                  <span className="xl:hidden">Analytics</span>
-                </button>
-                <button
-                  onClick={() => setActiveTab('HR')}
-                  className={`px-2 py-1 xl:px-3 xl:py-1.5 rounded-md text-[11px] xl:text-xs font-semibold transition-all flex items-center space-x-1 ${
-                    activeTab === 'HR' ? 'bg-sap-blue text-white shadow-sm' : 'text-slate-600 hover:bg-slate-100'
-                  }`}
-                >
-                  <span className="hidden xl:inline">Recursos Humanos (HCM)</span>
-                  <span className="xl:hidden">RRHH (HCM)</span>
-                  {complianceAlertEmployees.length > 0 && (
-                    <span className="bg-amber-500 text-white text-[9px] px-1 rounded-full font-bold">
+                  <span>{config.title}</span>
+                  {tabKey === 'HR' && complianceAlertEmployees.length > 0 && (
+                    <span className="bg-amber-500 text-white text-[9px] px-1.5 py-0.5 rounded-full font-bold ml-1">
                       {complianceAlertEmployees.length}
                     </span>
                   )}
                 </button>
-              </>
-            )}
+              );
+            })}
+
+            {/* ⭐ Customizer Button at the end of Nav */}
+            <button
+              onClick={() => {
+                setDraftFavorites(favoriteTabs);
+                setIsFavModalOpen(true);
+              }}
+              className="p-1.5 rounded-lg text-slate-400 hover:text-amber-500 hover:bg-amber-50 transition-all cursor-pointer ml-1"
+              title="⭐ Personalizar Accesos Favoritos de la Barra Superior"
+            >
+              <Star className="w-4 h-4 text-amber-500 fill-amber-400" />
+            </button>
           </nav>
         </div>
 
@@ -363,32 +575,39 @@ export const FioriHeader = ({ onOpenCreateWO, onOpenCreateMaterial, onOpenCreate
                   Crear Registro Rápido
                 </div>
                 <button
+                  onClick={() => { setShowQuickActions(false); if (onOpenReportModal) onOpenReportModal(); }}
+                  className="w-full px-3 py-2 text-xs text-left text-slate-800 hover:bg-slate-50 flex items-center space-x-2 transition-colors font-semibold border-b border-slate-100 text-sky-700 bg-sky-50/50"
+                >
+                  <FileText className="w-4 h-4 text-sky-600" />
+                  <span>Generar Reporte BI (PDF / Excel)</span>
+                </button>
+                <button
                   onClick={() => { setShowQuickActions(false); onOpenCreateEmployee(); }}
                   className="w-full px-3 py-2 text-xs text-left text-slate-800 hover:bg-slate-50 flex items-center space-x-2 transition-colors font-medium"
                 >
                   <Users className="w-4 h-4 text-sky-600" />
-                  <span>Alta Colaborador (PA30)</span>
+                  <span>Alta Colaborador (#rrhh-personal)</span>
                 </button>
                 <button
                   onClick={() => { setShowQuickActions(false); onOpenCreateWO(); }}
                   className="w-full px-3 py-2 text-xs text-left text-slate-800 hover:bg-slate-50 flex items-center space-x-2 transition-colors font-medium"
                 >
                   <Wrench className="w-4 h-4 text-amber-600" />
-                  <span>Nueva Orden de Trabajo (IW31)</span>
+                  <span>Nueva Orden de Trabajo (#mnt-ordenes)</span>
                 </button>
                 <button
                   onClick={() => { setShowQuickActions(false); onOpenCreateMIGO(); }}
                   className="w-full px-3 py-2 text-xs text-left text-slate-800 hover:bg-slate-50 flex items-center space-x-2 transition-colors font-medium"
                 >
                   <Package className="w-4 h-4 text-sky-600" />
-                  <span>Registrar Movimiento MIGO</span>
+                  <span>Registrar Movimiento (#inv-mov)</span>
                 </button>
                 <button
                   onClick={() => { setShowQuickActions(false); onOpenCreateMaterial(); }}
                   className="w-full px-3 py-2 text-xs text-left text-slate-800 hover:bg-slate-50 flex items-center space-x-2 transition-colors font-medium"
                 >
                   <PlusCircle className="w-4 h-4 text-emerald-600" />
-                  <span>Crear Material (MM01)</span>
+                  <span>Crear Material (#inv-materiales)</span>
                 </button>
               </div>
             )}
@@ -437,25 +656,10 @@ export const FioriHeader = ({ onOpenCreateWO, onOpenCreateMaterial, onOpenCreate
                           {emp.id}
                         </span>
                       </div>
-                      <div className="text-xs text-slate-900 font-bold truncate">{emp.name}</div>
-                      <div className="text-[10px] text-amber-800 mt-0.5">Faena: {emp.faena} • Revisar Vencimientos (≤30d)</div>
-                    </div>
-                  ))}
-
-                  {criticalWorkOrders.map(wo => (
-                    <div
-                      key={wo.id}
-                      onClick={() => { setActiveTab('WORK_ORDERS'); setShowNotifications(false); }}
-                      className="p-3 hover:bg-slate-50 cursor-pointer transition-colors"
-                    >
-                      <div className="flex items-center justify-between text-xs text-rose-700 font-bold mb-1">
-                        <span>OT URGENTE {wo.id}</span>
-                        <span className="text-[10px] bg-rose-100 text-rose-800 px-1.5 py-0.5 rounded border border-rose-200">
-                          {wo.priority}
-                        </span>
-                      </div>
-                      <div className="text-xs text-slate-800 font-medium truncate">{wo.title}</div>
-                      <div className="text-[10px] text-slate-500 mt-1">Equipo: {wo.equipmentId}</div>
+                      <p className="text-xs text-slate-700 font-medium">{emp.name}</p>
+                      <p className="text-[10px] text-amber-700 mt-0.5 font-mono">
+                        Vencimientos próximos en exámenes médicos o acreditaciones.
+                      </p>
                     </div>
                   ))}
 
@@ -465,131 +669,299 @@ export const FioriHeader = ({ onOpenCreateWO, onOpenCreateMaterial, onOpenCreate
                       onClick={() => { setActiveTab('INVENTORY'); setShowNotifications(false); }}
                       className="p-3 hover:bg-slate-50 cursor-pointer transition-colors"
                     >
-                      <div className="flex items-center justify-between text-xs text-amber-700 font-bold mb-1">
-                        <span>STOCK CRÍTICO {m.id}</span>
-                        <span className="text-[10px] text-amber-800">
-                          {m.stock} {m.unit} (Min: {m.reorderPoint})
+                      <div className="flex items-center justify-between text-xs text-slate-900 font-bold mb-1">
+                        <span>STOCK CRÍTICO REORDEN</span>
+                        <span className="text-[10px] bg-rose-100 text-rose-800 px-1.5 py-0.5 rounded font-mono">
+                          {m.id}
                         </span>
                       </div>
-                      <div className="text-xs text-slate-800 font-medium truncate">{m.name}</div>
-                      <div className="text-[10px] text-slate-500 mt-1">Ubicación: Bin {m.storageBin}</div>
+                      <p className="text-xs text-slate-600">{m.description}</p>
+                      <div className="flex justify-between items-center text-[10px] text-slate-500 mt-1 font-mono">
+                        <span>Stock Actual: <strong className="text-rose-600">{m.stock} UN</strong></span>
+                        <span>Punto Reorden: {m.reorderPoint} UN</span>
+                      </div>
                     </div>
                   ))}
 
-                  {totalAlertsCount === 0 && (
-                    <div className="p-6 text-center text-xs text-slate-500">
-                      <CheckCircle2 className="w-8 h-8 text-emerald-600 mx-auto mb-2 opacity-80" />
-                      Sin alertas pendientes. Operación normal en planta.
+                  {criticalWorkOrders.map(w => (
+                    <div
+                      key={w.id}
+                      onClick={() => { setActiveTab('WORK_ORDERS'); setShowNotifications(false); }}
+                      className="p-3 hover:bg-slate-50 cursor-pointer transition-colors"
+                    >
+                      <div className="flex items-center justify-between text-xs text-slate-900 font-bold mb-1">
+                        <span className="text-rose-600 font-extrabold">ORDEN MUY ALTA PRIORIDAD</span>
+                        <span className="text-[10px] bg-amber-100 text-amber-800 px-1.5 py-0.5 rounded font-mono">
+                          {w.id}
+                        </span>
+                      </div>
+                      <p className="text-xs text-slate-600">{w.description}</p>
                     </div>
-                  )}
+                  ))}
                 </div>
               </div>
             )}
           </div>
 
-          {/* Firebase Authentication User Profile / Login Button */}
+          {/* User Profile Controls */}
           <div className="relative">
             {user ? (
               <button
                 onClick={() => setShowUserMenu(!showUserMenu)}
-                className="flex items-center space-x-2 bg-slate-100 hover:bg-slate-200 px-2.5 py-1.5 rounded-lg border border-slate-200 transition-colors"
+                className="flex items-center space-x-2 p-1.5 rounded-lg hover:bg-slate-100 transition-colors border border-slate-200"
               >
-                {user.photoURL ? (
-                  <img src={user.photoURL} alt={user.displayName} className="w-5 h-5 rounded-full object-cover" />
-                ) : (
-                  <div className="w-5 h-5 rounded-full bg-sap-blue text-white flex items-center justify-center font-bold text-[10px]">
-                    {user.displayName?.charAt(0) || user.email?.charAt(0) || 'U'}
-                  </div>
-                )}
-                <div className="text-left text-xs hidden md:block">
-                  <div className="font-bold text-slate-800 leading-none truncate max-w-[110px]">
-                    {user.displayName || user.email?.split('@')[0]}
-                  </div>
+                <div className="w-7 h-7 rounded-full bg-sap-blue text-white flex items-center justify-center font-bold text-xs">
+                  {user.displayName ? user.displayName.charAt(0).toUpperCase() : user.email.charAt(0).toUpperCase()}
                 </div>
-                <ChevronDown className="w-3 h-3 text-slate-500" />
+                <span className="text-xs font-bold text-slate-800 hidden xl:inline max-w-[120px] truncate">
+                  {user.displayName || user.email.split('@')[0]}
+                </span>
+                <ChevronDown className="w-3 h-3 text-slate-400" />
               </button>
             ) : (
               <button
                 onClick={onOpenAuthModal}
-                className="bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold px-3 py-1.5 rounded-lg flex items-center space-x-1.5 shadow transition-colors"
+                className="px-3 py-1.5 bg-slate-900 hover:bg-slate-800 text-white rounded-lg text-xs font-bold flex items-center space-x-1.5 shadow-sm transition-all"
               >
                 <LogIn className="w-4 h-4" />
-                <span className="hidden sm:inline">Iniciar Sesión / Registro</span>
+                <span>Ingresar / Registrar</span>
               </button>
             )}
 
             {showUserMenu && user && (
               <div
-                className="absolute right-0 mt-2 w-64 bg-white border border-slate-200 rounded-xl shadow-xl py-2 z-50 animate-in fade-in slide-in-from-top-2"
+                className="absolute right-0 mt-2 w-64 bg-white border border-slate-200 rounded-xl shadow-xl py-2 z-50 animate-in fade-in"
                 onMouseLeave={() => setShowUserMenu(false)}
               >
                 <div className="px-4 py-2 border-b border-slate-100">
-                  <div className="text-xs font-bold text-slate-900 truncate">
-                    {user.displayName}
-                  </div>
-                  <div className="text-[10px] text-slate-500 truncate">
-                    {user.email}
-                  </div>
-                  <div className="mt-1 flex items-center gap-1.5">
-                    <span className="text-[9px] bg-emerald-100 text-emerald-800 border border-emerald-300 px-1.5 py-0.5 rounded font-mono">
-                      Firebase Authenticated
+                  <p className="text-xs font-bold text-slate-900">{user.displayName || 'Usuario ERP'}</p>
+                  <p className="text-[11px] text-slate-500 font-mono truncate">{user.email}</p>
+                  <div className="flex items-center gap-1.5 mt-1">
+                    <span className="px-2 py-0.5 text-[9px] font-bold bg-purple-100 text-purple-800 rounded font-mono">
+                      {user.isUniversalAdmin ? 'ADMINISTRATOR (SAP_ALL)' : (user.role || 'Usuario Corporativo')}
                     </span>
                   </div>
                 </div>
 
-                <div className="px-3 py-2 border-b border-slate-100 text-xs text-slate-700 space-y-2">
-                  <div className="space-y-1">
-                    <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider block">
-                      Seleccionar Rol Activo
-                    </label>
-                    <select
-                      value={currentRole}
-                      onChange={(e) => {
-                        setCurrentRole(e.target.value);
-                        addToast(`Modo cambiado a: ${roleLabels[e.target.value]?.title}`, 'info');
-                      }}
-                      className="w-full bg-slate-50 border border-slate-300 rounded-lg p-1.5 text-xs font-bold text-slate-900 focus:ring-2 focus:ring-sap-blue"
-                    >
-                      {Object.entries(roleLabels).map(([key, val]) => (
-                        <option key={key} value={key}>{val.title}</option>
-                      ))}
-                    </select>
+                {/* Conmutador de Tenant Contextual (Multi-Tenancy) */}
+                <div className="px-4 py-2 border-b border-slate-100 bg-slate-50/70">
+                  <div className="flex items-center justify-between text-[10px] font-bold text-slate-500 mb-1">
+                    <span>🏢 Tenant Activo:</span>
+                    <span className="font-mono text-sap-blue font-bold">{user.tenantId || 'tenant_demo'}</span>
                   </div>
-                  <div className="flex items-center justify-between text-[11px]">
-                    <span className="text-slate-500 font-medium">Planta:</span>
-                    <span className="font-semibold text-slate-800">{user.plant || '0001 (Planta Central)'}</span>
-                  </div>
+                  <select
+                    value={user.tenantId || 'tenant_demo'}
+                    onChange={(e) => {
+                      if (typeof switchTenant === 'function') {
+                        switchTenant(e.target.value);
+                      }
+                    }}
+                    className="w-full bg-white border border-slate-200 rounded px-2 py-1 text-xs text-slate-800 font-semibold focus:outline-none focus:border-sap-blue cursor-pointer"
+                  >
+                    <option value="tenant_demo">Demo Enterprise (DEMO)</option>
+                    <option value="tenant_codelco">CODELCO Chile (El Teniente / Chuqui)</option>
+                    <option value="tenant_bhp">BHP Billiton (Escondida)</option>
+                    <option value="tenant_collahuasi">Minera Collahuasi</option>
+                    <option value="tenant_antofagasta_minerals">Antofagasta Minerals (AMSA)</option>
+                  </select>
                 </div>
 
-                <button
-                  onClick={() => { setShowUserMenu(false); handleInstallPWA(); }}
-                  className="w-full px-4 py-2 text-xs text-left text-emerald-700 hover:bg-emerald-50 flex items-center space-x-2 transition-colors font-medium"
-                >
-                  <Download className="w-4 h-4 text-emerald-600" />
-                  <span>Instalar App Nativa (PWA)</span>
-                </button>
-
-                <button
-                  onClick={() => { setShowUserMenu(false); onOpenAuthModal(); }}
-                  className="w-full px-4 py-2 text-xs text-left text-slate-700 hover:bg-slate-50 flex items-center space-x-2 transition-colors font-medium"
-                >
-                  <KeyRound className="w-4 h-4 text-sky-600" />
-                  <span>Cambiar de Cuenta / Registro</span>
-                </button>
-
-                <button
-                  onClick={() => { setShowUserMenu(false); logout(); addToast('Sesión de Firebase cerrada', 'info'); }}
-                  className="w-full px-4 py-2 text-xs text-left text-rose-600 hover:bg-rose-50 flex items-center space-x-2 transition-colors font-bold"
-                >
-                  <LogOut className="w-4 h-4" />
-                  <span>Cerrar Sesión</span>
-                </button>
+                <div className="py-1">
+                  <button
+                    onClick={() => { setShowUserMenu(false); logout(); }}
+                    className="w-full text-left px-4 py-2 text-xs text-rose-600 hover:bg-rose-50 flex items-center space-x-2 font-bold transition-colors"
+                  >
+                    <LogOut className="w-4 h-4" />
+                    <span>Cerrar Sesión</span>
+                  </button>
+                </div>
               </div>
             )}
           </div>
+
         </div>
       </div>
+
+      {/* ⠿ MODAL LANZADOR DE APPS CUADRÍCULA (ESTILO ODOO + FIORI LAUNCHPAD) */}
+      {isAppLauncherOpen && (
+        <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-4 animate-in fade-in">
+          <div className="bg-slate-900 text-white border border-slate-800 rounded-3xl shadow-2xl max-w-2xl w-full p-6 space-y-5 overflow-hidden">
+            {/* Header Modal & Search */}
+            <div className="flex justify-between items-center border-b border-slate-800 pb-4">
+              <div className="flex items-center space-x-2.5">
+                <div className="p-2 rounded-xl bg-sap-blue/20 text-sap-blue border border-sap-blue/30">
+                  <LayoutGrid className="w-5 h-5 text-sky-400" />
+                </div>
+                <div>
+                  <h3 className="text-base font-black text-white tracking-tight">
+                    Lanzador de Módulos & Transacciones (App Launcher)
+                  </h3>
+                  <p className="text-[11px] text-slate-400 font-medium">
+                    Atajo global de teclado: <kbd className="bg-slate-800 px-1.5 py-0.5 rounded text-sky-300 font-mono text-[10px]">Cmd+K</kbd>
+                  </p>
+                </div>
+              </div>
+              <button
+                onClick={() => setIsAppLauncherOpen(false)}
+                className="text-slate-400 hover:text-white p-1 rounded-lg hover:bg-slate-800 transition-colors"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Quick Search */}
+            <div className="relative">
+              <Search className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
+              <input
+                type="text"
+                autoFocus
+                value={launcherSearch}
+                onChange={(e) => setLauncherSearch(e.target.value)}
+                placeholder="Buscar comando, slug o hashtag (ej. nebex:inventario:movimientos, #inv-mov, MIGO)..."
+                className="w-full bg-slate-800/90 text-white placeholder-slate-400 text-xs rounded-xl pl-10 pr-9 py-2.5 border border-slate-700 focus:outline-none focus:ring-2 focus:ring-sap-blue focus:border-transparent transition-all"
+              />
+              {launcherSearch && (
+                <button
+                  onClick={() => setLauncherSearch('')}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white text-xs"
+                >
+                  ✕
+                </button>
+              )}
+            </div>
+
+            {/* Grid of Colorful App Tiles (Odoo Style) */}
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3.5 max-h-[380px] overflow-y-auto pr-1">
+              {filteredAppsGrid.map(app => {
+                const IconComp = app.icon;
+                const isActive = activeTab === app.key;
+
+                return (
+                  <button
+                    key={app.key}
+                    onClick={() => {
+                      setActiveTab(app.key);
+                      setIsAppLauncherOpen(false);
+                      addToast(`🚀 Módulo ${app.title} (${app.slug}) activado.`, 'info');
+                    }}
+                    className={`group relative p-4 rounded-2xl text-left transition-all duration-200 border cursor-pointer flex flex-col justify-between h-34 ${
+                      isActive
+                        ? 'ring-2 ring-sky-400 border-sky-400 scale-[1.02] bg-slate-800'
+                        : 'border-slate-800 hover:border-slate-700 hover:scale-[1.02] bg-slate-900/90'
+                    } shadow-md`}
+                  >
+                    <div className="flex justify-between items-start">
+                      <div className={`p-2.5 rounded-xl border ${app.colorClasses}`}>
+                        <IconComp className="w-5 h-5" />
+                      </div>
+                      <span className="text-[9px] font-mono font-bold bg-sky-950 text-sky-300 px-2 py-0.5 rounded-md border border-sky-800/50">
+                        {app.badge}
+                      </span>
+                    </div>
+
+                    <div>
+                      <h4 className="font-extrabold text-xs text-slate-100 group-hover:text-sky-400 transition-colors flex items-center justify-between">
+                        <span>{app.title}</span>
+                        <ArrowRight className="w-3.5 h-3.5 text-slate-500 group-hover:text-sky-400 group-hover:translate-x-1 transition-all" />
+                      </h4>
+                      <p className="text-[10px] text-slate-400 font-medium line-clamp-1 mt-0.5">
+                        {app.subtitle}
+                      </p>
+                      <span className="inline-block mt-1 text-[9px] text-sky-400/90 font-mono">
+                        {app.slug}
+                      </span>
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
+
+            <div className="flex justify-between items-center text-[10px] text-slate-400 border-t border-slate-800/80 pt-3">
+              <span>9 Módulos Enterprise Activos</span>
+              <span>Presiona <kbd className="bg-slate-800 px-1 py-0.5 rounded text-white font-mono">ESC</kbd> para cerrar</span>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ⭐ MODAL PERSONALIZADOR DE FAVORITOS */}
+      {isFavModalOpen && (
+        <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-4 animate-in fade-in">
+          <div className="bg-white border border-slate-200 rounded-2xl shadow-2xl max-w-lg w-full p-6 text-slate-900 space-y-4">
+            <div className="flex justify-between items-center border-b border-slate-100 pb-3">
+              <div className="flex items-center space-x-2">
+                <Star className="w-5 h-5 text-amber-500 fill-amber-400" />
+                <h3 className="text-base font-black text-slate-900">
+                  Personalizar Barra de Accesos Directos (Fiori Bar)
+                </h3>
+              </div>
+              <button
+                onClick={() => setIsFavModalOpen(false)}
+                className="text-slate-400 hover:text-slate-700"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <p className="text-xs text-slate-500 leading-relaxed">
+              Selecciona los módulos a los que accedes habitualmente para mantener la barra superior limpia, rápida y personalizada:
+            </p>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2 max-h-80 overflow-y-auto">
+              {Object.entries(ALL_TAB_CONFIG).map(([tabKey, config]) => {
+                const isSelected = draftFavorites.includes(tabKey);
+                const IconComp = config.icon;
+
+                return (
+                  <div
+                    key={tabKey}
+                    onClick={() => handleToggleDraftFavorite(tabKey)}
+                    className={`p-3 rounded-xl border cursor-pointer transition-all flex items-start space-x-3 ${
+                      isSelected
+                        ? 'bg-blue-50/80 border-sap-blue/60 shadow-sm'
+                        : 'bg-slate-50 border-slate-200 hover:border-slate-300'
+                    }`}
+                  >
+                    <div className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 ${
+                      isSelected ? 'bg-sap-blue text-white' : 'bg-slate-200 text-slate-500'
+                    }`}>
+                      <IconComp className="w-4 h-4" />
+                    </div>
+
+                    <div className="flex-1 text-xs">
+                      <div className="font-bold text-slate-900 flex items-center justify-between">
+                        <span>{config.title}</span>
+                        {isSelected && <Check className="w-4 h-4 text-sap-blue stroke-[3]" />}
+                      </div>
+                      <div className="text-[10px] text-slate-500 mt-0.5 leading-tight">
+                        {config.desc}
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+
+            <div className="flex space-x-3 pt-3 border-t border-slate-100">
+              <button
+                type="button"
+                onClick={() => setIsFavModalOpen(false)}
+                className="w-1/2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold py-2.5 rounded-xl text-xs transition-colors"
+              >
+                Cancelar
+              </button>
+              <button
+                type="button"
+                onClick={handleSaveFavorites}
+                className="w-1/2 bg-sap-blue hover:bg-sap-blue-hover text-white font-bold py-2.5 rounded-xl text-xs shadow-lg transition-colors flex items-center justify-center space-x-1.5"
+              >
+                <CheckCircle2 className="w-4 h-4" />
+                <span>Guardar Accesos</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </header>
   );
 };
-

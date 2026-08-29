@@ -1,0 +1,63 @@
+{
+  "tenantId": "tenant_codelco",
+  "tenantName": "CODELCO Chile",
+  "plantLocation": "División El Teniente / Chuquicamata",
+  "backupTimestamp": "2026-08-23T16:16:16.679Z",
+  "backupLocalTime": "23-08-2026, 12:16:16 p. m.",
+  "environment": "Enterprise Production Backup Engine",
+  "totalCollections": 7,
+  "totalRecords": 10,
+  "checksumAlgorithm": "SHA-256",
+  "files": [
+    {
+      "collection": "plants",
+      "filename": "plants.json",
+      "recordsCount": 1,
+      "sizeBytes": 214,
+      "sha256Checksum": "f1a6a83034ec83c1ce5a12e86d0c73082e88de81863a7fbc7b90004122c0d324"
+    },
+    {
+      "collection": "assets",
+      "filename": "assets.json",
+      "recordsCount": 2,
+      "sizeBytes": 594,
+      "sha256Checksum": "b87a763bb6fc7fe0a86baec28d5f271450e8ccaf59b82fbf5b7844b1e64ba250"
+    },
+    {
+      "collection": "workOrders",
+      "filename": "workOrders.json",
+      "recordsCount": 1,
+      "sizeBytes": 308,
+      "sha256Checksum": "8094790506183d9ed76435a7fa64e2ad437fe9cb07b00aaba7561e15b6b51125"
+    },
+    {
+      "collection": "materials",
+      "filename": "materials.json",
+      "recordsCount": 2,
+      "sizeBytes": 445,
+      "sha256Checksum": "203ea274122c78963838807c6fb97e84d8d509b024dcb3c98b50d9dd62f52f08"
+    },
+    {
+      "collection": "migoDocuments",
+      "filename": "migoDocuments.json",
+      "recordsCount": 1,
+      "sizeBytes": 297,
+      "sha256Checksum": "f8688d3cd6be21ab5dff33b78f60a823ce024fe3126af2cf3b64c168b188e7c8"
+    },
+    {
+      "collection": "employees",
+      "filename": "employees.json",
+      "recordsCount": 2,
+      "sizeBytes": 404,
+      "sha256Checksum": "54ce66477498439d5cbf086d12e7d66dbffb4f5adbd43ecda3c8e24491561b8c"
+    },
+    {
+      "collection": "purchaseOrders",
+      "filename": "purchaseOrders.json",
+      "recordsCount": 1,
+      "sizeBytes": 166,
+      "sha256Checksum": "3bec3d234877118f593dd9f6cdcc71c5fce3ee38c64e321c9c23053820687913"
+    }
+  ],
+  "integrityStatus": "VERIFIED_OK"
+}

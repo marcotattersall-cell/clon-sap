@@ -1,25 +1,39 @@
-import React, { useState } from 'react';
+import React, { useState, Suspense, lazy } from 'react';
 import { SAPProvider, useSAP } from './context/SAPContext';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { FioriHeader } from './components/shell/FioriHeader';
 import { FioriLaunchpad } from './components/shell/FioriLaunchpad';
-import { MaterialMasterTable } from './components/inventory/MaterialMasterTable';
-import { WarehouseVisualMap } from './components/inventory/WarehouseVisualMap';
-import { WorkOrderMaster } from './components/workorders/WorkOrderMaster';
-import { GoodsMovementMIGO } from './components/inventory/GoodsMovementMIGO';
-import { AssetHierarchyTree } from './components/workorders/AssetHierarchyTree';
-import { FleetPlanner } from './components/fleet/FleetPlanner';
-import { SAPAnalyticsCockpit } from './components/analytics/SAPAnalyticsCockpit';
 import { CreateWOModal } from './components/modals/CreateWOModal';
 import { CreateMaterialModal } from './components/modals/CreateMaterialModal';
 import { CreatePlantModal } from './components/modals/CreatePlantModal';
-import { HRMaster } from './components/hr/HRMaster';
 import { CreateEmployeeModal } from './components/modals/CreateEmployeeModal';
 import { CreateAbsenceModal } from './components/modals/CreateAbsenceModal';
 import { AuthModal } from './components/auth/AuthModal';
 import { LoginScreen } from './components/auth/LoginScreen';
 import { MobileBottomNav } from './components/shell/MobileBottomNav';
+import { AICopilotChatbox } from './components/common/AICopilotChatbox';
+import AxomiraLogo from './components/common/AxomiraLogo';
+import { NebexEntranceSplash } from './components/common/NebexEntranceSplash';
 import { AlertCircle, CheckCircle2, Info, X, Loader2, ShieldCheck } from 'lucide-react';
+
+// 🚀 Code-Splitting (React.lazy): Carga perezosa de módulos pesados para reducir el bundle inicial
+const MaterialMasterTable = lazy(() => import('./components/inventory/MaterialMasterTable').then(m => ({ default: m.MaterialMasterTable })));
+const WarehouseVisualMap = lazy(() => import('./components/inventory/WarehouseVisualMap').then(m => ({ default: m.WarehouseVisualMap })));
+const WorkOrderMaster = lazy(() => import('./components/workorders/WorkOrderMaster').then(m => ({ default: m.WorkOrderMaster })));
+const GoodsMovementMIGO = lazy(() => import('./components/inventory/GoodsMovementMIGO').then(m => ({ default: m.GoodsMovementMIGO })));
+const AssetHierarchyTree = lazy(() => import('./components/workorders/AssetHierarchyTree').then(m => ({ default: m.AssetHierarchyTree })));
+const FleetPlanner = lazy(() => import('./components/fleet/FleetPlanner').then(m => ({ default: m.FleetPlanner })));
+const SAPAnalyticsCockpit = lazy(() => import('./components/analytics/SAPAnalyticsCockpit').then(m => ({ default: m.SAPAnalyticsCockpit })));
+const HRMaster = lazy(() => import('./components/hr/HRMaster').then(m => ({ default: m.HRMaster })));
+const UserManagementSU01 = lazy(() => import('./components/admin/UserManagementSU01').then(m => ({ default: m.UserManagementSU01 })));
+const ExecutiveReportGeneratorModal = lazy(() => import('./components/modals/ExecutiveReportGeneratorModal').then(m => ({ default: m.ExecutiveReportGeneratorModal })));
+
+const ViewLoader = () => (
+  <div className="flex flex-col items-center justify-center p-12 space-y-3 min-h-[350px]">
+    <Loader2 className="w-8 h-8 text-sky-500 animate-spin" />
+    <span className="text-xs font-bold text-slate-400 tracking-wider uppercase font-mono">Cargando Módulo AXOMIRA...</span>
+  </div>
+);
 
 const ToastContainer = () => {
   const { globalToasts } = useSAP();
@@ -193,16 +207,27 @@ const SAPAppContent = () => {
   const [isCreatePlantOpen, setIsCreatePlantOpen] = useState(false);
   const [isCreateEmployeeOpen, setIsCreateEmployeeOpen] = useState(false);
   const [isCreateAbsenceOpen, setIsCreateAbsenceOpen] = useState(false);
+  const [isExecutiveReportOpen, setIsExecutiveReportOpen] = useState(false);
   const [isAuthOpen, setIsAuthOpen] = useState(false);
   const [migoInitialMat, setMigoInitialMat] = useState('');
+  const [showEntranceSplash, setShowEntranceSplash] = useState(false);
+  const prevUserRef = React.useRef(null);
+
+  React.useEffect(() => {
+    if (user && !prevUserRef.current) {
+      setShowEntranceSplash(true);
+    }
+    prevUserRef.current = user;
+  }, [user]);
 
   // 1. Loading state
   if (loading) {
     return (
-      <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col items-center justify-center font-sans">
-        <Loader2 className="w-8 h-8 text-sap-blue animate-spin mb-3" />
-        <div className="text-xs font-bold tracking-widest uppercase text-slate-400">
-          Cargando Sistema Operam ERP...
+      <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col items-center justify-center font-sans space-y-4">
+        <AxomiraLogo variant="full" dark className="w-52 h-auto animate-pulse" />
+        <div className="flex items-center space-x-2 text-xs font-bold tracking-widest uppercase text-slate-400">
+          <Loader2 className="w-4 h-4 text-sky-400 animate-spin" />
+          <span>Iniciando AXOMIRA Cloud Platform...</span>
         </div>
       </div>
     );
@@ -220,6 +245,10 @@ const SAPAppContent = () => {
 
   return (
     <div className="min-h-screen bg-white text-slate-900 flex flex-col font-sans selection:bg-sap-blue selection:text-white">
+      {/* 🚀 Animación sutil y rápida de entrada tras el inicio de sesión */}
+      {showEntranceSplash && (
+        <NebexEntranceSplash onComplete={() => setShowEntranceSplash(false)} />
+      )}
       {/* Header */}
       <FioriHeader
         onOpenCreateWO={() => setIsCreateWOOpen(true)}
@@ -228,64 +257,72 @@ const SAPAppContent = () => {
         onOpenAuthModal={() => setIsAuthOpen(true)}
         onOpenCreatePlant={() => setIsCreatePlantOpen(true)}
         onOpenCreateEmployee={() => setIsCreateEmployeeOpen(true)}
+        onOpenReportModal={() => setIsExecutiveReportOpen(true)}
       />
 
       {/* Main Content Area - Full Screen Width with Mobile Bottom Bar Clearance */}
       <main className="flex-1 w-full px-3 sm:px-6 lg:px-8 py-4 sm:py-6 pb-20 lg:pb-6 space-y-4 sm:space-y-6">
         <ErrorBoundary>
-        {activeTab === 'LAUNCHPAD' && (
-          <FioriLaunchpad
-            onOpenCreateWO={() => setIsCreateWOOpen(true)}
-            onOpenCreateMIGO={() => setActiveTab('MIGO')}
-          />
-        )}
+          <Suspense fallback={<ViewLoader />}>
+            {activeTab === 'LAUNCHPAD' && (
+              <FioriLaunchpad
+                onOpenCreateWO={() => setIsCreateWOOpen(true)}
+                onOpenCreateMIGO={() => setActiveTab('MIGO')}
+              />
+            )}
 
-        {activeTab === 'WORK_ORDERS' && (
-          <WorkOrderMaster
-            onOpenCreateWO={() => setIsCreateWOOpen(true)}
-            onOpenMIGOForWO={() => setActiveTab('MIGO')}
-          />
-        )}
+            {activeTab === 'WORK_ORDERS' && (
+              <WorkOrderMaster
+                onOpenCreateWO={() => setIsCreateWOOpen(true)}
+                onOpenMIGOForWO={() => setActiveTab('MIGO')}
+              />
+            )}
 
-        {activeTab === 'INVENTORY' && (
-          <div className="space-y-6">
-            <MaterialMasterTable
-              onOpenCreateMaterial={() => setIsCreateMaterialOpen(true)}
-              onOpenMIGOForMaterial={handleOpenMIGOForMat}
-            />
-            <WarehouseVisualMap />
-          </div>
-        )}
+            {activeTab === 'INVENTORY' && (
+              <div className="space-y-6">
+                <MaterialMasterTable
+                  onOpenCreateMaterial={() => setIsCreateMaterialOpen(true)}
+                  onOpenMIGOForMaterial={handleOpenMIGOForMat}
+                />
+                <WarehouseVisualMap />
+              </div>
+            )}
 
-        {activeTab === 'MIGO' && (
-          <GoodsMovementMIGO initialMaterialId={migoInitialMat} />
-        )}
+            {activeTab === 'MIGO' && (
+              <GoodsMovementMIGO initialMaterialId={migoInitialMat} />
+            )}
 
-        {activeTab === 'ASSETS' && (
-          <AssetHierarchyTree />
-        )}
+            {activeTab === 'ASSETS' && (
+              <AssetHierarchyTree />
+            )}
 
-        {activeTab === 'FLEET' && (
-          <FleetPlanner onOpenCreateWOForVehicle={() => setIsCreateWOOpen(true)} />
-        )}
+            {activeTab === 'FLEET' && (
+              <FleetPlanner onOpenCreateWOForVehicle={() => setIsCreateWOOpen(true)} />
+            )}
 
-        {activeTab === 'HR' && (
-          <HRMaster
-            onOpenCreateEmployee={() => setIsCreateEmployeeOpen(true)}
-            onOpenCreateAbsence={() => setIsCreateAbsenceOpen(true)}
-          />
-        )}
+            {activeTab === 'HR' && (
+              <HRMaster
+                onOpenCreateEmployee={() => setIsCreateEmployeeOpen(true)}
+                onOpenCreateAbsence={() => setIsCreateAbsenceOpen(true)}
+              />
+            )}
 
-        {activeTab === 'ANALYTICS' && (
-          <SAPAnalyticsCockpit />
-        )}
+            {activeTab === 'ANALYTICS' && (
+              <SAPAnalyticsCockpit />
+            )}
+
+            {activeTab === 'USER_MGMT' && (
+              <UserManagementSU01 />
+            )}
+          </Suspense>
         </ErrorBoundary>
       </main>
 
       {/* Footer Ribbon */}
-      <footer className="bg-slate-50 border-t border-slate-200 py-4 px-6 mb-14 lg:mb-0 text-center text-xs text-slate-600 flex flex-col sm:flex-row items-center justify-between gap-2 no-print">
-        <div>
-          <strong>Operam ERP Enterprise Platform</strong> • Módulos Transaccionales: Mantenimiento (PM), Almacén (MM), Recursos Humanos (HCM), Flota y Analítica Integrados
+      <footer className="bg-slate-50 border-t border-slate-200 py-3.5 px-6 mb-14 lg:mb-0 text-center text-xs text-slate-600 flex flex-col sm:flex-row items-center justify-between gap-2 no-print">
+        <div className="flex items-center space-x-2">
+          <AxomiraLogo variant="horizontal" className="h-5" />
+          <span>• Módulos Transaccionales: PM, MM, HCM, Flota y Analítica Integrados</span>
         </div>
         <div className="flex items-center space-x-4 text-[11px] text-slate-500">
           <span>Executive Horizon UI 4.0</span>
@@ -330,8 +367,16 @@ const SAPAppContent = () => {
         onClose={() => setIsAuthOpen(false)}
       />
 
+      <ExecutiveReportGeneratorModal
+        isOpen={isExecutiveReportOpen}
+        onClose={() => setIsExecutiveReportOpen(false)}
+      />
+
       {/* Centered TECO Certificate Modal */}
       <TECOConfirmationModal />
+
+      {/* Floating AI Copilot Chatbox */}
+      <AICopilotChatbox />
 
       {/* Toast Notifications */}
       <ToastContainer />

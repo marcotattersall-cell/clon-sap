@@ -21,32 +21,26 @@ import {
   PlusCircle,
   History,
   BarChart2,
+  Sparkles,
   Server
 } from 'lucide-react';
 import { CreateAssetModal } from '../modals/CreateAssetModal';
-import { getTelemetryHistory } from '../../services/iotIngestionService';
+import { getTelemetryHistory, processIoTTelemetry } from '../../services/iotIngestionService';
+import { predictAssetRUL } from '../../services/pdmPredictiveMaintenanceService';
 
 export const AssetHierarchyTree = () => {
   const { assets, workOrders, addToast } = useSAP();
   const [selectedAsset, setSelectedAsset] = useState(assets[0] || null);
   const [isCreateAssetOpen, setIsCreateAssetOpen] = useState(false);
+  const [editingAsset, setEditingAsset] = useState(null);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [telemetryLogs, setTelemetryLogs] = useState([]);
-  const [isLoadingLogs, setIsLoadingLogs] = useState(false);
 
   // Fetch Time-Series Telemetry History whenever selected asset changes
   useEffect(() => {
-    if (!selectedAsset) return;
-    let isMounted = true;
-    setIsLoadingLogs(true);
-
-    getTelemetryHistory(selectedAsset.id).then(logs => {
-      if (isMounted) {
-        setTelemetryLogs(logs);
-        setIsLoadingLogs(false);
-      }
-    });
-
-    return () => { isMounted = false; };
+    if (selectedAsset) {
+      getTelemetryHistory(selectedAsset.id).then(logs => setTelemetryLogs(logs));
+    }
   }, [selectedAsset]);
 
   // Fleet Health Metrics Calculations
@@ -59,7 +53,6 @@ export const AssetHierarchyTree = () => {
   // Trigger IoT Telemetry Burst for a specific asset
   const triggerIoTBurst = async (targetAsset) => {
     if (!targetAsset) return;
-    const { processIoTTelemetry } = await import('../../services/iotIngestionService');
     const randomTemp = Math.floor(88 + Math.random() * 24); // 88°C to 112°C
     const randomVib = Number((3.2 + Math.random() * 4.8).toFixed(1)); // 3.2 to 8.0 mm/s
     const newHrs = (targetAsset.hourmeter || 4000) + Math.floor(Math.random() * 5 + 1);
@@ -84,7 +77,6 @@ export const AssetHierarchyTree = () => {
 
   // Trigger IoT Burst for ALL assets in fleet
   const triggerFleetBurst = async () => {
-    const { processIoTTelemetry } = await import('../../services/iotIngestionService');
     let alertCount = 0;
 
     for (const asset of assets) {
@@ -128,7 +120,7 @@ export const AssetHierarchyTree = () => {
               <span>Módulo PM - Serverless IoT Webhook & Time-Series DB</span>
             </div>
             <h2 className="text-xl sm:text-2xl font-black tracking-tight text-white flex items-center gap-2">
-              <span>Jerarquía de Activos & Salud de Flota (IE03)</span>
+              <span>Jerarquía de Activos & Salud de Flota (#flota-activos)</span>
               <span className="text-xs px-2.5 py-1 rounded-md bg-purple-500/20 text-purple-300 border border-purple-500/30 font-mono">
                 REST API Ready 100%
               </span>
@@ -230,12 +222,34 @@ export const AssetHierarchyTree = () => {
                 >
                   <div className="flex items-center justify-between font-bold">
                     <span className="font-mono">{asset.id}</span>
-                    <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${
-                      asset.status === 'OPERATIVE' || asset.status === 'Operational' ? 'bg-emerald-500/20 text-emerald-600 dark:text-emerald-300 border border-emerald-500/30' :
-                      'bg-rose-500/20 text-rose-600 dark:text-rose-300 border border-rose-500/30 animate-pulse'
-                    }`}>
-                      {asset.status === 'OPERATIVE' || asset.status === 'Operational' ? 'OPERATIVO' : 'MANTENCIÓN'}
-                    </span>
+                    <div className="flex items-center space-x-1.5">
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setEditingAsset(asset);
+                          setIsEditModalOpen(true);
+                        }}
+                        className={`p-1 rounded-md transition-colors ${
+                          isSelected
+                            ? 'hover:bg-white/20 text-white'
+                            : 'hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-500'
+                        }`}
+                        title="Editar Registro de Equipo (IE02)"
+                      >
+                        <Settings className="w-3.5 h-3.5" />
+                      </button>
+                      <span className={`px-2 py-0.5 rounded text-[10px] transition-all ${
+                        asset.status === 'OPERATIVE' || asset.status === 'Operational'
+                          ? isSelected
+                            ? 'bg-emerald-400 text-slate-950 font-black border border-emerald-200 shadow-md'
+                            : 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950/80 dark:text-emerald-300 border border-emerald-400/60 font-bold'
+                          : isSelected
+                            ? 'bg-rose-400 text-slate-950 font-black border border-rose-200 shadow-md animate-pulse'
+                            : 'bg-rose-100 text-rose-800 dark:bg-rose-950/80 dark:text-rose-300 border border-rose-400/60 font-bold animate-pulse'
+                      }`}>
+                        {asset.status === 'OPERATIVE' || asset.status === 'Operational' ? 'OPERATIVO' : 'MANTENCIÓN'}
+                      </span>
+                    </div>
                   </div>
 
                   <div className="font-bold text-sm mt-1 truncate">
@@ -291,6 +305,18 @@ export const AssetHierarchyTree = () => {
 
                 <div className="flex items-center space-x-3">
                   <button
+                    onClick={() => {
+                      setEditingAsset(selectedAsset);
+                      setIsEditModalOpen(true);
+                    }}
+                    className="bg-sky-600 hover:bg-sky-500 text-white px-3.5 py-2 rounded-xl text-xs font-bold flex items-center space-x-1.5 shadow transition-all cursor-pointer"
+                    title="Editar datos de este equipo (IE02)"
+                  >
+                    <Settings className="w-4 h-4" />
+                    <span>✏️ Editar Equipo (IE02)</span>
+                  </button>
+
+                  <button
                     onClick={() => triggerIoTBurst(selectedAsset)}
                     className="bg-purple-600 hover:bg-purple-500 text-white px-3.5 py-2 rounded-xl text-xs font-bold flex items-center space-x-1.5 shadow transition-all cursor-pointer"
                     title="Enviar ráfaga de sensores IoT a este equipo"
@@ -307,6 +333,38 @@ export const AssetHierarchyTree = () => {
                   </div>
                 </div>
               </div>
+
+              {/* PdM Machine Learning RUL Banner */}
+              {(() => {
+                const pdm = predictAssetRUL(selectedAsset, telemetryLogs);
+                return (
+                  <div className="p-4 rounded-xl bg-slate-900 border border-purple-800/60 text-white shadow-lg space-y-2">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center space-x-2 text-xs font-bold text-purple-300">
+                        <Sparkles className="w-4 h-4 text-amber-300 animate-spin" />
+                        <span>Inferencia de Mantenimiento Predictivo (PdM ML Engine)</span>
+                      </div>
+                      <span className="text-[10px] font-mono text-purple-300 bg-purple-950 px-2 py-0.5 rounded border border-purple-800">
+                        Confianza ML: {pdm.confidenceScore}%
+                      </span>
+                    </div>
+
+                    <div className="flex flex-wrap items-center justify-between gap-3 pt-1">
+                      <div>
+                        <div className="text-[11px] text-slate-400 font-medium">Vida Útil Restante Estimada (RUL):</div>
+                        <div className="text-xl font-black text-amber-300 font-mono">
+                          {pdm.predictedRulHours} hrs de operación <span className="text-xs text-slate-400 font-normal">({pdm.daysToFailure} días aprox.)</span>
+                        </div>
+                      </div>
+
+                      <div className="text-right">
+                        <div className="text-[11px] font-bold text-slate-300">{pdm.recommendedAction}</div>
+                        <div className="text-[10px] text-slate-400 font-mono">Fecha estimada intervención: {pdm.estimatedInterventionDate}</div>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })()}
 
               {/* IoT Live Sensors Gauges */}
               <div className="space-y-3">
@@ -511,6 +569,15 @@ export const AssetHierarchyTree = () => {
       <CreateAssetModal
         isOpen={isCreateAssetOpen}
         onClose={() => setIsCreateAssetOpen(false)}
+      />
+
+      <CreateAssetModal
+        isOpen={isEditModalOpen}
+        onClose={() => {
+          setIsEditModalOpen(false);
+          setEditingAsset(null);
+        }}
+        assetToEdit={editingAsset}
       />
     </div>
   );

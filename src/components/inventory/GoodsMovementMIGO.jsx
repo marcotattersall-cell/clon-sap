@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useSAP } from '../../context/SAPContext';
-import { Package, ArrowRightLeft, ArrowDownRight, ArrowUpRight, FileCheck, CheckCircle2, History, Layers, QrCode } from 'lucide-react';
+import { Package, ArrowRightLeft, ArrowDownRight, ArrowUpRight, FileCheck, CheckCircle2, History, Layers, QrCode, HelpCircle } from 'lucide-react';
 import { QRScannerModal } from '../modals/QRScannerModal';
 import { formatDateDDMMYYYY } from '../../utils/dateUtils';
 
@@ -64,15 +64,15 @@ const GoodsMovementMIGOComponent = ({ initialMaterialId = '' }) => {
       {/* Header Banner */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-slate-900 text-white p-5 rounded-2xl border border-slate-800 shadow-xl">
         <div>
-          <div className="flex items-center space-x-2 text-xs font-semibold text-sap-blue uppercase tracking-wider mb-1">
+          <div className="flex items-center space-x-2 text-xs font-semibold text-sky-400 uppercase tracking-wider mb-1 font-mono">
             <Package className="w-4 h-4" />
-            <span>Transacción MIGO - Movimiento de Mercancías</span>
+            <span>nebex:inventario:movimientos <span className="bg-sky-950 text-sky-300 px-2 py-0.5 rounded border border-sky-800/60 ml-1">#inv-mov</span></span>
           </div>
           <h2 className="text-xl font-bold tracking-tight">
-            Entradas, Salidas y Traspasos de Almacén
+            Movimiento de Mercancías & Gestión de Stock
           </h2>
           <p className="text-xs text-slate-400 mt-0.5">
-            Procesamiento de documentos de material con actualización simultánea del libro mayor e inventario.
+            Procesamiento de documentos de entradas, salidas (261) y traspasos con actualización en tiempo real.
           </p>
         </div>
       </div>
@@ -82,13 +82,19 @@ const GoodsMovementMIGOComponent = ({ initialMaterialId = '' }) => {
         <div className="lg:col-span-1 fiori-glass p-6 rounded-2xl border border-slate-200 dark:border-slate-800 space-y-4 shadow-lg">
           <h3 className="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2 border-b border-slate-200 dark:border-slate-800 pb-3">
             <FileCheck className="w-4 h-4 text-sap-blue" />
-            <span>Formulario MIGO Express</span>
+            <span>Formulario `#inv-mov` Express</span>
           </h3>
 
           <form onSubmit={handleSubmitMIGO} className="space-y-4 text-xs">
             {/* Movement Type Selector */}
             <div>
-              <label className="block text-slate-600 dark:text-slate-400 font-bold mb-1">Clase de Movimiento ERP</label>
+              <div className="flex items-center space-x-1.5 mb-1">
+                <label className="text-slate-600 dark:text-slate-400 font-bold">Clase de Movimiento ERP</label>
+                <HelpCircle
+                  title="MIGO 261: Salida de Mercancías por Orden de Trabajo PM (Rebaja de Stock MM e Imputación a Costo Real PM)"
+                  className="w-3.5 h-3.5 text-amber-500 hover:text-amber-600 transition-colors cursor-help"
+                />
+              </div>
               <select
                 value={movementType}
                 onChange={(e) => setMovementType(e.target.value)}
@@ -235,11 +241,14 @@ const GoodsMovementMIGOComponent = ({ initialMaterialId = '' }) => {
                       {doc.documentId}
                     </td>
                     <td>
-                      <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${
-                        doc.movementType === '261' ? 'bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300' :
-                        doc.movementType === '101' ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300' :
-                        'bg-blue-100 text-blue-800 dark:bg-blue-950 dark:text-blue-300'
-                      }`}>
+                      <span
+                        title={doc.movementType === '261' ? 'MIGO 261: Salida para Orden PM (Rebaja de Stock MM e Imputación a Costo Real PM)' : doc.movementType === '101' ? 'MIGO 101: Entrada por Pedido' : 'MIGO 311: Traspaso de Almacén'}
+                        className={`px-2 py-0.5 rounded text-[10px] font-bold cursor-help ${
+                          doc.movementType === '261' ? 'bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300' :
+                          doc.movementType === '101' ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300' :
+                          'bg-blue-100 text-blue-800 dark:bg-blue-950 dark:text-blue-300'
+                        }`}
+                      >
                         {doc.movementType}
                       </span>
                     </td>

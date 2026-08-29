@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
+import { useVirtualizer } from '@tanstack/react-virtual';
 import { useSAP } from '../../context/SAPContext';
 import {
   Package,
@@ -15,14 +16,20 @@ import {
   SlidersHorizontal,
   CheckCircle2,
   XCircle,
-  Truck
+  Truck,
+  Sparkles,
+  Trash2,
+  Edit3
 } from 'lucide-react';
+import { forecastCatalogDemand } from '../../services/materialDemandForecastingService';
 
 export const MaterialMasterTable = ({ onOpenCreateMaterial, onOpenMIGOForMaterial }) => {
-  const { materials, searchTerm, setSearchTerm, addToast } = useSAP();
+  const { materials, searchTerm, setSearchTerm, addToast, deleteMaterial, updateMaterial } = useSAP();
   const [selectedType, setSelectedType] = useState('ALL'); // ALL, SPARE, RAW, FIN
   const [selectedLocation, setSelectedLocation] = useState('ALL'); // ALL, 0001, 0002, 0003
   const [onlyLowStock, setOnlyLowStock] = useState(false);
+
+  const parentRef = useRef(null);
 
   // Filter materials based on global search & filters
   const filteredMaterials = materials.filter(m => {
@@ -39,6 +46,17 @@ export const MaterialMasterTable = ({ onOpenCreateMaterial, onOpenMIGOForMateria
     return matchesSearch && matchesType && matchesLocation && matchesLowStock;
   });
 
+  const rowVirtualizer = useVirtualizer({
+    count: filteredMaterials.length,
+    getScrollElement: () => parentRef.current,
+    estimateSize: () => 52,
+    overscan: 5
+  });
+
+  const virtualItems = rowVirtualizer.getVirtualItems();
+  const paddingTop = virtualItems.length > 0 ? virtualItems[0].start : 0;
+  const paddingBottom = virtualItems.length > 0 ? rowVirtualizer.getTotalSize() - virtualItems[virtualItems.length - 1].end : 0;
+
   const totalStockValuation = filteredMaterials.reduce((acc, m) => acc + (m.stock * m.unitPrice), 0);
   const totalLowStockCount = filteredMaterials.filter(m => m.stock <= m.reorderPoint).length;
 
@@ -47,15 +65,15 @@ export const MaterialMasterTable = ({ onOpenCreateMaterial, onOpenMIGOForMateria
       {/* Header bar */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-slate-900 text-white p-5 rounded-2xl border border-slate-800 shadow-xl">
         <div>
-          <div className="flex items-center space-x-2 text-xs font-semibold text-sap-blue uppercase tracking-wider mb-1">
+          <div className="flex items-center space-x-2 text-xs font-semibold text-sky-400 uppercase tracking-wider mb-1 font-mono">
             <Package className="w-4 h-4" />
-            <span>Módulo MM / WM - Maestro de Materiales</span>
+            <span>nebex:inventario:materiales <span className="bg-sky-950 text-sky-300 px-2 py-0.5 rounded border border-sky-800/60 ml-1">#inv-materiales</span></span>
           </div>
           <h2 className="text-xl font-bold tracking-tight">
             Gestión de Stock & Catálogo de Repuestos
           </h2>
           <p className="text-xs text-slate-400 mt-0.5">
-            Transacción MM03 / MMBE - Control de inventario en tiempo real y valoración de stock.
+            Control de inventario en tiempo real, valoración de stock y reaprovisionamiento.
           </p>
         </div>
 
@@ -65,7 +83,7 @@ export const MaterialMasterTable = ({ onOpenCreateMaterial, onOpenMIGOForMateria
             className="bg-sap-blue hover:bg-sap-blue-hover text-white text-xs font-bold px-4 py-2.5 rounded-xl shadow flex items-center space-x-2 transition-all"
           >
             <Plus className="w-4 h-4" />
-            <span>Crear Material (MM01)</span>
+            <span>+ Nuevo Material</span>
           </button>
         </div>
       </div>
@@ -100,6 +118,63 @@ export const MaterialMasterTable = ({ onOpenCreateMaterial, onOpenMIGOForMateria
           <AlertTriangle className="w-8 h-8 text-rose-500 opacity-80" />
         </div>
       </div>
+
+      {/* MM Demand Forecasting ML Banner */}
+      {(() => {
+        if (filteredMaterials.length === 0) {
+          return (
+            <div className="p-4 rounded-xl bg-slate-900 border border-purple-800/60 text-white shadow-lg space-y-2">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-2 text-xs font-bold text-purple-300">
+                  <Sparkles className="w-4 h-4 text-amber-300 animate-spin" />
+                  <span>Pronóstico Inteligente de Demanda MM (Demand Forecasting ML Engine)</span>
+                </div>
+                <span className="text-[10px] font-mono text-purple-300 bg-purple-950 px-2 py-0.5 rounded border border-purple-800">
+                  Modelo In-Browser v2.1
+                </span>
+              </div>
+              <div className="text-xs text-slate-400 font-medium pt-1">
+                ℹ️ Sin datos de repuestos o inventario registrado en el catálogo para proyectar demanda.
+              </div>
+            </div>
+          );
+        }
+
+        const forecasts = forecastCatalogDemand(filteredMaterials);
+        const criticalForecasts = forecasts.filter(f => f.stockoutRisk === 'CRITICAL' || f.stockoutRisk === 'HIGH');
+        return (
+          <div className="p-4 rounded-xl bg-slate-900 border border-purple-800/60 text-white shadow-lg space-y-2">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-2 text-xs font-bold text-purple-300">
+                <Sparkles className="w-4 h-4 text-amber-300 animate-spin" />
+                <span>Pronóstico Inteligente de Demanda MM (Demand Forecasting ML Engine)</span>
+              </div>
+              <span className="text-[10px] font-mono text-purple-300 bg-purple-950 px-2 py-0.5 rounded border border-purple-800">
+                Modelo In-Browser v2.1
+              </span>
+            </div>
+
+            <div className="flex flex-wrap items-center justify-between gap-3 pt-1 text-xs">
+              <div className="space-y-0.5">
+                <div className="font-bold text-slate-200">
+                  Proyección a 30 días: <strong className="text-amber-300 font-mono">{forecasts.reduce((acc, f) => acc + f.projectedDemand30d, 0)} unidades</strong> consumidas estimadas.
+                </div>
+                <div className="text-[11px] text-slate-400">
+                  {criticalForecasts.length > 0
+                    ? `⚠️ ${criticalForecasts.length} repuestos requieren ajuste de Punto de Reorden (Reorder Point)`
+                    : '🟢 Todos los SKUs cuentan con Stock de Seguridad suficiente.'}
+                </div>
+              </div>
+
+              {criticalForecasts.length > 0 && (
+                <div className="bg-rose-950/80 border border-rose-700/60 px-3 py-1.5 rounded-lg text-rose-200 text-[11px] font-bold">
+                  {criticalForecasts[0].purchaseRecommendation}
+                </div>
+              )}
+            </div>
+          </div>
+        );
+      })()}
 
       {/* Filter Toolbar */}
       <div className="fiori-glass p-4 rounded-xl border border-slate-200 dark:border-slate-800 flex flex-wrap items-center justify-between gap-3">
@@ -166,11 +241,11 @@ export const MaterialMasterTable = ({ onOpenCreateMaterial, onOpenMIGOForMateria
         </label>
       </div>
 
-      {/* Main Material Master SAP Grid Table */}
+      {/* Main Material Master SAP Grid Table (Virtualizada) */}
       <div className="fiori-glass rounded-2xl border border-slate-200 dark:border-slate-800 overflow-hidden shadow-lg">
-        <div className="overflow-x-auto">
-          <table className="sap-table">
-            <thead>
+        <div ref={parentRef} className="overflow-auto max-h-[600px] custom-scrollbar">
+          <table className="sap-table w-full">
+            <thead className="sticky top-0 z-10 bg-slate-100 dark:bg-slate-900 shadow-sm">
               <tr>
                 <th>Código SKU</th>
                 <th>Descripción del Material</th>
@@ -181,11 +256,18 @@ export const MaterialMasterTable = ({ onOpenCreateMaterial, onOpenMIGOForMateria
                 <th>Precio Unit.</th>
                 <th>Valor Stock</th>
                 <th>Proveedor Principal</th>
-                <th className="text-right">Acción Quick MIGO</th>
+                <th className="text-right">Acción `#inv-mov`</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-200 dark:divide-slate-800">
-              {filteredMaterials.map(mat => {
+              {paddingTop > 0 && (
+                <tr>
+                  <td colSpan={10} style={{ height: `${paddingTop}px` }} />
+                </tr>
+              )}
+              {virtualItems.map(virtualRow => {
+                const mat = filteredMaterials[virtualRow.index];
+                if (!mat) return null;
                 const isCriticalStock = mat.stock <= mat.reorderPoint;
                 const matTotalValue = mat.stock * mat.unitPrice;
 
@@ -237,22 +319,50 @@ export const MaterialMasterTable = ({ onOpenCreateMaterial, onOpenMIGOForMateria
                       {mat.supplier}
                     </td>
                     <td className="text-right">
-                      <button
-                        onClick={() => onOpenMIGOForMaterial(mat.id)}
-                        className="bg-sap-blue/10 hover:bg-sap-blue text-sap-blue hover:text-white text-xs font-bold px-2.5 py-1 rounded-lg border border-sap-blue/30 transition-all"
-                      >
-                        MIGO 261/101
-                      </button>
+                      <div className="flex items-center justify-end space-x-1.5">
+                        <button
+                          onClick={() => onOpenMIGOForMaterial(mat.id)}
+                          className="bg-sky-500/10 hover:bg-sky-600 text-sky-700 hover:text-white dark:text-sky-300 text-xs font-bold px-2 py-1 rounded-lg border border-sky-500/30 transition-all font-mono cursor-pointer"
+                          title="Movimiento rápido de stock (#inv-mov)"
+                        >
+                          #inv-mov
+                        </button>
+                        <button
+                          onClick={() => {
+                            const newStockStr = window.prompt(`Modificar stock para ${mat.name} (${mat.id}):`, mat.stock);
+                            if (newStockStr !== null) {
+                              const newStock = Number(newStockStr);
+                              if (!isNaN(newStock) && newStock >= 0) {
+                                updateMaterial(mat.id, { stock: newStock });
+                              } else {
+                                addToast('❌ Cantidad de stock inválida.', 'error');
+                              }
+                            }
+                          }}
+                          className="p-1.5 bg-slate-100 hover:bg-sky-600 hover:text-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 rounded-lg transition-colors cursor-pointer"
+                          title="Editar stock rápido"
+                        >
+                          <Edit3 className="w-3.5 h-3.5" />
+                        </button>
+                        <button
+                          onClick={() => {
+                            if (window.confirm(`¿Está seguro de eliminar el material ${mat.name} (${mat.id}) del maestro?`)) {
+                              deleteMaterial(mat.id);
+                            }
+                          }}
+                          className="p-1.5 bg-rose-500/10 hover:bg-rose-600 text-rose-600 hover:text-white dark:text-rose-400 rounded-lg transition-colors cursor-pointer"
+                          title="Eliminar material"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 );
               })}
-
-              {filteredMaterials.length === 0 && (
+              {paddingBottom > 0 && (
                 <tr>
-                  <td colSpan="10" className="text-center py-8 text-slate-400 text-sm">
-                    No se encontraron materiales que coincidan con la búsqueda.
-                  </td>
+                  <td colSpan={10} style={{ height: `${paddingBottom}px` }} />
                 </tr>
               )}
             </tbody>

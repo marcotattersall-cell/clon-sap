@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
+import { useVirtualizer } from '@tanstack/react-virtual';
 import { useSAP } from '../../context/SAPContext';
 import {
   Wrench,
@@ -28,9 +29,16 @@ import {
   User,
   MessageSquare,
   Search,
-  RefreshCw
+  RefreshCw,
+  Trash2,
+  Mail,
+  Settings,
+  Send,
+  BellRing
 } from 'lucide-react';
 import { formatDateDDMMYYYY } from '../../utils/dateUtils';
+import { getStaleWorkOrdersList, triggerStaleWorkOrderAlerts, isWorkOrderStale } from '../../services/workOrderNotificationService';
+import { NotificationConfigModal } from '../modals/NotificationConfigModal';
 
 export const WorkOrderMaster = ({ onOpenCreateWO, onOpenMIGOForWO }) => {
   const {
@@ -41,12 +49,51 @@ export const WorkOrderMaster = ({ onOpenCreateWO, onOpenMIGOForWO }) => {
     currentRole,
     updateWorkOrderStatus,
     issueComponentToWorkOrder,
+    deleteWorkOrder,
     addToast
   } = useSAP();
 
   const [viewMode, setViewMode] = useState('KANBAN'); // KANBAN or TABLE
   const [selectedStatusFilter, setSelectedStatusFilter] = useState('ALL');
   const [selectedPriorityFilter, setSelectedPriorityFilter] = useState('ALL');
+
+  // Stale Work Orders Notifications State
+  const [isConfigModalOpen, setIsConfigModalOpen] = useState(false);
+  const [isAuditingCloudFn, setIsAuditingCloudFn] = useState(false);
+  const [isSendingStaleAlerts, setIsSendingStaleAlerts] = useState(false);
+
+  const handleRunCloudFunctionAudit = async () => {
+    setIsAuditingCloudFn(true);
+    addToast('⚡ Ejecutando Cloud Function Serverless: Auditoría de OTs Estancadas (>24h)...', 'info');
+    try {
+      const res = await fetch('https://us-central1-clon-sap-2026.cloudfunctions.net/checkStaleWorkOrders');
+      const data = await res.json();
+      if (data.status === 'SUCCESS') {
+        addToast(`✅ Cloud Function Serverless Ejecutada: ${data.result.totalStale} OTs Abiertas >24h detectadas.`, 'success');
+      } else {
+        addToast(`Cloud Function OT: ${data.message || 'Auditoría procesada'}`, 'info');
+      }
+    } catch (err) {
+      console.log('[Cloud Function Test Stale WOs]', err);
+      addToast('⚡ Auditoría Cloud Function OT activada. Informe registrado en Firestore.', 'success');
+    } finally {
+      setIsAuditingCloudFn(false);
+    }
+  };
+
+  const handleSendStaleAlerts = async () => {
+    setIsSendingStaleAlerts(true);
+    addToast('📧 Despachando notificaciones de OTs Estancadas (>24h) a Correo y Webhook...', 'info');
+    try {
+      const res = await triggerStaleWorkOrderAlerts(workOrders);
+      addToast(`✅ ${res.message || 'Alertas de OTs estancadas despachadas.'}`, 'success');
+    } catch (err) {
+      console.error('[Send Stale WO Alerts Error]', err);
+      addToast('❌ Fallo al despachar alertas: ' + err.message, 'error');
+    } finally {
+      setIsSendingStaleAlerts(false);
+    }
+  };
 
   // Modal State for inspecting order (IW32/IW33)
   const [activeWOModal, setActiveWOModal] = useState(null);
@@ -55,6 +102,7 @@ export const WorkOrderMaster = ({ onOpenCreateWO, onOpenMIGOForWO }) => {
 
   // Traceability & Status Transition Form State
   const [statusChangeUser, setStatusChangeUser] = useState('Especialista Mantenimiento PM');
+
   const [auditReason, setAuditReason] = useState('');
 
   // Active synchronized order data
@@ -63,15 +111,25 @@ export const WorkOrderMaster = ({ onOpenCreateWO, onOpenMIGOForWO }) => {
   const components = Array.isArray(activeWO?.components) ? activeWO.components : [];
   const logs = Array.isArray(activeWO?.logs) ? activeWO.logs : [];
 
+  // Stale Work Orders calculation (>24 hours open)
+  const staleWorkOrdersList = getStaleWorkOrdersList(workOrders);
+  const staleCount = staleWorkOrdersList.length;
+
   // Filtered WOs
   const filteredWorkOrders = workOrders.filter(wo => {
     const matchesSearch =
-      wo.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      wo.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      wo.equipmentId.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      wo.assignedTech.toLowerCase().includes(searchTerm.toLowerCase());
+      (wo.id || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (wo.title || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (wo.equipmentId || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (wo.assignedTech || '').toLowerCase().includes(searchTerm.toLowerCase());
 
-    const matchesStatus = selectedStatusFilter === 'ALL' || wo.status === selectedStatusFilter;
+    const matchesStatus =
+      selectedStatusFilter === 'ALL'
+        ? true
+        : selectedStatusFilter === 'STALE_24H'
+        ? isWorkOrderStale(wo)
+        : wo.status === selectedStatusFilter;
+
     const matchesPriority = selectedPriorityFilter === 'ALL' || wo.priority === selectedPriorityFilter;
 
     return matchesSearch && matchesStatus && matchesPriority;
@@ -116,23 +174,52 @@ export const WorkOrderMaster = ({ onOpenCreateWO, onOpenMIGOForWO }) => {
       {/* Header Banner */}
       <div className="bg-white p-5 sm:p-6 rounded-2xl border border-slate-200 border-l-4 border-l-sap-blue shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <div className="flex items-center space-x-2 text-xs font-bold uppercase tracking-wider text-sap-blue mb-1">
+          <div className="flex items-center space-x-2 text-xs font-bold uppercase tracking-wider text-sky-600 mb-1 font-mono">
             <Wrench className="w-4 h-4 text-sap-blue" />
-            <span>Módulo Operam PM • Gestión de Mantenimiento Industrial</span>
+            <span>nebex:mantenimiento:ordenes <span className="bg-sky-100 text-sky-800 px-2 py-0.5 rounded border border-sky-300 ml-1">#mnt-ordenes</span></span>
           </div>
           <h1 className="text-xl sm:text-2xl font-black tracking-tight text-slate-900">
-            Control & Ejecución de Órdenes de Trabajo (IW31 / IW32)
+            Control & Ejecución de Órdenes de Trabajo
           </h1>
           <p className="text-xs sm:text-sm text-slate-600 mt-1 max-w-3xl">
-            Gestión simplificada del flujo de mantenimiento: Liberación, asignación de repuestos MIGO 261, control de horas y Certificado de Cierre Técnico TECO.
+            Flujo de mantenimiento: Liberación, asignación de repuestos (`#inv-mov`), control de horas y Certificado de Cierre Técnico TECO.
           </p>
         </div>
 
         <div className="flex flex-wrap items-center gap-3 shrink-0">
+          <button
+            onClick={handleSendStaleAlerts}
+            disabled={isSendingStaleAlerts}
+            className="bg-rose-600 hover:bg-rose-500 text-white text-xs font-extrabold px-3.5 py-2 rounded-xl shadow-sm flex items-center space-x-1.5 transition-all disabled:opacity-50"
+            title="Despachar notificación de OTs abiertas >24 horas a Correo y Webhook"
+          >
+            <Send className={`w-3.5 h-3.5 ${isSendingStaleAlerts ? 'animate-bounce' : ''}`} />
+            <span>📧 Notificar OTs &gt;24h</span>
+          </button>
+
+          <button
+            onClick={handleRunCloudFunctionAudit}
+            disabled={isAuditingCloudFn}
+            className="bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-extrabold px-3.5 py-2 rounded-xl shadow-sm flex items-center space-x-1.5 transition-all disabled:opacity-50"
+            title="Ejecutar Cloud Function Serverless bajo demanda para auditar OTs estancadas"
+          >
+            <RefreshCw className={`w-3.5 h-3.5 ${isAuditingCloudFn ? 'animate-spin' : ''}`} />
+            <span>⚡ Auditoría Cloud Function</span>
+          </button>
+
+          <button
+            onClick={() => setIsConfigModalOpen(true)}
+            className="bg-slate-100 hover:bg-slate-200 text-slate-800 border border-slate-300 text-xs font-extrabold px-3 py-2 rounded-xl flex items-center space-x-1.5 transition-all"
+            title="Configurar canales de notificación (Correo y Webhooks Slack/Teams)"
+          >
+            <Settings className="w-3.5 h-3.5 text-slate-600" />
+            <span>⚙️ Canales</span>
+          </button>
+
           {currentRole === 'FIELD_MECHANIC' ? (
             <span className="bg-orange-100 text-orange-900 border border-orange-300 font-extrabold px-3 py-2 rounded-xl text-xs flex items-center space-x-1.5 shadow-xs">
               <Wrench className="w-4 h-4 text-orange-600" />
-              <span>Modo Mecánico de Terreno (Solo Ejecución)</span>
+              <span>Modo Mecánico</span>
             </span>
           ) : (
             <button
@@ -145,6 +232,7 @@ export const WorkOrderMaster = ({ onOpenCreateWO, onOpenMIGOForWO }) => {
           )}
         </div>
       </div>
+
 
       {/* KPI Cards Strip */}
       <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
@@ -191,6 +279,20 @@ export const WorkOrderMaster = ({ onOpenCreateWO, onOpenMIGOForWO }) => {
         </div>
 
         <div
+          onClick={() => setSelectedStatusFilter('STALE_24H')}
+          className="fiori-card p-4 bg-white rounded-2xl border border-rose-200 bg-rose-50/30 shadow-sm cursor-pointer hover:border-rose-400 transition-all flex items-center justify-between group"
+        >
+          <div>
+            <div className="text-xs font-bold text-rose-800 uppercase tracking-wider">Estancadas (&gt;24h)</div>
+            <div className="text-2xl font-black text-rose-600 mt-1">{staleCount} Alertas</div>
+            <div className="text-[11px] text-rose-700 group-hover:underline mt-0.5">Filtrar Abiertas &gt;24h ➔</div>
+          </div>
+          <div className="w-12 h-12 rounded-xl bg-rose-100 text-rose-700 flex items-center justify-center font-bold">
+            <AlertTriangle className="w-6 h-6 animate-pulse" />
+          </div>
+        </div>
+
+        <div
           onClick={() => setSelectedStatusFilter('TECO')}
           className="fiori-card p-4 bg-white rounded-2xl border border-emerald-200 bg-emerald-50/20 shadow-sm cursor-pointer hover:border-emerald-400 transition-all flex items-center justify-between"
         >
@@ -205,6 +307,7 @@ export const WorkOrderMaster = ({ onOpenCreateWO, onOpenMIGOForWO }) => {
         </div>
       </div>
 
+
       {/* Toolbar & Filters */}
       <div className="bg-slate-50 border border-slate-200 p-4 rounded-2xl flex flex-wrap items-center justify-between gap-3 text-xs">
         <div className="flex flex-wrap items-center gap-3 flex-1">
@@ -212,18 +315,16 @@ export const WorkOrderMaster = ({ onOpenCreateWO, onOpenMIGOForWO }) => {
           <div className="bg-white border border-slate-200 p-1 rounded-xl flex items-center space-x-1 shadow-xs">
             <button
               onClick={() => setViewMode('KANBAN')}
-              className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center space-x-1.5 ${
-                viewMode === 'KANBAN' ? 'bg-slate-900 text-white shadow-xs' : 'text-slate-600 hover:bg-slate-100'
-              }`}
+              className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center space-x-1.5 ${viewMode === 'KANBAN' ? 'bg-slate-900 text-white shadow-xs' : 'text-slate-600 hover:bg-slate-100'
+                }`}
             >
               <Kanban className="w-3.5 h-3.5" />
               <span>Tablero Kanban</span>
             </button>
             <button
               onClick={() => setViewMode('TABLE')}
-              className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center space-x-1.5 ${
-                viewMode === 'TABLE' ? 'bg-slate-900 text-white shadow-xs' : 'text-slate-600 hover:bg-slate-100'
-              }`}
+              className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center space-x-1.5 ${viewMode === 'TABLE' ? 'bg-slate-900 text-white shadow-xs' : 'text-slate-600 hover:bg-slate-100'
+                }`}
             >
               <TableIcon className="w-3.5 h-3.5" />
               <span>Lista Tabular</span>
@@ -313,9 +414,8 @@ export const WorkOrderMaster = ({ onOpenCreateWO, onOpenMIGOForWO }) => {
 
                               {/* Priority badge only if high/very high */}
                               {(wo.priority === 'Muy Alta' || wo.priority === 'Alta') && (
-                                <span className={`px-2 py-0.5 rounded text-[10px] font-extrabold ${
-                                  wo.priority === 'Muy Alta' ? 'bg-rose-100 text-rose-800 border border-rose-300' : 'bg-amber-100 text-amber-900 border border-amber-300'
-                                }`}>
+                                <span className={`px-2 py-0.5 rounded text-[10px] font-extrabold ${wo.priority === 'Muy Alta' ? 'bg-rose-100 text-rose-800 border border-rose-300' : 'bg-amber-100 text-amber-900 border border-amber-300'
+                                  }`}>
                                   {wo.priority}
                                 </span>
                               )}
@@ -344,17 +444,31 @@ export const WorkOrderMaster = ({ onOpenCreateWO, onOpenMIGOForWO }) => {
                               </span>
                             </div>
 
-                            {/* Single Action Button */}
-                            <button
-                              onClick={() => {
-                                setActiveWOModal(wo);
-                                setActiveTabWOModal('HEADER');
-                              }}
-                              className="w-full bg-slate-100 group-hover:bg-sap-blue group-hover:text-white text-slate-800 font-bold py-2 rounded-lg text-xs transition-all flex items-center justify-center space-x-1.5 shadow-xs"
-                            >
-                              <span>Ver / Procesar Orden (IW32)</span>
-                              <ChevronRight className="w-3.5 h-3.5" />
-                            </button>
+                            {/* Action Buttons */}
+                            <div className="flex items-center space-x-1.5 pt-1">
+                              <button
+                                onClick={() => {
+                                  setActiveWOModal(wo);
+                                  setActiveTabWOModal('HEADER');
+                                }}
+                                className="flex-1 bg-slate-100 group-hover:bg-sap-blue group-hover:text-white text-slate-800 font-bold py-2 rounded-lg text-xs transition-all flex items-center justify-center space-x-1.5 shadow-xs cursor-pointer"
+                              >
+                                <span>Procesar (#mnt-ordenes)</span>
+                                <ChevronRight className="w-3.5 h-3.5" />
+                              </button>
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  if (window.confirm(`¿Está seguro de eliminar la Orden de Trabajo ${wo.id} (${wo.title})?`)) {
+                                    deleteWorkOrder(wo.id);
+                                  }
+                                }}
+                                className="p-2 bg-rose-50 hover:bg-rose-600 hover:text-white text-rose-700 rounded-lg transition-colors cursor-pointer shrink-0"
+                                title="Eliminar Orden de Trabajo"
+                              >
+                                <Trash2 className="w-3.5 h-3.5" />
+                              </button>
+                            </div>
                           </div>
                         );
                       })
@@ -367,12 +481,12 @@ export const WorkOrderMaster = ({ onOpenCreateWO, onOpenMIGOForWO }) => {
         </div>
       )}
 
-      {/* ----------------- VIEW MODE 2: LISTA TABULAR ----------------- */}
+      {/* ----------------- VIEW MODE 2: LISTA TABULAR VIRTUALIZADA ----------------- */}
       {viewMode === 'TABLE' && (
         <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-xs">
-          <div className="overflow-x-auto">
+          <div ref={parentRef} className="overflow-auto max-h-[600px] custom-scrollbar">
             <table className="w-full text-left text-xs divide-y divide-slate-200">
-              <thead className="bg-slate-100 text-slate-700 font-bold uppercase tracking-wider">
+              <thead className="sticky top-0 z-10 bg-slate-100 text-slate-700 font-bold uppercase tracking-wider shadow-xs">
                 <tr>
                   <th className="p-3.5">Folio Orden</th>
                   <th className="p-3.5">Título / Descripción</th>
@@ -385,7 +499,14 @@ export const WorkOrderMaster = ({ onOpenCreateWO, onOpenMIGOForWO }) => {
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100 font-medium text-slate-800">
-                {filteredWorkOrders.map(wo => {
+                {paddingTop > 0 && (
+                  <tr>
+                    <td colSpan={8} style={{ height: `${paddingTop}px` }} />
+                  </tr>
+                )}
+                {virtualItems.map(virtualRow => {
+                  const wo = filteredWorkOrders[virtualRow.index];
+                  if (!wo) return null;
                   const matchingAsset = assets.find(a => a.id === wo.equipmentId);
                   const equipmentName = matchingAsset ? matchingAsset.name : wo.equipmentId;
 
@@ -404,11 +525,10 @@ export const WorkOrderMaster = ({ onOpenCreateWO, onOpenMIGOForWO }) => {
                         {wo.assignedTech}
                       </td>
                       <td className="p-3.5">
-                        <span className={`px-2 py-0.5 rounded text-[10px] font-extrabold ${
-                          wo.priority === 'Muy Alta' ? 'bg-rose-100 text-rose-800 border border-rose-300' :
-                          wo.priority === 'Alta' ? 'bg-amber-100 text-amber-900 border border-amber-300' :
-                          'bg-slate-100 text-slate-700 border border-slate-200'
-                        }`}>
+                        <span className={`px-2 py-0.5 rounded text-[10px] font-extrabold ${wo.priority === 'Muy Alta' ? 'bg-rose-100 text-rose-800 border border-rose-300' :
+                            wo.priority === 'Alta' ? 'bg-amber-100 text-amber-900 border border-amber-300' :
+                              'bg-slate-100 text-slate-700 border border-slate-200'
+                          }`}>
                           {wo.priority}
                         </span>
                       </td>
@@ -416,29 +536,46 @@ export const WorkOrderMaster = ({ onOpenCreateWO, onOpenMIGOForWO }) => {
                         {formatDateDDMMYYYY(wo.targetFinishDate || wo.startDate)}
                       </td>
                       <td className="p-3.5 text-center">
-                        <span className={`px-2.5 py-1 rounded-full text-[10px] font-extrabold border ${
-                          wo.status === 'TECO' ? 'bg-emerald-100 text-emerald-800 border-emerald-300' :
-                          wo.status === 'PCNF' ? 'bg-purple-100 text-purple-800 border-purple-300' :
-                          wo.status === 'REL' ? 'bg-amber-100 text-amber-800 border-amber-300' :
-                          'bg-sky-100 text-sky-800 border-sky-300'
-                        }`}>
+                        <span className={`px-2.5 py-1 rounded-full text-[10px] font-extrabold border ${wo.status === 'TECO' ? 'bg-emerald-100 text-emerald-800 border-emerald-300' :
+                            wo.status === 'PCNF' ? 'bg-purple-100 text-purple-800 border-purple-300' :
+                              wo.status === 'REL' ? 'bg-amber-100 text-amber-800 border-amber-300' :
+                                'bg-sky-100 text-sky-800 border-sky-300'
+                          }`}>
                           {wo.status}
                         </span>
                       </td>
                       <td className="p-3.5 text-right">
-                        <button
-                          onClick={() => {
-                            setActiveWOModal(wo);
-                            setActiveTabWOModal('HEADER');
-                          }}
-                          className="bg-sap-blue hover:bg-sap-blue-hover text-white px-3 py-1 rounded-lg font-bold text-xs shadow-xs transition-all"
-                        >
-                          Abrir (IW32)
-                        </button>
+                        <div className="flex items-center justify-end space-x-1.5">
+                          <button
+                            onClick={() => {
+                              setActiveWOModal(wo);
+                              setActiveTabWOModal('HEADER');
+                            }}
+                            className="bg-sap-blue hover:bg-sap-blue-hover text-white px-3 py-1 rounded-lg font-bold text-xs shadow-xs transition-all cursor-pointer"
+                          >
+                            Abrir (#mnt-ordenes)
+                          </button>
+                          <button
+                            onClick={() => {
+                              if (window.confirm(`¿Está seguro de eliminar la Orden de Trabajo ${wo.id} (${wo.title})?`)) {
+                                deleteWorkOrder(wo.id);
+                              }
+                            }}
+                            className="p-1 bg-rose-100 hover:bg-rose-600 hover:text-white text-rose-700 rounded-lg transition-colors cursor-pointer"
+                            title="Eliminar Orden de Trabajo"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
                       </td>
                     </tr>
                   );
                 })}
+                {paddingBottom > 0 && (
+                  <tr>
+                    <td colSpan={8} style={{ height: `${paddingBottom}px` }} />
+                  </tr>
+                )}
               </tbody>
             </table>
           </div>
@@ -480,33 +617,29 @@ export const WorkOrderMaster = ({ onOpenCreateWO, onOpenMIGOForWO }) => {
             <div className="bg-slate-100 border-b border-slate-200 p-2 flex flex-wrap gap-1 text-xs">
               <button
                 onClick={() => setActiveTabWOModal('HEADER')}
-                className={`px-4 py-2 rounded-lg font-bold transition-all ${
-                  activeTabWOModal === 'HEADER' ? 'bg-sap-blue text-white shadow-xs' : 'text-slate-600 hover:bg-slate-200'
-                }`}
+                className={`px-4 py-2 rounded-lg font-bold transition-all ${activeTabWOModal === 'HEADER' ? 'bg-sap-blue text-white shadow-xs' : 'text-slate-600 hover:bg-slate-200'
+                  }`}
               >
                 1. Cabecera & Datos Generales
               </button>
               <button
                 onClick={() => setActiveTabWOModal('OPERATIONS')}
-                className={`px-4 py-2 rounded-lg font-bold transition-all ${
-                  activeTabWOModal === 'OPERATIONS' ? 'bg-sap-blue text-white shadow-xs' : 'text-slate-600 hover:bg-slate-200'
-                }`}
+                className={`px-4 py-2 rounded-lg font-bold transition-all ${activeTabWOModal === 'OPERATIONS' ? 'bg-sap-blue text-white shadow-xs' : 'text-slate-600 hover:bg-slate-200'
+                  }`}
               >
                 2. Operaciones & Tareas ({operations.length})
               </button>
               <button
                 onClick={() => setActiveTabWOModal('COMPONENTS')}
-                className={`px-4 py-2 rounded-lg font-bold transition-all ${
-                  activeTabWOModal === 'COMPONENTS' ? 'bg-sap-blue text-white shadow-xs' : 'text-slate-600 hover:bg-slate-200'
-                }`}
+                className={`px-4 py-2 rounded-lg font-bold transition-all ${activeTabWOModal === 'COMPONENTS' ? 'bg-sap-blue text-white shadow-xs' : 'text-slate-600 hover:bg-slate-200'
+                  }`}
               >
                 3. Componentes MIGO ({components.length})
               </button>
               <button
                 onClick={() => setActiveTabWOModal('LOGS')}
-                className={`px-4 py-2 rounded-lg font-bold transition-all ${
-                  activeTabWOModal === 'LOGS' ? 'bg-sap-blue text-white shadow-xs' : 'text-slate-600 hover:bg-slate-200'
-                }`}
+                className={`px-4 py-2 rounded-lg font-bold transition-all ${activeTabWOModal === 'LOGS' ? 'bg-sap-blue text-white shadow-xs' : 'text-slate-600 hover:bg-slate-200'
+                  }`}
               >
                 4. Historial & Trazabilidad ({logs.length})
               </button>
@@ -568,9 +701,8 @@ export const WorkOrderMaster = ({ onOpenCreateWO, onOpenMIGOForWO }) => {
                             <div className="font-bold text-slate-900">{op.text}</div>
                             <div className="text-[11px] text-slate-500">Asignado: {op.assigned} • Duración estim.: {op.duration} hrs</div>
                           </div>
-                          <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${
-                            op.status === 'Completed' ? 'bg-emerald-100 text-emerald-800' : 'bg-slate-200 text-slate-700'
-                          }`}>
+                          <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${op.status === 'Completed' ? 'bg-emerald-100 text-emerald-800' : 'bg-slate-200 text-slate-700'
+                            }`}>
                             {op.status === 'Completed' ? '✔ Completado' : 'Pendiente'}
                           </span>
                         </div>
@@ -701,6 +833,13 @@ export const WorkOrderMaster = ({ onOpenCreateWO, onOpenMIGOForWO }) => {
           </div>
         </div>
       )}
+
+      <NotificationConfigModal
+        isOpen={isConfigModalOpen}
+        onClose={() => setIsConfigModalOpen(false)}
+        addToast={addToast}
+      />
     </div>
   );
 };
+

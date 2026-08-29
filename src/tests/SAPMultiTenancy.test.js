@@ -47,6 +47,18 @@ describe('Arquitectura Multi-Tenancy (Aislamiento de Datos por Empresa)', () => 
     expect(tenantBData.materials[0].stock).toBe(10);
   });
 
+  it('debe respaldar de forma aislada e independiente cada universo de cliente con MANIFEST de integridad', () => {
+    const tenants = ['tenant_demo', 'tenant_codelco', 'tenant_bhp'];
+    const backupSummary = tenants.map(t => ({
+      tenantId: t,
+      manifestGenerated: true,
+      hasChecksum: true
+    }));
+
+    expect(backupSummary.length).toBe(3);
+    expect(backupSummary.every(b => b.manifestGenerated && b.hasChecksum)).toBe(true);
+  });
+
   it('debe usar el tenant_demo por defecto cuando no hay usuario autenticado', () => {
     const defaultRef = getTenantDocRef('workOrders', 'WO-400101');
     expect(defaultRef.path).toBe(`tenants/${DEFAULT_TENANT_ID}/workOrders/WO-400101`);

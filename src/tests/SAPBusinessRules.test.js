@@ -59,6 +59,85 @@ describe('Reglas de Negocio SAP PM/MM (Suite de Calidad ERP)', () => {
     });
   });
 
+  describe('IW31: Validaciones de Existencia de Equipo en Maestro de Activos', () => {
+    const assetMaster = [
+      { id: 'EQ-101', name: 'Chancador Primario' },
+      { id: 'EQ-102', name: 'Camión CAEX 797F' }
+    ];
+
+    const validateEquipmentExists = (targetId) => {
+      return assetMaster.some(a => a.id === targetId);
+    };
+
+    it('debe aprobar la creación de OT para un equipo existente (EQ-101)', () => {
+      expect(validateEquipmentExists('EQ-101')).toBe(true);
+    });
+
+    it('debe rechazar la creación de OT para un equipo inexistente (EQ-999)', () => {
+      expect(validateEquipmentExists('EQ-999')).toBe(false);
+    });
+  });
+
+  describe('IW31: Validaciones de Existencia del Técnico Responsable en HCM', () => {
+    const employeeMaster = [
+      { id: 'EMP-1001', name: 'Jorge Silva San Martín', position: 'Técnico Senior' },
+      { id: 'EMP-1002', name: 'Carlos Mendoza Morales', position: 'Especialista Mecánico' }
+    ];
+
+    const validateTechnicianExists = (techName) => {
+      const nameClean = (techName || '').trim().toLowerCase();
+      return employeeMaster.some(e =>
+        e.name.toLowerCase().includes(nameClean) ||
+        e.id.toLowerCase() === nameClean ||
+        nameClean.includes(e.name.toLowerCase())
+      );
+    };
+
+    it('debe aprobar la asignación de un técnico registrado en HCM (Jorge Silva)', () => {
+      expect(validateTechnicianExists('Jorge Silva San Martín')).toBe(true);
+    });
+
+    it('debe rechazar la asignación de un técnico no registrado en HCM (Pedro Fantasma)', () => {
+      expect(validateTechnicianExists('Pedro Fantasma')).toBe(false);
+    });
+  });
+
+  describe('IW31: Sistema Estandarizado de Códigos de Error SAP PM', () => {
+    const getErrorCode = ({ targetAssetExists, targetTechExists, duplicateActiveWO, isLowerValueDetected, isCounterCorrection, hasReservedMaterial }) => {
+      if (!targetAssetExists) return 'IW31-E001';
+      if (!targetTechExists) return 'IW31-E002';
+      if (duplicateActiveWO) return 'IW31-E003';
+      if (isLowerValueDetected && !isCounterCorrection) return 'IW31-E004';
+      if (!hasReservedMaterial) return 'IW31-E005';
+      return null;
+    };
+
+    it('debe retornar IW31-E001 si el equipo no existe', () => {
+      const code = getErrorCode({ targetAssetExists: false, targetTechExists: true, hasReservedMaterial: true });
+      expect(code).toBe('IW31-E001');
+    });
+
+    it('debe retornar IW31-E002 si el técnico no existe en HCM', () => {
+      const code = getErrorCode({ targetAssetExists: true, targetTechExists: false, hasReservedMaterial: true });
+      expect(code).toBe('IW31-E002');
+    });
+
+    it('debe retornar IW31-E003 si existe una orden activa duplicada', () => {
+      const code = getErrorCode({ targetAssetExists: true, targetTechExists: true, duplicateActiveWO: true, hasReservedMaterial: true });
+      expect(code).toBe('IW31-E003');
+    });
+
+    it('debe retornar IW31-E004 si la lectura del contador es menor sin autorización', () => {
+      const code = getErrorCode({ targetAssetExists: true, targetTechExists: true, isLowerValueDetected: true, isCounterCorrection: false, hasReservedMaterial: true });
+      expect(code).toBe('IW31-E004');
+    });
+
+    it('debe retornar IW31-E005 si no se seleccionó un repuesto MM obligatorio', () => {
+      const code = getErrorCode({ targetAssetExists: true, targetTechExists: true, hasReservedMaterial: false });
+      expect(code).toBe('IW31-E005');
+    });
+  });
+
   describe('IW31: Prevención de Órdenes Duplicadas', () => {
     const existingWOs = [
       { id: 'WO-400101', equipmentId: 'EQ-101', type: 'PM01', status: 'REL' },

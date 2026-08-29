@@ -5,12 +5,20 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "vite build",
+    "audit:imports": "node scripts/audit_imports.cjs",
+    "backup": "node scripts/backup_tenant_data.cjs",
+    "backup:daily": "node scripts/backup_tenant_data.cjs --tier=HIGH",
+    "backup:weekly": "node scripts/backup_tenant_data.cjs --tier=MEDIUM",
+    "backup:monthly": "node scripts/backup_tenant_data.cjs --tier=LOW",
+    "simulate": "node scripts/simulate_50_tenants_150_users.cjs",
+    "build": "node scripts/audit_imports.cjs && vite build",
     "lint": "oxlint",
-    "test": "vitest run",
+    "test": "node scripts/audit_imports.cjs && vitest run",
     "preview": "vite preview"
   },
   "dependencies": {
+    "@supabase/supabase-js": "^2.112.3",
+    "@tanstack/react-virtual": "^3.14.10",
     "canvas-confetti": "^1.9.4",
     "clsx": "^2.1.1",
     "firebase": "^12.17.1",

@@ -1,0 +1,10 @@
+[
+  {
+    "id": "tenant_antofagasta_minerals-PLANT-01",
+    "name": "Planta Central Antofagasta Minerals S.A.",
+    "address": "Av. Industrial 5000",
+    "city": "Antofagasta",
+    "status": "Activo",
+    "tenantId": "tenant_antofagasta_minerals"
+  }
+]

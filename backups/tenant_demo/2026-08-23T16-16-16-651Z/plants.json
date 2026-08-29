@@ -1,0 +1,10 @@
+[
+  {
+    "id": "tenant_demo-PLANT-01",
+    "name": "Planta Central Demo Operam Enterprise",
+    "address": "Av. Industrial 5000",
+    "city": "Antofagasta",
+    "status": "Activo",
+    "tenantId": "tenant_demo"
+  }
+]

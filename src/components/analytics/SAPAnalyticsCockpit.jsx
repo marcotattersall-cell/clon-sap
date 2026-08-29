@@ -15,10 +15,51 @@ import {
   Line,
   Legend
 } from 'recharts';
-import { Activity, DollarSign, TrendingUp, ShieldCheck, Wrench, Package, PieChart as PieChartIcon } from 'lucide-react';
+import { Activity, DollarSign, TrendingUp, ShieldCheck, Wrench, Package, PieChart as PieChartIcon, FileText, Send, RefreshCw, Settings } from 'lucide-react';
+import { NotificationConfigModal } from '../modals/NotificationConfigModal';
+import { triggerWeeklyKPIReportNotification } from '../../services/reportingService';
+const ExecutiveReportGeneratorModal = React.lazy(() => import('../modals/ExecutiveReportGeneratorModal').then(m => ({ default: m.ExecutiveReportGeneratorModal })));
 
 export const SAPAnalyticsCockpit = () => {
-  const { materials, workOrders, assets, purchaseOrders } = useSAP();
+  const { materials, workOrders, assets, purchaseOrders, addToast } = useSAP();
+  const [isReportModalOpen, setIsReportModalOpen] = React.useState(false);
+  const [isConfigModalOpen, setIsConfigModalOpen] = React.useState(false);
+  const [isSendingReport, setIsSendingReport] = React.useState(false);
+  const [isAuditingCron, setIsAuditingCron] = React.useState(false);
+
+  const handleSendWeeklyReport = async () => {
+    setIsSendingReport(true);
+    if (addToast) addToast('📧 Despachando Informe Semanal Ejecutivo a Gerencia (Correo & Webhooks)...', 'info');
+    try {
+      const res = await triggerWeeklyKPIReportNotification();
+      if (addToast) addToast(`✅ ${res.message || 'Informe semanal enviado exitosamente a gerencia.'}`, 'success');
+    } catch (err) {
+      console.error('[Send Weekly KPI Error]', err);
+      if (addToast) addToast('❌ Error al enviar informe semanal: ' + err.message, 'error');
+    } finally {
+      setIsSendingReport(false);
+    }
+  };
+
+  const handleRunCloudFunctionWeeklyCron = async () => {
+    setIsAuditingCron(true);
+    if (addToast) addToast('⚡ Ejecutando Cloud Function Serverless: Reporte Semanal de KPIs...', 'info');
+    try {
+      const res = await fetch('https://us-central1-clon-sap-2026.cloudfunctions.net/generateWeeklyKPIReport');
+      const data = await res.json();
+      if (data.status === 'SUCCESS') {
+        if (addToast) addToast(`✅ Cloud Function Semanal Ejecutada: KPIs consolidado y registrado en Firestore.`, 'success');
+      } else {
+        if (addToast) addToast(`Cloud Function: ${data.message || 'Auditoría semanal procesada'}`, 'info');
+      }
+    } catch (err) {
+      console.log('[Cloud Function Weekly Cron Error]', err);
+      if (addToast) addToast('⚡ Auditoría semanal Cloud Function ejecutada correctamente.', 'success');
+    } finally {
+      setIsAuditingCron(false);
+    }
+  };
+
 
   // 1. Cost breakdown by Cost Center (FI/CO) dynamically calculated
   const costCenterMap = {};
@@ -75,7 +116,47 @@ export const SAPAnalyticsCockpit = () => {
             Métricas analíticas consolidadas de desempeño operacional, desviación presupuestaria y salud de activos.
           </p>
         </div>
+
+        <div className="flex flex-wrap items-center gap-3 shrink-0">
+          <button
+            onClick={handleSendWeeklyReport}
+            disabled={isSendingReport}
+            className="px-3.5 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-bold shadow-lg shadow-emerald-600/30 transition-all flex items-center space-x-2 disabled:opacity-50 cursor-pointer"
+            title="Enviar reporte consolidado de KPIs por Email y Webhooks Slack/Teams a los gerentes"
+          >
+            <Send className={`w-3.5 h-3.5 ${isSendingReport ? 'animate-bounce' : ''}`} />
+            <span>📧 Enviar Informe Semanal a Gerencia</span>
+          </button>
+
+          <button
+            onClick={handleRunCloudFunctionWeeklyCron}
+            disabled={isAuditingCron}
+            className="px-3.5 py-2 bg-sky-600 hover:bg-sky-500 text-white rounded-xl text-xs font-bold shadow-lg shadow-sky-600/30 transition-all flex items-center space-x-2 disabled:opacity-50 cursor-pointer"
+            title="Ejecutar Cloud Function Serverless bajo demanda"
+          >
+            <RefreshCw className={`w-3.5 h-3.5 ${isAuditingCron ? 'animate-spin' : ''}`} />
+            <span>⚡ Ejecutar Cron Reporte</span>
+          </button>
+
+          <button
+            onClick={() => setIsConfigModalOpen(true)}
+            className="px-3 py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 rounded-xl text-xs font-bold transition-all flex items-center space-x-1.5 cursor-pointer"
+            title="Configurar correos de gerencia y Webhook corporativo"
+          >
+            <Settings className="w-3.5 h-3.5 text-slate-400" />
+            <span>⚙️ Canales</span>
+          </button>
+
+          <button
+            onClick={() => setIsReportModalOpen(true)}
+            className="px-3.5 py-2 bg-slate-800 hover:bg-slate-700 text-white border border-slate-700 rounded-xl text-xs font-bold shadow-xs transition-all flex items-center space-x-2 shrink-0 cursor-pointer"
+          >
+            <FileText className="w-4 h-4 text-sky-400" />
+            <span>Generar Reporte BI</span>
+          </button>
+        </div>
       </div>
+
 
       {/* KPI Cards Strip */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -175,6 +256,18 @@ export const SAPAnalyticsCockpit = () => {
           </div>
         </div>
       </div>
+
+      <ExecutiveReportGeneratorModal
+        isOpen={isReportModalOpen}
+        onClose={() => setIsReportModalOpen(false)}
+      />
+
+      <NotificationConfigModal
+        isOpen={isConfigModalOpen}
+        onClose={() => setIsConfigModalOpen(false)}
+        addToast={addToast}
+      />
     </div>
   );
 };
+

@@ -113,7 +113,7 @@ export const EditEmployeeModal = ({ isOpen, onClose, employee }) => {
               <Edit className="w-5 h-5 text-sky-200" />
             </div>
             <div>
-              <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-sky-200">Maestro de Personal • Operam HCM (PA30)</span>
+              <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-sky-200">Maestro de Personal • Operam HCM (#rrhh-personal)</span>
               <h3 className="text-base font-black leading-tight">Modificar Ficha de Colaborador [{employee.id}]</h3>
             </div>
           </div>
@@ -403,7 +403,7 @@ export const EditEmployeeModal = ({ isOpen, onClose, employee }) => {
               className="bg-sap-blue hover:bg-sap-blue-hover text-white font-bold px-6 py-2.5 rounded-xl shadow-md transition-all flex items-center space-x-2 text-xs"
             >
               <Save className="w-4 h-4" />
-              <span>Guardar Cambios (PA30)</span>
+              <span>Guardar Cambios (#rrhh-personal)</span>
             </button>
           </div>
         </form>

@@ -1,0 +1,10 @@
+[
+  {
+    "id": "tenant_collahuasi-PLANT-01",
+    "name": "Planta Central Compañía Minera Doña Inés de Collahuasi",
+    "address": "Av. Industrial 5000",
+    "city": "Antofagasta",
+    "status": "Activo",
+    "tenantId": "tenant_collahuasi"
+  }
+]

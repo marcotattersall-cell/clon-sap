@@ -17,15 +17,22 @@ import {
   ChevronRight,
   Filter,
   Building2,
-  FileText
+  FileText,
+  Mail,
+  Settings,
+  Send
 } from 'lucide-react';
 import { formatDateDDMMYYYY } from '../../utils/dateUtils';
 import { UpdateVehicleExpirationsModal } from '../modals/UpdateVehicleExpirationsModal';
 import { UpdateComplianceModal } from '../modals/UpdateComplianceModal';
+import { NotificationConfigModal } from '../modals/NotificationConfigModal';
+import { triggerExpirationAlerts } from '../../services/expirationNotificationService';
 
 export const GeneralExpirationsDashboard = () => {
   const { assets, employees, workOrders, addToast } = useSAP();
   const [isAuditing, setIsAuditing] = useState(false);
+  const [isSendingAlerts, setIsSendingAlerts] = useState(false);
+  const [isConfigModalOpen, setIsConfigModalOpen] = useState(false);
 
   const handleRunCloudFunctionAudit = async () => {
     setIsAuditing(true);
@@ -45,6 +52,21 @@ export const GeneralExpirationsDashboard = () => {
       setIsAuditing(false);
     }
   };
+
+  const handleSendAlerts = async () => {
+    setIsSendingAlerts(true);
+    addToast('📧 Despachando resumen de vencimientos a Correo y Webhooks...', 'info');
+    try {
+      const res = await triggerExpirationAlerts();
+      addToast(`✅ ${res.message || 'Alertas despachadas exitosamente.'}`, 'success');
+    } catch (err) {
+      console.error('[Send Alerts Error]', err);
+      addToast('❌ Fallo al despachar alertas: ' + err.message, 'error');
+    } finally {
+      setIsSendingAlerts(false);
+    }
+  };
+
 
   const [entityFilter, setEntityFilter] = useState('ALL'); // ALL, FLEET, HR
   const [statusFilter, setStatusFilter] = useState('ALL'); // ALL, EXPIRED, ALERT_30, OK
@@ -199,13 +221,32 @@ export const GeneralExpirationsDashboard = () => {
 
         <div className="flex flex-wrap items-center gap-3">
           <button
+            onClick={handleSendAlerts}
+            disabled={isSendingAlerts}
+            className="bg-sky-600 hover:bg-sky-500 text-white font-extrabold text-xs px-3.5 py-2 rounded-xl flex items-center space-x-2 shadow-lg transition-all disabled:opacity-50"
+            title="Despachar notificaciones de alerta a Correo y Webhooks"
+          >
+            <Send className={`w-3.5 h-3.5 ${isSendingAlerts ? 'animate-bounce' : ''}`} />
+            <span>📧 Notificar por Correo / Webhook</span>
+          </button>
+
+          <button
             onClick={handleRunCloudFunctionAudit}
             disabled={isAuditing}
             className="bg-emerald-600 hover:bg-emerald-500 text-white font-extrabold text-xs px-3.5 py-2 rounded-xl flex items-center space-x-2 shadow-lg transition-all disabled:opacity-50"
             title="Ejecutar Cloud Function Serverless bajo demanda"
           >
             <RefreshCw className={`w-3.5 h-3.5 ${isAuditing ? 'animate-spin' : ''}`} />
-            <span>⚡ Ejecutar Auditoría Cloud Function</span>
+            <span>⚡ Ejecutar Auditoría</span>
+          </button>
+
+          <button
+            onClick={() => setIsConfigModalOpen(true)}
+            className="bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 font-extrabold text-xs px-3 py-2 rounded-xl flex items-center space-x-1.5 transition-all"
+            title="Configurar destinatarios de correo y Webhook de Slack/Teams"
+          >
+            <Settings className="w-3.5 h-3.5 text-slate-400" />
+            <span>⚙️ Canales</span>
           </button>
 
           <span className="text-xs bg-slate-800 border border-slate-700 px-3 py-2 rounded-xl text-slate-300 font-mono">
@@ -213,6 +254,7 @@ export const GeneralExpirationsDashboard = () => {
           </span>
         </div>
       </div>
+
 
       {/* Top Consolidated KPI Summary */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -477,6 +519,13 @@ export const GeneralExpirationsDashboard = () => {
         onClose={() => setSelectedEmployeeModal(null)}
         employee={selectedEmployeeModal}
       />
+
+      <NotificationConfigModal
+        isOpen={isConfigModalOpen}
+        onClose={() => setIsConfigModalOpen(false)}
+        addToast={addToast}
+      />
     </div>
   );
 };
+

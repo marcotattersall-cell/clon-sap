@@ -1,0 +1,17 @@
+[
+  {
+    "id": "EMP-1001-tena",
+    "name": "Marco Vidal Tattersall",
+    "position": "Administrador Universal ERP",
+    "email": "marco.tattersall@gmail.com",
+    "status": "Active",
+    "tenantId": "tenant_demo"
+  },
+  {
+    "id": "EMP-1002-tena",
+    "name": "Jorge Silva San Martín",
+    "position": "Especialista Mecánico Senior",
+    "status": "Active",
+    "tenantId": "tenant_demo"
+  }
+]
