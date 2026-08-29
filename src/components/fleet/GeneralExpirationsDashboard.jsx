@@ -20,7 +20,10 @@ import {
   FileText,
   Mail,
   Settings,
-  Send
+  Send,
+  Trash2,
+  AlertCircle,
+  X
 } from 'lucide-react';
 import { formatDateDDMMYYYY } from '../../utils/dateUtils';
 import { UpdateVehicleExpirationsModal } from '../modals/UpdateVehicleExpirationsModal';
@@ -29,10 +32,15 @@ import { NotificationConfigModal } from '../modals/NotificationConfigModal';
 import { triggerExpirationAlerts } from '../../services/expirationNotificationService';
 
 export const GeneralExpirationsDashboard = () => {
-  const { assets, employees, workOrders, addToast } = useSAP();
+  const { assets, employees, workOrders, addToast, updateAsset, updateEmployee, recordAuditLog } = useSAP();
   const [isAuditing, setIsAuditing] = useState(false);
   const [isSendingAlerts, setIsSendingAlerts] = useState(false);
   const [isConfigModalOpen, setIsConfigModalOpen] = useState(false);
+
+  // Selected Modal States for Delete Confirmation
+  const [deleteModalItem, setDeleteModalItem] = useState(null);
+  const [confirmCheck, setConfirmCheck] = useState(false);
+  const [deleteReason, setDeleteReason] = useState('');
 
   const handleRunCloudFunctionAudit = async () => {
     setIsAuditing(true);
@@ -67,6 +75,68 @@ export const GeneralExpirationsDashboard = () => {
     }
   };
 
+  const handleConfirmDeleteExpiration = () => {
+    if (!deleteModalItem) return;
+    if (!confirmCheck) {
+      addToast('⚠️ Debes marcar la casilla de validación para proceder.', 'warning');
+      return;
+    }
+
+    const { entityType, entityId, docType, coreKey, isCustom, customIndex, rawAsset, rawEmployee } = deleteModalItem;
+
+    if (entityType === 'FLEET' && rawAsset) {
+      if (isCustom && Array.isArray(rawAsset.customExpirations)) {
+        const updatedCustoms = rawAsset.customExpirations.filter((_, idx) => idx !== customIndex);
+        updateAsset(entityId, { customExpirations: updatedCustoms });
+      } else if (coreKey) {
+        const fieldMap = {
+          accreditation: 'accreditationExpiry',
+          circulation: 'circulationPermitExpiry',
+          soap: 'soapExpiry',
+          technical: 'technicalReviewExpiry'
+        };
+        const fieldName = fieldMap[coreKey];
+        if (fieldName) {
+          updateAsset(entityId, { [fieldName]: null });
+        }
+      }
+    } else if (entityType === 'HR' && rawEmployee) {
+      const fieldMap = {
+        medical: 'medicalExamExpiry',
+        accreditation: 'accreditationExpiry',
+        safety: 'safetyCourseExpiry'
+      };
+      const fieldName = fieldMap[coreKey];
+
+      let updatedFaenas = Array.isArray(rawEmployee.faenasAccredited)
+        ? rawEmployee.faenasAccredited.map(f => {
+            if (f.faenaName === deleteModalItem.faenaName) {
+              return { ...f, [fieldName]: null };
+            }
+            return f;
+          })
+        : [];
+
+      const updateObj = { faenasAccredited: updatedFaenas };
+      if (fieldName) {
+        updateObj[fieldName] = null;
+      }
+      updateEmployee(entityId, updateObj);
+    }
+
+    recordAuditLog({
+      entityType: 'EXPIRATION_RECORD',
+      entityId: entityId,
+      action: 'DELETE_EXPIRATION_DOCUMENT',
+      details: `Documento de vencimiento "${docType}" eliminado para ${deleteModalItem.entityName}. Motivo: ${deleteReason || 'Validación de usuario'}`,
+      user: 'Especialista Flota/HCM'
+    });
+
+    addToast(`🗑️ Registro de vencimiento "${docType}" para ${deleteModalItem.entityName} eliminado correctamente.`, 'info');
+    setDeleteModalItem(null);
+    setConfirmCheck(false);
+    setDeleteReason('');
+  };
 
   const [entityFilter, setEntityFilter] = useState('ALL'); // ALL, FLEET, HR
   const [statusFilter, setStatusFilter] = useState('ALL'); // ALL, EXPIRED, ALERT_30, OK
@@ -92,11 +162,11 @@ export const GeneralExpirationsDashboard = () => {
     return { days, status: 'OK' };
   };
 
-  // Compile all Fleet Vehicle Expirations
+  // Compile all Fleet Vehicle Expirations with deduplication
   const fleetExpirationsList = [];
-  assets.forEach(asset => {
-    const isVehicle = asset.category && (asset.category.includes('Camión') || asset.category.includes('Camioneta') || asset.category.includes('Vehículo') || asset.category.includes('Maquinaria'));
+  const seenFleetKeys = new Set();
 
+  assets.forEach(asset => {
     const items = [
       { docType: 'Acreditación en Faena', expiryDate: asset.accreditationExpiry, coreKey: 'accreditation' },
       { docType: 'Permiso de Circulación', expiryDate: asset.circulationPermitExpiry, coreKey: 'circulation' },
@@ -105,32 +175,41 @@ export const GeneralExpirationsDashboard = () => {
     ];
 
     if (Array.isArray(asset.customExpirations)) {
-      asset.customExpirations.forEach(c => {
-        items.push({ docType: c.title, expiryDate: c.expiryDate, isCustom: true });
+      asset.customExpirations.forEach((c, idx) => {
+        items.push({ docType: c.title, expiryDate: c.expiryDate, isCustom: true, customIndex: idx });
       });
     }
 
     items.forEach(item => {
       if (item.expiryDate) {
-        const res = calculateDaysRemaining(item.expiryDate);
-        fleetExpirationsList.push({
-          id: `FLEET-${asset.id}-${item.docType}`,
-          entityType: 'FLEET',
-          entityId: asset.id,
-          entityName: asset.name,
-          subLabel: `Patente: ${asset.plate || asset.id} • ${asset.category || 'Equipo'}`,
-          docType: item.docType,
-          expiryDate: item.expiryDate,
-          days: res.days,
-          status: res.status,
-          rawAsset: asset
-        });
+        const uniqueKey = `${asset.id}-${item.docType}-${item.expiryDate}`;
+        if (!seenFleetKeys.has(uniqueKey)) {
+          seenFleetKeys.add(uniqueKey);
+          const res = calculateDaysRemaining(item.expiryDate);
+          fleetExpirationsList.push({
+            id: `FLEET-${asset.id}-${item.docType}`,
+            entityType: 'FLEET',
+            entityId: asset.id,
+            entityName: asset.name,
+            subLabel: `Patente: ${asset.plate || asset.id} • ${asset.category || 'Equipo'}`,
+            docType: item.docType,
+            coreKey: item.coreKey,
+            isCustom: item.isCustom,
+            customIndex: item.customIndex,
+            expiryDate: item.expiryDate,
+            days: res.days,
+            status: res.status,
+            rawAsset: asset
+          });
+        }
       }
     });
   });
 
-  // Compile all HR Employee Expirations
+  // Compile all HR Employee Expirations with deduplication
   const hrExpirationsList = [];
+  const seenHRKeys = new Set();
+
   employees.forEach(emp => {
     const mainFaena = emp.faena || 'Faena Principal';
     const faenas = emp.faenasAccredited && emp.faenasAccredited.length > 0
@@ -139,26 +218,37 @@ export const GeneralExpirationsDashboard = () => {
 
     faenas.forEach(f => {
       const items = [
-        { docType: `Examen Médico Ocupacional (${f.faenaName})`, expiryDate: f.medicalExamExpiry || emp.medicalExamExpiry },
-        { docType: `Pase de Acreditación (${f.faenaName})`, expiryDate: f.accreditationExpiry || emp.accreditationExpiry },
-        { docType: `Curso Inducción Prevención (${f.faenaName})`, expiryDate: f.safetyCourseExpiry || emp.safetyCourseExpiry }
+        { docType: `Examen Médico Ocupacional (${f.faenaName})`, expiryDate: f.medicalExamExpiry || emp.medicalExamExpiry, coreKey: 'medical' },
+        { docType: `Pase de Acreditación (${f.faenaName})`, expiryDate: f.accreditationExpiry || emp.accreditationExpiry, coreKey: 'accreditation' },
+        { docType: `Curso Inducción Prevención (${f.faenaName})`, expiryDate: f.safetyCourseExpiry || emp.safetyCourseExpiry, coreKey: 'safety' }
       ];
 
       items.forEach(item => {
         if (item.expiryDate) {
-          const res = calculateDaysRemaining(item.expiryDate);
-          hrExpirationsList.push({
-            id: `HR-${emp.id}-${f.faenaName}-${item.docType}`,
-            entityType: 'HR',
-            entityId: emp.id,
-            entityName: emp.name,
-            subLabel: `RUT: ${emp.rut} • Cargo: ${emp.position} • Faena: ${f.faenaName}`,
-            docType: item.docType,
-            expiryDate: item.expiryDate,
-            days: res.days,
-            status: res.status,
-            rawEmployee: emp
-          });
+          const uniqueKey = `${emp.id}-${item.coreKey}-${item.expiryDate}`;
+          if (!seenHRKeys.has(uniqueKey)) {
+            seenHRKeys.add(uniqueKey);
+            const res = calculateDaysRemaining(item.expiryDate);
+            hrExpirationsList.push({
+              id: `HR-${emp.id}-${f.faenaName}-${item.coreKey}`,
+              entityType: 'HR',
+              entityId: emp.id,
+              entityName: emp.name,
+              subLabel: `RUT: ${emp.rut} • Cargo: ${emp.position} • Faena: ${f.faenaName}`,
+              docType: item.docType,
+              coreKey: item.coreKey,
+              faenaName: f.faenaName,
+              expiryDate: item.expiryDate,
+              days: res.days,
+              status: res.status,
+              rawEmployee: emp
+            });
+          }
+        }
+      });
+    });
+  });
+});
         }
       });
     });
@@ -479,7 +569,20 @@ export const GeneralExpirationsDashboard = () => {
                         </span>
                       </td>
 
-                      <td className="p-3.5 text-right">
+                      <td className="p-3.5 text-right space-x-1.5 flex justify-end items-center">
+                        <button
+                          onClick={() => {
+                            setDeleteModalItem(item);
+                            setConfirmCheck(false);
+                            setDeleteReason('');
+                          }}
+                          className="bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 px-2.5 py-1.5 rounded-lg text-xs font-bold transition-all inline-flex items-center space-x-1"
+                          title="Eliminar registro de vencimiento"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                          <span>Eliminar</span>
+                        </button>
+
                         {isFleet ? (
                           <button
                             onClick={() => setSelectedVehicleModal(item.rawAsset)}
@@ -507,6 +610,91 @@ export const GeneralExpirationsDashboard = () => {
         </div>
       </div>
 
+      {/* Modal de Validación de Eliminación de Vencimiento */}
+      {deleteModalItem && (
+        <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl max-w-md w-full border border-slate-200 shadow-2xl overflow-hidden animate-in fade-in zoom-in duration-150">
+            <div className="p-4 bg-rose-600 text-white flex items-center justify-between">
+              <div className="flex items-center space-x-2">
+                <AlertTriangle className="w-5 h-5" />
+                <h3 className="font-extrabold text-sm uppercase tracking-wider">
+                  Validación: Eliminar Vencimiento
+                </h3>
+              </div>
+              <button
+                onClick={() => setDeleteModalItem(null)}
+                className="hover:bg-rose-700 p-1 rounded-lg transition-colors"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <div className="p-5 space-y-4">
+              <div className="bg-rose-50 border border-rose-200 rounded-xl p-3.5 text-xs text-rose-900 space-y-1">
+                <div className="font-bold flex items-center space-x-1">
+                  <AlertCircle className="w-4 h-4 text-rose-600 mr-1" />
+                  <span>¿Deseas eliminar este registro del monitor?</span>
+                </div>
+                <p className="text-slate-600">
+                  Esta acción desvinculará o limpiará la fecha registrada para fines de auditoría.
+                </p>
+              </div>
+
+              <div className="bg-slate-50 border border-slate-200 rounded-xl p-3.5 text-xs space-y-1 font-mono">
+                <div><strong className="text-slate-700">Entidad:</strong> {deleteModalItem.entityName}</div>
+                <div><strong className="text-slate-700">Documento:</strong> {deleteModalItem.docType}</div>
+                <div><strong className="text-slate-700">Fecha Vencimiento:</strong> {formatDateDDMMYYYY(deleteModalItem.expiryDate)}</div>
+              </div>
+
+              <div className="space-y-1">
+                <label className="text-xs font-bold text-slate-700">Motivo de la eliminación (opcional):</label>
+                <input
+                  type="text"
+                  value={deleteReason}
+                  onChange={(e) => setDeleteReason(e.target.value)}
+                  placeholder="Ej: Documento renovado externamente / Registro obsoleto"
+                  className="w-full text-xs p-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-rose-500 focus:outline-none"
+                />
+              </div>
+
+              <div className="flex items-start space-x-2 pt-2 border-t border-slate-200">
+                <input
+                  type="checkbox"
+                  id="confirmCheckExpirations"
+                  checked={confirmCheck}
+                  onChange={(e) => setConfirmCheck(e.target.checked)}
+                  className="mt-0.5 rounded border-slate-300 text-rose-600 focus:ring-rose-500 w-4 h-4"
+                />
+                <label htmlFor="confirmCheckExpirations" className="text-xs font-semibold text-slate-800 cursor-pointer">
+                  Confirmo la eliminación del registro de vencimiento bajo mi perfil de usuario auditado.
+                </label>
+              </div>
+            </div>
+
+            <div className="p-4 bg-slate-50 border-t border-slate-200 flex justify-end space-x-2">
+              <button
+                onClick={() => setDeleteModalItem(null)}
+                className="px-4 py-2 text-xs font-bold text-slate-600 hover:bg-slate-200 rounded-xl transition-colors"
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={handleConfirmDeleteExpiration}
+                disabled={!confirmCheck}
+                className={`px-4 py-2 text-xs font-bold text-white rounded-xl shadow-xs transition-all inline-flex items-center space-x-1.5 ${
+                  confirmCheck
+                    ? 'bg-rose-600 hover:bg-rose-700 cursor-pointer'
+                    : 'bg-slate-400 cursor-not-allowed opacity-60'
+                }`}
+              >
+                <Trash2 className="w-3.5 h-3.5" />
+                <span>Confirmar Eliminación</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Modals for Direct Renewal */}
       <UpdateVehicleExpirationsModal
         isOpen={Boolean(selectedVehicleModal)}
@@ -528,4 +716,5 @@ export const GeneralExpirationsDashboard = () => {
     </div>
   );
 };
+
 
