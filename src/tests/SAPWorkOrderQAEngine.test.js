@@ -6,7 +6,8 @@ import { describe, it, expect } from 'vitest';
  * Cobertura: Happy Path, Casos Límite, Resiliencia y Manejo de Errores
  */
 
-describe('Módulo Operam PM: Auditoría QA & Cobertura de Órdenes de Trabajo (IW31/IW32/TECO)', () => {
+describe('Módulo Axomira PM: Auditoría QA & Cobertura de Órdenes de Trabajo (IW31/IW32/TECO)', () => {
+
 
   // Mock State Fixtures
   const mockAssets = [

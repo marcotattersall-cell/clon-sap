@@ -47,7 +47,7 @@ export const UserManagementSU01 = () => {
   // Lista de Tenants Corporativos Conocidos
   const tenantOptions = [
     { id: 'ALL', name: '🏢 Todos los Clientes Corporativos' },
-    { id: 'tenant_demo', name: 'Demo Operam Enterprise (Santiago)' },
+    { id: 'tenant_demo', name: 'Demo Axomira Enterprise (Santiago)' },
     { id: 'tenant_bhp', name: 'BHP Billiton (Minera Escondida)' },
     { id: 'tenant_codelco', name: 'CODELCO Chile (El Teniente / Chuquicamata)' },
     { id: 'tenant_antofagasta_minerals', name: 'Antofagasta Minerals (Pelambres / Centinela)' },
@@ -58,7 +58,7 @@ export const UserManagementSU01 = () => {
   const [corporateClientsList, setCorporateClientsList] = useState([
     {
       id: 'tenant_demo',
-      name: 'Demo Operam Enterprise',
+      name: 'Demo Axomira Enterprise',
       sector: 'Planta Central Santiago (Demostración Corporativa)',
       tenantId: 'tenant_demo',
       slaTier: 'HIGH',
@@ -143,7 +143,7 @@ export const UserManagementSU01 = () => {
       role: 'ADMINISTRATOR',
       roleName: 'Administrador Universal (SAP_ALL)',
       tenantId: 'tenant_demo',
-      tenantName: 'Demo Operam Enterprise',
+      tenantName: 'Demo Axomira Enterprise',
       plant: '0001 (Planta Central Santiago)',
       status: 'Activo',
       lastLogin: '2026-08-23 13:00',
@@ -1017,7 +1017,7 @@ export const UserManagementSU01 = () => {
                 </div>
                 <h2 className="text-base font-black text-white flex items-center gap-2 mt-0.5">
                   <UserPlus className="w-4 h-4 text-purple-400" />
-                  <span>Gestión de Usuarios (operam:admin:usuarios) — {editingUser ? 'Edición de Permisos & Tenant Corporativo' : 'Alta de Usuario & Asignación Multi-Tenant'}</span>
+                  <span>Gestión de Usuarios (axomira:admin:usuarios) — {editingUser ? 'Edición de Permisos & Tenant Corporativo' : 'Alta de Usuario & Asignación Multi-Tenant'}</span>
 
                 </h2>
               </div>

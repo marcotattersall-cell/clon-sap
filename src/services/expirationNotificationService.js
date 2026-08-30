@@ -1,6 +1,6 @@
 /**
  * Servicio de Notificaciones de Vencimientos (Correo Electrónico & Webhooks)
- * Operam ERP Enterprise Platform
+ * AXOMIRA INTELLIGENT CLOUD ERP Platform
  */
 
 import { doc, getDoc, setDoc } from 'firebase/firestore';
@@ -10,9 +10,9 @@ const CONFIG_DOC_PATH = 'settings/notification_config';
 
 const DEFAULT_CONFIG = {
   emails: {
-    safety: 'prevencion@operam.cl',
-    fleet: 'flota@operam.cl',
-    hr: 'rrhh@operam.cl'
+    safety: 'prevencion@axomira.cl',
+    fleet: 'flota@axomira.cl',
+    hr: 'rrhh@axomira.cl'
   },
   webhookUrl: '',
   webhookType: 'SLACK', // 'SLACK', 'TEAMS', 'GENERIC'
@@ -37,7 +37,7 @@ export const getNotificationConfig = async () => {
     console.warn('[NotificationService] No se pudo leer Firestore, utilizando configuración local:', err);
   }
 
-  const localSaved = localStorage.getItem('operam_notification_config');
+  const localSaved = localStorage.getItem('axomira_notification_config');
   if (localSaved) {
     try {
       return { ...DEFAULT_CONFIG, ...JSON.parse(localSaved) };
@@ -53,7 +53,7 @@ export const getNotificationConfig = async () => {
  */
 export const saveNotificationConfig = async (newConfig) => {
   const merged = { ...DEFAULT_CONFIG, ...newConfig, updatedAt: new Date().toISOString() };
-  localStorage.setItem('operam_notification_config', JSON.stringify(merged));
+  localStorage.setItem('axomira_notification_config', JSON.stringify(merged));
 
   try {
     if (db) {
@@ -72,7 +72,7 @@ export const saveNotificationConfig = async (newConfig) => {
  */
 export const buildWebhookPayload = (webhookType, summary) => {
   const { totalExpired, totalWarning, expiredItems = [], warningItems = [] } = summary;
-  const title = `🚨 [Operam ERP] Alerta de Vencimientos: ${totalExpired} Vencidos y ${totalWarning} por Vencer`;
+  const title = `🚨 [Axomira ERP] Alerta de Vencimientos: ${totalExpired} Vencidos y ${totalWarning} por Vencer`;
 
   if (webhookType === 'SLACK') {
     const fields = [
@@ -88,7 +88,7 @@ export const buildWebhookPayload = (webhookType, summary) => {
       blocks: [
         {
           type: 'header',
-          text: { type: 'plain_text', text: '🚨 Operam ERP — Alerta de Vencimientos Documentales', emoji: true }
+          text: { type: 'plain_text', text: '🚨 Axomira ERP — Alerta de Vencimientos Documentales', emoji: true }
         },
         {
           type: 'section',
@@ -124,7 +124,7 @@ export const buildWebhookPayload = (webhookType, summary) => {
             { name: 'Documentos Vencidos', value: `${totalExpired}` },
             { name: 'Por Vencer (30d)', value: `${totalWarning}` }
           ],
-          text: `Se han auditado registros de Flota y Colaboradores. Por favor revisar el tablero de vencimientos en la plataforma Operam ERP.`
+          text: `Se han auditado registros de Flota y Colaboradores. Por favor revisar el tablero de vencimientos en la plataforma Axomira ERP.`
         }
       ]
     };
@@ -132,7 +132,7 @@ export const buildWebhookPayload = (webhookType, summary) => {
 
   // Generic JSON Payload
   return {
-    source: 'OPERAM_ERP_ENTERPRISE',
+    source: 'AXOMIRA_ERP_ENTERPRISE',
     timestamp: new Date().toISOString(),
     event: 'EXPIRATION_AUDIT_SUMMARY',
     totalExpired,

@@ -2,7 +2,8 @@ import React, { useEffect, useState } from 'react';
 import { Html5Qrcode } from 'html5-qrcode';
 import { Camera, X, QrCode, Sparkles, CheckCircle2 } from 'lucide-react';
 
-export const QRScannerModal = ({ isOpen, onClose, onScanSuccess, title = "Escáner QR / Código de Barras Operam" }) => {
+export const QRScannerModal = ({ isOpen, onClose, onScanSuccess, title = "Escáner QR / Código de Barras Axomira ERP" }) => {
+
   const [scanResult, setScanResult] = useState('');
   const [cameraError, setCameraError] = useState('');
   const [isScanning, setIsScanning] = useState(false);

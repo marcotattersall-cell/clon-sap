@@ -78,7 +78,7 @@ export const LoginScreen = () => {
     setIsSubmitting(false);
     if (res.success) {
       setCurrentRole(res.user.role || role);
-      addToast(`Bienvenido a Operam ERP Industrial: ${res.user.displayName}`, 'success');
+      addToast(`Bienvenido a AXOMIRA INTELLIGENT CLOUD ERP: ${res.user.displayName}`, 'success');
     } else {
       setLocalError(res.error);
     }
@@ -376,7 +376,7 @@ export const LoginScreen = () => {
                     <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">Correo Electrónico</label>
                     <div className="relative">
                       <Mail className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
-                      <input type="email" required placeholder="carlos.ruiz@operam-erp.com" value={email} onChange={handleEmailChange} className="w-full text-xs rounded-lg border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 pl-9 pr-3 py-2.5 focus:ring-2 focus:ring-sap-blue focus:outline-none" />
+                      <input type="email" required placeholder="carlos.ruiz@axomira-erp.com" value={email} onChange={handleEmailChange} className="w-full text-xs rounded-lg border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 pl-9 pr-3 py-2.5 focus:ring-2 focus:ring-sap-blue focus:outline-none" />
                     </div>
                   </div>
 

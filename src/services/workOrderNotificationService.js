@@ -1,7 +1,8 @@
 /**
  * Servicio de Auditoría y Notificaciones para Órdenes de Trabajo Estancadas (>24 Horas)
- * Operam ERP Enterprise Platform
+ * AXOMIRA INTELLIGENT CLOUD ERP Platform
  */
+
 
 import { getNotificationConfig, testWebhookConnection, buildWebhookPayload } from './expirationNotificationService';
 

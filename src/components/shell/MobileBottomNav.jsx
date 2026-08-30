@@ -6,12 +6,13 @@ export const MobileBottomNav = () => {
   const { activeTab, setActiveTab } = useSAP();
 
   const navItems = [
-    { id: 'LAUNCHPAD', label: 'Inicio', icon: LayoutGrid, slug: 'operam:home:cockpit' },
-    { id: 'WORK_ORDERS', label: 'Órdenes', icon: Wrench, slug: 'operam:mantenimiento:ordenes' },
-    { id: 'HR', label: 'Personal', icon: Users, slug: 'operam:rrhh:personal' },
-    { id: 'ASSETS', label: 'Activos', icon: Cpu, slug: 'operam:flota:activos' },
-    { id: 'INVENTORY', label: 'Stock', icon: Package, slug: 'operam:inventario:materiales' },
-    { id: 'ANALYTICS', label: 'Analítica', icon: BarChart3, slug: 'operam:analitica:costos' }
+    { id: 'LAUNCHPAD', label: 'Inicio', icon: LayoutGrid, slug: 'axomira:home:cockpit' },
+    { id: 'WORK_ORDERS', label: 'Órdenes', icon: Wrench, slug: 'axomira:mantenimiento:ordenes' },
+    { id: 'HR', label: 'Personal', icon: Users, slug: 'axomira:rrhh:personal' },
+    { id: 'ASSETS', label: 'Activos', icon: Cpu, slug: 'axomira:flota:activos' },
+    { id: 'INVENTORY', label: 'Stock', icon: Package, slug: 'axomira:inventario:materiales' },
+    { id: 'ANALYTICS', label: 'Analítica', icon: BarChart3, slug: 'axomira:analitica:costos' }
+
 
   ];
 

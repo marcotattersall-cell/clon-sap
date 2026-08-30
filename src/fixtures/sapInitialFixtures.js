@@ -1,5 +1,6 @@
 /**
- * Fixtures Iniciales para Siembra (Seeding) de Datos Maestros en Operam ERP (PM / MM)
+ * Fixtures Iniciales para Siembra (Seeding) de Datos Maestros en AXOMIRA INTELLIGENT CLOUD ERP (PM / MM)
+
  * Aísla las constantes de prueba iniciales para mantener el contexto limpio y liviano.
  */
 

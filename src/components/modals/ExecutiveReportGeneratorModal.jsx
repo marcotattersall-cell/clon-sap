@@ -81,7 +81,7 @@ export const ExecutiveReportGeneratorModal = ({ isOpen, onClose }) => {
             </div>
             <h2 className="text-base font-black text-white flex items-center gap-2 mt-0.5">
               <FileText className="w-4 h-4 text-sky-400" />
-              <span>Motor de Generación de Reportes Ejecutivos BI (operam:analitica:reportes)</span>
+              <span>Motor de Generación de Reportes Ejecutivos BI (axomira:analitica:reportes)</span>
             </h2>
           </div>
         </div>
@@ -116,7 +116,7 @@ export const ExecutiveReportGeneratorModal = ({ isOpen, onClose }) => {
           <div className="space-y-1">
             <div className="flex items-center space-x-2 text-xs font-mono font-bold text-sky-400 uppercase tracking-widest">
               <Sparkles className="w-4 h-4 text-amber-400" />
-              <span>OPERAM BI REPORTING ENGINE • AUDIT-READY</span>
+              <span>AXOMIRA BI REPORTING ENGINE • AUDIT-READY</span>
             </div>
 
             <h3 className="text-lg font-bold text-white tracking-tight">
@@ -234,7 +234,7 @@ export const ExecutiveReportGeneratorModal = ({ isOpen, onClose }) => {
             <div>
               <div className="flex items-center space-x-2 text-xs font-mono font-bold text-sky-400 uppercase tracking-widest mb-1">
                 <ShieldCheck className="w-4 h-4 text-emerald-400" />
-                <span>DOCUMENTO OFICIAL OPERAM ERP • SELLO AUDITADO</span>
+                <span>DOCUMENTO OFICIAL AXOMIRA INTELLIGENT CLOUD ERP • SELLO AUDITADO</span>
               </div>
               <h3 className="text-xl font-black text-white tracking-tight">{currentReportData.title}</h3>
               <p className="text-xs text-slate-400 mt-0.5">{currentReportData.subtitle}</p>
@@ -291,7 +291,7 @@ export const ExecutiveReportGeneratorModal = ({ isOpen, onClose }) => {
 
           {/* Footer de la Hoja */}
           <div className="pt-4 border-t border-slate-800 flex flex-col sm:flex-row items-center justify-between text-xs text-slate-400 font-mono gap-2">
-            <div>Firma Digital de Auditoría: <strong>OPERAM-ENGINE-AUTH-2026</strong></div>
+            <div>Firma Digital de Auditoría: <strong>AXOMIRA-ENGINE-AUTH-2026</strong></div>
             <div>Página 1 de 1 • Confidencial Corporativo</div>
           </div>
 

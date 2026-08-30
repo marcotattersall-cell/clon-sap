@@ -1,5 +1,6 @@
 /**
- * 🛡️ OPERAM ERP ENTERPRISE — MATRIZ DE CONTROL DE ACCESO BASADO EN ROLES (RBAC MATRIX)
+ * 🛡️ AXOMIRA INTELLIGENT CLOUD ERP — MATRIZ DE CONTROL DE ACCESO BASADO EN ROLES (RBAC MATRIX)
+
  * 
  * Define las autorizaciones por módulo, transacción y rol de usuario en la plataforma ERP.
  */

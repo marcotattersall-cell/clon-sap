@@ -222,7 +222,8 @@ export const HRMaster = ({ onOpenCreateEmployee, onOpenCreateAbsence }) => {
         <div>
           <div className="flex items-center space-x-2 text-xs font-bold uppercase tracking-wider text-sky-700 mb-1">
             <Users className="w-4 h-4 text-sky-600" />
-            <span>Módulo Operam HCM • Gestión de Capital Humano</span>
+            <span>Módulo Axomira HCM • Gestión de Capital Humano</span>
+
           </div>
           <h1 className="text-xl sm:text-2xl font-black tracking-tight text-slate-900">
             Recursos Humanos & Control de Acreditación de Faenas

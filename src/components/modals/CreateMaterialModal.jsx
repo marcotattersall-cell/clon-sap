@@ -80,7 +80,8 @@ export const CreateMaterialModal = ({ isOpen, onClose }) => {
             </div>
             <h2 className="text-base font-black text-white flex items-center gap-2 mt-0.5">
               <Package className="w-4 h-4 text-emerald-400" />
-              <span>Alta de Nuevo Material (operam:inventario:materiales)</span>
+              <span>Alta de Nuevo Material (axomira:inventario:materiales)</span>
+
 
             </h2>
           </div>

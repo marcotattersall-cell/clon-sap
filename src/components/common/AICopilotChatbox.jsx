@@ -41,7 +41,7 @@ export const AICopilotChatbox = () => {
       id: 1,
       sender: 'bot',
       timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-      text: '¡Hola! Soy tu Copiloto Operam AI. Estoy conectado en tiempo real al sistema ERP. ¿En qué puedo ayudarte hoy?',
+      text: '¡Hola! Soy tu Copiloto Axomira AI. Estoy conectado en tiempo real al sistema ERP. ¿En qué puedo ayudarte hoy?',
       quickActions: [
         { label: '📊 Generar Reporte BI', query: 'Genera el informe ejecutivo de mantenimiento y presupuesto' },
         { label: '🚨 Órdenes Críticas', query: '¿Cuáles son las órdenes PM de prioridad Alta?' },
@@ -183,7 +183,7 @@ export const AICopilotChatbox = () => {
               </div>
               <div>
                 <h4 className="text-xs font-black text-white leading-tight flex items-center gap-1.5">
-                  Copiloto Operam AI
+                  Copiloto Axomira AI
                   <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
                 </h4>
                 <p className="text-[10px] text-sky-200 font-medium">Asistente Inteligente ERP 2026</p>
@@ -311,7 +311,7 @@ export const AICopilotChatbox = () => {
       <button
         onClick={() => setIsOpen(!isOpen)}
         className="group relative p-3.5 bg-gradient-to-r from-sap-blue via-blue-600 to-indigo-700 hover:scale-105 text-white rounded-full shadow-2xl transition-all duration-200 cursor-pointer border border-white/20 flex items-center justify-center ring-4 ring-sap-blue/20"
-        title="Abrir Copiloto Operam AI"
+        title="Abrir Copiloto Axomira AI"
       >
         <div className="relative">
           <Bot className="w-7 h-7 text-white" />
@@ -322,7 +322,7 @@ export const AICopilotChatbox = () => {
         {/* Floating Tooltip Label */}
         <span className="absolute right-14 bg-slate-900 text-white text-xs font-extrabold px-3 py-1.5 rounded-xl shadow-xl border border-slate-700 opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none flex items-center gap-1.5">
           <Sparkles className="w-3.5 h-3.5 text-amber-400" />
-          Copiloto Operam AI
+          Copiloto Axomira AI
         </span>
       </button>
 

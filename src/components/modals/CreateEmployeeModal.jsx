@@ -91,7 +91,8 @@ export const CreateEmployeeModal = ({ isOpen, onClose }) => {
             </div>
             <h2 className="text-base font-black text-white flex items-center gap-2 mt-0.5">
               <UserPlus className="w-4 h-4 text-sky-400" />
-              <span>Alta de Personal & Ficha HCM (operam:rrhh:personal)</span>
+              <span>Alta de Personal & Ficha HCM (axomira:rrhh:personal)</span>
+
 
             </h2>
           </div>

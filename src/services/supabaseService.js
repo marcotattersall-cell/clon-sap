@@ -390,7 +390,7 @@ export const executeAtomicGoodsMovement = async ({
       targetStorageLocation: targetStorageLocation || null,
       refDocument: refDocument || 'N/A',
       timestamp: new Date().toISOString(),
-      user: currentUser?.displayName || currentUser?.email || 'Operador Operam ERP',
+      user: currentUser?.displayName || currentUser?.email || 'Operador Axomira ERP',
       tenantId: activeTenant
     };
 
@@ -485,7 +485,7 @@ export const recordAuditLog = async ({ entityType, entityId, action, details, us
       entityId: String(entityId),
       action,
       details: details || '',
-      user: user || 'SISTEMA_OPERAM',
+      user: user || 'SISTEMA_AXOMIRA',
       timestamp: new Date().toISOString(),
       tenantId: activeTenant
     };

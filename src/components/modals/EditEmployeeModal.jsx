@@ -112,7 +112,8 @@ export const EditEmployeeModal = ({ isOpen, onClose, employee }) => {
               <Edit className="w-5 h-5 text-sky-200" />
             </div>
             <div>
-              <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-sky-200">Maestro de Personal • Operam HCM (#rrhh-personal)</span>
+              <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-sky-200">Maestro de Personal • Axomira HCM (#rrhh-personal)</span>
+
               <h3 className="text-base font-black leading-tight">Modificar Ficha de Colaborador [{employee.id}]</h3>
             </div>
           </div>

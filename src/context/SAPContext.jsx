@@ -1054,12 +1054,12 @@ export const SAPProvider = ({ children }) => {
     setEmployees(DEFAULT_EMPLOYEES);
     setAbsences(DEFAULT_ABSENCES);
     setPayrollRuns(DEFAULT_PAYROLL_RUNS);
-    addToast('✨ Datos de demostración de OPERAM restaurados exitosamente.', 'success');
+    addToast('✨ Datos de demostración de AXOMIRA INTELLIGENT CLOUD ERP restaurados exitosamente.', 'success');
   };
 
   // Clear All Tenant Data to 0 (Clean Production State)
   const clearAllTenantData = () => {
-    localStorage.setItem(`operam_is_wiped_${activeTenantId}`, 'true');
+    localStorage.setItem(`axomira_is_wiped_${activeTenantId}`, 'true');
 
     setWorkOrders([]);
     setMaterials([]);

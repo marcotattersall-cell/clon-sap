@@ -119,11 +119,11 @@ export const AuthModal = ({ isOpen, onClose }) => {
         <div className="bg-slate-900 text-white px-5 py-4 flex items-center justify-between border-b border-slate-800">
           <div className="flex items-center space-x-3">
             <div className="w-8 h-8 rounded bg-sap-blue flex items-center justify-center font-black text-[10px]">
-              OPM
+              AXM
             </div>
             <div>
               <h3 className="font-bold text-sm leading-tight text-slate-100">
-                Autenticación Firebase Operam ERP
+                Autenticación Firebase Axomira ERP
               </h3>
               <p className="text-[11px] text-slate-400 font-mono">
                 {isRealFirebaseConfigured ? 'Conectado a Firebase Cloud Auth' : 'Firebase Demo Mode (Offline Active)'}
@@ -201,7 +201,7 @@ export const AuthModal = ({ isOpen, onClose }) => {
               <input
                 type="email"
                 required
-                placeholder="usuario@operam-erp.com"
+                placeholder="usuario@axomira-erp.com"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 className="w-full text-xs rounded border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 pl-9 pr-3 py-2 focus:ring-1 focus:ring-sap-blue focus:outline-none"

@@ -3,7 +3,8 @@ import { slugifyTenantId } from '../context/AuthContext';
 import { getTenantDocRef, DEFAULT_TENANT_ID } from '../services/firestoreService';
 
 /**
- * ⚡🚀 OPERAM ERP ENTERPRISE — SIMULACIÓN MASIVA DE CARGA Y CONCURRENCIA
+ * ⚡🚀 AXOMIRA INTELLIGENT CLOUD ERP — SIMULACIÓN MASIVA DE CARGA Y CONCURRENCIA
+
  * Escenario: 50 Clientes Corporativos Independientes (Tenants)
  *            150 Usuarios Concurrentes (3 usuarios por cliente)
  * Operaciones: Login, Consultas a BDD, Creación de Activos (IE01), 
