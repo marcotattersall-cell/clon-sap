@@ -245,9 +245,10 @@ const GoodsMovementMIGOComponent = ({ initialMaterialId = '' }) => {
                       <span
                         title={doc.movementType === '261' ? 'MIGO 261: Salida para Orden PM (Rebaja de Stock MM e Imputación a Costo Real PM)' : doc.movementType === '101' ? 'MIGO 101: Entrada por Pedido' : 'MIGO 311: Traspaso de Almacén'}
                         className={`px-2 py-0.5 rounded text-[10px] font-bold cursor-help ${
-                          doc.movementType === '261' ? 'bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300' :
-                          doc.movementType === '101' ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300' :
-                          'bg-blue-100 text-blue-800 dark:bg-blue-950 dark:text-blue-300'
+                          doc.movementType === '261' ? 'bg-amber-100 text-amber-900 dark:bg-amber-950/80 dark:text-amber-300 border border-amber-300' :
+                          doc.movementType === '101' ? 'bg-slate-100 text-slate-800 dark:bg-slate-800 dark:text-slate-200 border border-slate-300 dark:border-slate-700' :
+                          'bg-slate-100 text-slate-800 dark:bg-slate-800 dark:text-slate-200 border border-slate-300 dark:border-slate-700'
+
                         }`}
                       >
                         {doc.movementType}

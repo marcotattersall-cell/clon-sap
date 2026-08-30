@@ -721,7 +721,7 @@ export const WorkOrderMaster = ({ onOpenCreateWO, onOpenMIGOForWO }) => {
                             <div className="font-bold text-slate-900">{op.text}</div>
                             <div className="text-[11px] text-slate-500">Asignado: {op.assigned} • Duración estim.: {op.duration} hrs</div>
                           </div>
-                          <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${op.status === 'Completed' ? 'bg-emerald-100 text-emerald-800' : 'bg-slate-200 text-slate-700'
+                          <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${op.status === 'Completed' ? 'bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-200 border border-slate-300 dark:border-slate-700' : 'bg-slate-200 text-slate-700'
                             }`}>
                             {op.status === 'Completed' ? '✔ Completado' : 'Pendiente'}
                           </span>
@@ -744,7 +744,7 @@ export const WorkOrderMaster = ({ onOpenCreateWO, onOpenMIGOForWO }) => {
                         setActiveWOModal(null);
                         if (onOpenMIGOForWO) onOpenMIGOForWO(activeWO);
                       }}
-                      className="bg-amber-600 hover:bg-amber-500 text-white font-bold px-3 py-1.5 rounded-lg text-xs transition-all flex items-center space-x-1 shadow-xs"
+                      className="bg-slate-100 hover:bg-slate-200 text-slate-800 dark:bg-slate-800 dark:hover:bg-slate-700 dark:text-slate-200 border border-slate-300 dark:border-slate-700 font-bold px-3 py-1.5 rounded-lg text-xs transition-all flex items-center space-x-1 shadow-xs"
                     >
                       <Package className="w-3.5 h-3.5" />
                       <span>Ir a MIGO Completo</span>
@@ -766,7 +766,7 @@ export const WorkOrderMaster = ({ onOpenCreateWO, onOpenMIGOForWO }) => {
 
                           <button
                             onClick={() => handleIssueComponent(activeWO.id, comp.materialId)}
-                            className="bg-emerald-600 hover:bg-emerald-500 text-white font-bold px-3 py-1 rounded-lg text-xs transition-all shadow-xs"
+                            className="bg-sky-700 hover:bg-sky-800 text-white font-bold px-3 py-1 rounded-lg text-xs transition-all shadow-xs"
                           >
                             + Reclamar 1 UN
                           </button>
@@ -817,7 +817,7 @@ export const WorkOrderMaster = ({ onOpenCreateWO, onOpenMIGOForWO }) => {
                 {activeWO.status === 'CRTE' && (
                   <button
                     onClick={() => handleQuickStatusChange(activeWO, 'REL')}
-                    className="bg-amber-600 hover:bg-amber-500 text-white font-bold px-4 py-2 rounded-xl transition-all shadow-xs"
+                    className="bg-sky-700 hover:bg-sky-800 text-white font-bold px-4 py-2 rounded-xl transition-all shadow-xs"
                   >
                     ⚡ Liberar Orden (REL)
                   </button>
@@ -826,7 +826,7 @@ export const WorkOrderMaster = ({ onOpenCreateWO, onOpenMIGOForWO }) => {
                 {activeWO.status === 'REL' && (
                   <button
                     onClick={() => handleQuickStatusChange(activeWO, 'PCNF')}
-                    className="bg-purple-600 hover:bg-purple-500 text-white font-bold px-4 py-2 rounded-xl transition-all shadow-xs"
+                    className="bg-sky-700 hover:bg-sky-800 text-white font-bold px-4 py-2 rounded-xl transition-all shadow-xs"
                   >
                     ▶ Iniciar Trabajos (PCNF)
                   </button>
@@ -835,12 +835,13 @@ export const WorkOrderMaster = ({ onOpenCreateWO, onOpenMIGOForWO }) => {
                 {(activeWO.status === 'REL' || activeWO.status === 'PCNF') && (
                   <button
                     onClick={() => handleQuickStatusChange(activeWO, 'TECO')}
-                    className="bg-emerald-600 hover:bg-emerald-500 text-white font-extrabold px-4 py-2 rounded-xl transition-all shadow-xs flex items-center space-x-1"
+                    className="bg-sky-700 hover:bg-sky-800 text-white font-bold px-4 py-2 rounded-xl transition-all shadow-xs flex items-center space-x-1"
                   >
                     <CheckCircle2 className="w-4 h-4" />
                     <span>Emitir Cierre TECO</span>
                   </button>
                 )}
+
 
                 <button
                   onClick={() => setActiveWOModal(null)}

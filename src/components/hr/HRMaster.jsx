@@ -617,13 +617,14 @@ export const HRMaster = ({ onOpenCreateEmployee, onOpenCreateAbsence }) => {
 
                         <td className="p-3 text-center">
                           <span className={`px-2 py-0.5 rounded text-[10px] font-bold border ${
-                            emp.status === 'Activo' ? 'bg-emerald-50 text-emerald-700 border-emerald-200' :
-                            emp.status === 'Licencia Médica' ? 'bg-purple-50 text-purple-700 border-purple-200' :
+                            emp.status === 'Activo' ? 'bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-200 border-slate-300 dark:border-slate-700' :
+                            emp.status === 'Licencia Médica' ? 'bg-amber-50 dark:bg-amber-950/40 text-amber-800 dark:text-amber-300 border-amber-200 dark:border-amber-800' :
                             'bg-slate-100 text-slate-600 border-slate-200'
                           }`}>
                             {emp.status}
                           </span>
                         </td>
+
 
                         <td className="p-3 text-right space-x-1">
                           <button
@@ -711,12 +712,13 @@ export const HRMaster = ({ onOpenCreateEmployee, onOpenCreateAbsence }) => {
               <button
                 onClick={() => setComplianceFilter('OK')}
                 className={`px-3 py-1 rounded-lg text-xs font-bold border transition-all flex items-center gap-1 ${
-                  complianceFilter === 'OK' ? 'bg-emerald-600 text-white border-emerald-600' : 'bg-emerald-100 text-emerald-900 border-emerald-300'
+                  complianceFilter === 'OK' ? 'bg-sky-700 text-white border-sky-700' : 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-300 dark:border-slate-700'
                 }`}
               >
-                <CheckCircle2 className="w-3.5 h-3.5" />
+                <CheckCircle2 className="w-3.5 h-3.5 text-slate-500 dark:text-slate-400" />
                 Vigentes
               </button>
+
             </div>
           </div>
 
@@ -1076,31 +1078,31 @@ export const HRMaster = ({ onOpenCreateEmployee, onOpenCreateAbsence }) => {
               <div className="text-[11px] text-amber-700 font-medium">Ligeras variaciones sobre la media</div>
             </div>
 
-            <div className="p-4 rounded-xl bg-emerald-50 border border-emerald-200 shadow-xs space-y-1">
-              <div className="text-xs text-emerald-800 font-bold flex items-center justify-between">
+            <div className="p-4 rounded-xl bg-slate-100 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 shadow-xs space-y-1">
+              <div className="text-xs text-slate-500 dark:text-slate-400 font-bold flex items-center justify-between">
                 <span>Parámetros Normales (🟢)</span>
-                <ShieldCheck className="w-4 h-4 text-emerald-600" />
+                <ShieldCheck className="w-4 h-4 text-slate-600 dark:text-slate-400" />
               </div>
-              <div className="text-2xl font-black text-emerald-900 font-mono">{mlNormalCount}</div>
-              <div className="text-[11px] text-emerald-700 font-medium">Validados dentro del rango estadístico</div>
+              <div className="text-2xl font-black text-slate-900 dark:text-white font-mono">{mlNormalCount}</div>
+              <div className="text-[11px] text-slate-500 dark:text-slate-400 font-medium">Validados dentro del rango estadístico</div>
             </div>
           </div>
 
           {/* ML Audit Table */}
-          <div className="bg-white rounded-xl border border-slate-200 overflow-hidden shadow-xs">
-            <div className="p-4 bg-slate-50 border-b border-slate-200 flex items-center justify-between">
-              <h4 className="font-bold text-slate-900 text-xs uppercase tracking-wider flex items-center gap-2">
-                <Cpu className="w-4 h-4 text-purple-600" />
+          <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 overflow-hidden shadow-xs">
+            <div className="p-4 bg-slate-50 dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 flex items-center justify-between">
+              <h4 className="font-bold text-slate-900 dark:text-white text-xs uppercase tracking-wider flex items-center gap-2">
+                <Cpu className="w-4 h-4 text-sky-400" />
                 <span>Resultados de Auditoría de Nómina en Tiempo Real</span>
               </h4>
-              <span className="text-[11px] font-mono text-slate-500 font-semibold">
+              <span className="text-[11px] font-mono text-slate-500 dark:text-slate-400 font-semibold">
                 Ordenado por Índice de Riesgo de Anomalía (ML Score)
               </span>
             </div>
 
             <div className="overflow-x-auto">
-              <table className="w-full text-left text-xs divide-y divide-slate-200">
-                <thead className="bg-slate-100 text-slate-700 font-bold uppercase tracking-wider">
+              <table className="w-full text-left text-xs divide-y divide-slate-200 dark:divide-slate-800">
+                <thead className="bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-bold uppercase tracking-wider">
                   <tr>
                     <th className="p-3">ID Nómina / Colaborador</th>
                     <th className="p-3">Departamento / Cargo</th>
@@ -1112,35 +1114,35 @@ export const HRMaster = ({ onOpenCreateEmployee, onOpenCreateAbsence }) => {
                     <th className="p-3 text-center">Estado Auditoría</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-100 font-medium text-slate-800">
+                <tbody className="divide-y divide-slate-100 dark:divide-slate-800 font-medium text-slate-800 dark:text-slate-200">
                   {mlAuditedPayrolls
                     .sort((a, b) => b.anomalyScore - a.anomalyScore)
                     .map(item => (
-                      <tr key={item.id} className="hover:bg-slate-50 transition-colors">
+                      <tr key={item.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/60 transition-colors">
                         <td className="p-3">
-                          <div className="font-mono font-bold text-sap-blue">{item.id}</div>
-                          <div className="font-bold text-slate-900">{item.employeeName}</div>
+                          <div className="font-mono font-bold text-sky-700 dark:text-sky-400">{item.id}</div>
+                          <div className="font-bold text-slate-900 dark:text-white">{item.employeeName}</div>
                         </td>
 
                         <td className="p-3">
-                          <div className="font-bold text-slate-800">{item.department}</div>
-                          <div className="text-[11px] text-slate-500">{item.position}</div>
+                          <div className="font-bold text-slate-800 dark:text-slate-200">{item.department}</div>
+                          <div className="text-[11px] text-slate-500 dark:text-slate-400">{item.position}</div>
                         </td>
 
-                        <td className="p-3 font-mono font-bold text-slate-700">
+                        <td className="p-3 font-mono font-bold text-slate-700 dark:text-slate-300">
                           ${Number(item.baseSalary || 0).toLocaleString('es-CL')}
                         </td>
 
                         <td className="p-3">
-                          <div className="font-bold text-slate-900 font-mono">{item.overtimeHours} hrs</div>
+                          <div className="font-bold text-slate-900 dark:text-white font-mono">{item.overtimeHours} hrs</div>
                           <div className="text-[10px] text-slate-500 font-mono">
-                            Z-Score: <strong className={item.zOvertimeScore >= 1.5 ? 'text-rose-600' : 'text-slate-700'}>
+                            Z-Score: <strong className={item.zOvertimeScore >= 1.5 ? 'text-rose-600' : 'text-slate-700 dark:text-slate-300'}>
                               {item.zOvertimeScore > 0 ? `+${item.zOvertimeScore}σ` : `${item.zOvertimeScore}σ`}
                             </strong>
                           </div>
                         </td>
 
-                        <td className="p-3 font-mono font-black text-slate-900">
+                        <td className="p-3 font-mono font-black text-slate-900 dark:text-white">
                           ${Number(item.totalNet || item.baseSalary || 0).toLocaleString('es-CL')}
                         </td>
 
@@ -1148,10 +1150,10 @@ export const HRMaster = ({ onOpenCreateEmployee, onOpenCreateAbsence }) => {
                           <div className="flex flex-col items-center gap-1">
                             <span className={`px-2.5 py-1 rounded-full text-xs font-mono font-black border ${
                               item.anomalyLevel === 'CRITICAL'
-                                ? 'bg-rose-100 text-rose-900 border-rose-300 ring-2 ring-rose-400/40'
+                                ? 'bg-rose-100 text-rose-900 border-rose-300 dark:bg-rose-950 dark:text-rose-200'
                                 : item.anomalyLevel === 'WARNING'
-                                ? 'bg-amber-100 text-amber-900 border-amber-300'
-                                : 'bg-emerald-100 text-emerald-900 border-emerald-300'
+                                ? 'bg-amber-100 text-amber-900 border-amber-300 dark:bg-amber-950 dark:text-amber-200'
+                                : 'bg-slate-100 text-slate-800 border-slate-300 dark:bg-slate-800 dark:text-slate-200'
                             }`}>
                               {item.anomalyScore}% Riesgo
                             </span>
@@ -1183,11 +1185,12 @@ export const HRMaster = ({ onOpenCreateEmployee, onOpenCreateAbsence }) => {
                               <span>Revisión Sugerida</span>
                             </span>
                           ) : (
-                            <span className="bg-emerald-600 text-white text-[11px] font-bold px-2.5 py-1 rounded-lg shadow-xs inline-flex items-center gap-1">
-                              <CheckCircle2 className="w-3 h-3" />
+                            <span className="bg-slate-700 text-white text-[11px] font-bold px-2.5 py-1 rounded-lg shadow-xs inline-flex items-center gap-1">
+                              <CheckCircle2 className="w-3 h-3 text-slate-300" />
                               <span>Aprobado por ML</span>
                             </span>
                           )}
+
                         </td>
                       </tr>
                     ))}

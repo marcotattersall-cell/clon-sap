@@ -242,14 +242,15 @@ export const AssetHierarchyTree = () => {
                       <span className={`px-2 py-0.5 rounded text-[10px] transition-all ${
                         asset.status === 'OPERATIVE' || asset.status === 'Operational'
                           ? isSelected
-                            ? 'bg-emerald-400 text-slate-950 font-black border border-emerald-200 shadow-md'
-                            : 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950/80 dark:text-emerald-300 border border-emerald-400/60 font-bold'
+                            ? 'bg-slate-200 text-slate-950 font-black border border-slate-300 shadow-xs'
+                            : 'bg-slate-100 text-slate-800 dark:bg-slate-800 dark:text-slate-200 border border-slate-300 dark:border-slate-700 font-bold'
                           : isSelected
                             ? 'bg-rose-400 text-slate-950 font-black border border-rose-200 shadow-md animate-pulse'
                             : 'bg-rose-100 text-rose-800 dark:bg-rose-950/80 dark:text-rose-300 border border-rose-400/60 font-bold animate-pulse'
                       }`}>
                         {asset.status === 'OPERATIVE' || asset.status === 'Operational' ? 'OPERATIVO' : 'MANTENCIÓN'}
                       </span>
+
                     </div>
                   </div>
 

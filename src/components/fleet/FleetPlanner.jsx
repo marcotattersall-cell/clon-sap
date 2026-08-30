@@ -554,11 +554,12 @@ export const FleetPlanner = ({ onOpenCreateWOForVehicle }) => {
                       </span>
                     )}
                     {vehicle.status === 'OK' && (
-                      <span className="inline-flex items-center space-x-1 px-3 py-1 rounded-full text-xs font-bold bg-emerald-100 text-emerald-800 border border-emerald-300">
-                        <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
+                      <span className="inline-flex items-center space-x-1 px-3 py-1 rounded-full text-xs font-bold bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-200 border border-slate-300 dark:border-slate-700">
+                        <CheckCircle2 className="w-3.5 h-3.5 text-slate-500 dark:text-slate-400" />
                         <span>Al Día</span>
                       </span>
                     )}
+
 
                     {/* Expiration badge preview */}
                     <button
@@ -742,12 +743,12 @@ export const FleetPlanner = ({ onOpenCreateWOForVehicle }) => {
                       <span className={`inline-flex items-center space-x-1 font-mono text-[11px] font-bold px-2 py-0.5 rounded-full border ${
                         exp.acc.status === 'EXPIRED' ? 'bg-rose-50 text-rose-700 border-rose-200' :
                         exp.acc.status === 'ALERT_30' ? 'bg-amber-50 text-amber-800 border-amber-200' :
-                        'bg-emerald-50 text-emerald-700 border-emerald-200'
+                        'bg-slate-100 text-slate-700 border-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:border-slate-700'
                       }`}>
                         <span className={`w-1.5 h-1.5 rounded-full ${
                           exp.acc.status === 'EXPIRED' ? 'bg-rose-500' :
                           exp.acc.status === 'ALERT_30' ? 'bg-amber-500' :
-                          'bg-emerald-500'
+                          'bg-slate-400'
                         }`} />
                         <span>{exp.acc.status === 'EXPIRED' ? 'Vencido' : exp.acc.status === 'ALERT_30' ? `${exp.acc.days}d` : `${exp.acc.days}d`}</span>
                       </span>
@@ -764,12 +765,12 @@ export const FleetPlanner = ({ onOpenCreateWOForVehicle }) => {
                       <span className={`inline-flex items-center space-x-1 font-mono text-[11px] font-bold px-2 py-0.5 rounded-full border ${
                         exp.perm.status === 'EXPIRED' ? 'bg-rose-50 text-rose-700 border-rose-200' :
                         exp.perm.status === 'ALERT_30' ? 'bg-amber-50 text-amber-800 border-amber-200' :
-                        'bg-emerald-50 text-emerald-700 border-emerald-200'
+                        'bg-slate-100 text-slate-700 border-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:border-slate-700'
                       }`}>
                         <span className={`w-1.5 h-1.5 rounded-full ${
                           exp.perm.status === 'EXPIRED' ? 'bg-rose-500' :
                           exp.perm.status === 'ALERT_30' ? 'bg-amber-500' :
-                          'bg-emerald-500'
+                          'bg-slate-400'
                         }`} />
                         <span>{exp.perm.status === 'EXPIRED' ? 'Vencido' : exp.perm.status === 'ALERT_30' ? `${exp.perm.days}d` : `${exp.perm.days}d`}</span>
                       </span>
@@ -786,12 +787,12 @@ export const FleetPlanner = ({ onOpenCreateWOForVehicle }) => {
                       <span className={`inline-flex items-center space-x-1 font-mono text-[11px] font-bold px-2 py-0.5 rounded-full border ${
                         exp.soap.status === 'EXPIRED' ? 'bg-rose-50 text-rose-700 border-rose-200' :
                         exp.soap.status === 'ALERT_30' ? 'bg-amber-50 text-amber-800 border-amber-200' :
-                        'bg-emerald-50 text-emerald-700 border-emerald-200'
+                        'bg-slate-100 text-slate-700 border-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:border-slate-700'
                       }`}>
                         <span className={`w-1.5 h-1.5 rounded-full ${
                           exp.soap.status === 'EXPIRED' ? 'bg-rose-500' :
                           exp.soap.status === 'ALERT_30' ? 'bg-amber-500' :
-                          'bg-emerald-500'
+                          'bg-slate-400'
                         }`} />
                         <span>{exp.soap.status === 'EXPIRED' ? 'Vencido' : exp.soap.status === 'ALERT_30' ? `${exp.soap.days}d` : `${exp.soap.days}d`}</span>
                       </span>
@@ -808,16 +809,17 @@ export const FleetPlanner = ({ onOpenCreateWOForVehicle }) => {
                       <span className={`inline-flex items-center space-x-1 font-mono text-[11px] font-bold px-2 py-0.5 rounded-full border ${
                         exp.tech.status === 'EXPIRED' ? 'bg-rose-50 text-rose-700 border-rose-200' :
                         exp.tech.status === 'ALERT_30' ? 'bg-amber-50 text-amber-800 border-amber-200' :
-                        'bg-emerald-50 text-emerald-700 border-emerald-200'
+                        'bg-slate-100 text-slate-700 border-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:border-slate-700'
                       }`}>
                         <span className={`w-1.5 h-1.5 rounded-full ${
                           exp.tech.status === 'EXPIRED' ? 'bg-rose-500' :
                           exp.tech.status === 'ALERT_30' ? 'bg-amber-500' :
-                          'bg-emerald-500'
+                          'bg-slate-400'
                         }`} />
                         <span>{exp.tech.status === 'EXPIRED' ? 'Vencido' : exp.tech.status === 'ALERT_30' ? `${exp.tech.days}d` : `${exp.tech.days}d`}</span>
                       </span>
                     </div>
+
                   </div>
 
                   {/* Custom Expirations List Section */}
