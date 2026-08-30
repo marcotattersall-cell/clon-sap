@@ -300,6 +300,43 @@ describe('Reglas de Negocio SAP PM/MM (Suite de Calidad ERP)', () => {
       expect(updatedEmp.faenasAccredited[0].medicalExamExpiry).toBe('2027-08-15');
     });
   });
+
+  describe('MM: Reglas de Validación para Eliminación/Desincorporación de Materiales', () => {
+    const validateMaterialDeletion = (material, activeWorkOrders) => {
+      if (!material) return { canDelete: false, reason: 'NOT_FOUND' };
+      if (Number(material.stock || 0) > 0) return { canDelete: false, reason: 'ACTIVE_STOCK' };
+      const hasActiveReservation = activeWorkOrders.some(wo =>
+        ['CRTE', 'REL', 'PCNF'].includes(wo.status) && (
+          wo.plannedMaterialId === material.id ||
+          (Array.isArray(wo.components) && wo.components.some(c => c.materialId === material.id))
+        )
+      );
+      if (hasActiveReservation) return { canDelete: false, reason: 'ACTIVE_RESERVATION' };
+      return { canDelete: true };
+    };
+
+    it('debe bloquear la eliminación si el material tiene stock físico activo (>0 UN)', () => {
+      const mat = { id: 'MAT-1001', name: 'Filtro de Aceite', stock: 15, unit: 'UN' };
+      const res = validateMaterialDeletion(mat, []);
+      expect(res.canDelete).toBe(false);
+      expect(res.reason).toBe('ACTIVE_STOCK');
+    });
+
+    it('debe bloquear la eliminación si el material está reservado en una Orden de Trabajo activa', () => {
+      const mat = { id: 'MAT-2002', name: 'Correa de Transmisión', stock: 0, unit: 'UN' };
+      const wos = [{ id: 'WO-1001', status: 'REL', plannedMaterialId: 'MAT-2002' }];
+      const res = validateMaterialDeletion(mat, wos);
+      expect(res.canDelete).toBe(false);
+      expect(res.reason).toBe('ACTIVE_RESERVATION');
+    });
+
+    it('debe permitir la eliminación si el stock es 0 y no existen reservas activas en OTs', () => {
+      const mat = { id: 'MAT-3003', name: 'Empaquetadura Obsoleta', stock: 0, unit: 'UN' };
+      const res = validateMaterialDeletion(mat, []);
+      expect(res.canDelete).toBe(true);
+    });
+  });
 });
+
 
 

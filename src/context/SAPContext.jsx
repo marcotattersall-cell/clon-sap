@@ -512,21 +512,47 @@ export const SAPProvider = ({ children }) => {
     return true;
   };
 
-  // Delete Material
+  // Delete Material (Con Validaciones Estrictas de Negocio MM/PM)
   const deleteMaterial = (matId) => {
     const mat = materials.find(m => m.id === matId);
+    if (!mat) {
+      addToast('❌ El material especificado no existe en el catálogo.', 'error');
+      return false;
+    }
+
+    // Validar 1: Stock Físico Activo > 0
+    if (Number(mat.stock || 0) > 0) {
+      addToast(`❌ No se puede eliminar ${mat.id} (${mat.name}): posee stock físico activo de ${mat.stock} ${mat.unit || 'UN'}. Realice una salida o desincorporación MIGO (261/551) antes de eliminar.`, 'error');
+      return false;
+    }
+
+    // Validar 2: Reservas en Órdenes de Trabajo Activas (CRTE, REL, PCNF)
+    const activeWOWithReservation = workOrders.find(wo =>
+      ['CRTE', 'REL', 'PCNF'].includes(wo.status) && (
+        wo.plannedMaterialId === matId ||
+        (Array.isArray(wo.components) && wo.components.some(c => c.materialId === matId))
+      )
+    );
+
+    if (activeWOWithReservation) {
+      addToast(`❌ No se puede eliminar ${mat.id} (${mat.name}): está reservado en la Orden de Trabajo activa ${activeWOWithReservation.id} (${activeWOWithReservation.status}).`, 'error');
+      return false;
+    }
+
+    // Eliminación exitosa
     setMaterials(prev => prev.filter(m => m.id !== matId));
     deleteDocument('materials', matId);
     recordAuditLog({
       entityType: 'MATERIAL_MASTER',
       entityId: matId,
       action: 'DELETE_MATERIAL',
-      details: `Material ${matId} (${mat?.name || ''}) eliminado del sistema.`,
+      details: `Material ${matId} (${mat.name}) desincorporado exitosamente del maestro.`,
       user: 'Especialista MM'
     });
-    addToast(`🗑️ Material ${matId} (${mat?.name || ''}) eliminado correctamente del maestro.`, 'info');
+    addToast(`🗑️ Material ${matId} (${mat.name}) desincorporado correctamente del maestro.`, 'info');
     return true;
   };
+
 
   // Delete Employee
   const deleteEmployee = (empId) => {

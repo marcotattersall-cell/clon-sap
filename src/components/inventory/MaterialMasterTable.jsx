@@ -344,15 +344,20 @@ export const MaterialMasterTable = ({ onOpenCreateMaterial, onOpenMIGOForMateria
                         </button>
                         <button
                           onClick={() => {
-                            if (window.confirm(`¿Está seguro de eliminar el material ${mat.name} (${mat.id}) del maestro?`)) {
+                            if (Number(mat.stock || 0) > 0) {
+                              addToast(`❌ No se puede eliminar ${mat.id} (${mat.name}): posee stock físico activo de ${mat.stock} ${mat.unit || 'UN'}. Realice una salida MIGO antes de desincorporar.`, 'error');
+                              return;
+                            }
+                            if (window.confirm(`¿Está seguro de desincorporar permanentemente el material ${mat.name} (${mat.id}) del maestro de inventarios?`)) {
                               deleteMaterial(mat.id);
                             }
                           }}
                           className="p-1.5 bg-rose-500/10 hover:bg-rose-600 text-rose-600 hover:text-white dark:text-rose-400 rounded-lg transition-colors cursor-pointer"
-                          title="Eliminar material"
+                          title="Desincorporar/Eliminar material del maestro"
                         >
                           <Trash2 className="w-3.5 h-3.5" />
                         </button>
+
                       </div>
                     </td>
                   </tr>
