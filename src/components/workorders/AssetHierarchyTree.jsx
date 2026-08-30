@@ -121,7 +121,7 @@ export const AssetHierarchyTree = () => {
             </div>
             <h2 className="text-xl sm:text-2xl font-black tracking-tight text-white flex items-center gap-2">
               <span>Jerarquía de Activos & Salud de Flota (#flota-activos)</span>
-              <span className="text-xs px-2.5 py-1 rounded-md bg-purple-500/20 text-purple-300 border border-purple-500/30 font-mono">
+              <span className="text-xs px-2.5 py-1 rounded-md bg-slate-800 text-slate-300 border border-slate-700 font-mono">
                 REST API Ready 100%
               </span>
             </h2>
@@ -133,20 +133,21 @@ export const AssetHierarchyTree = () => {
           <div className="flex flex-wrap items-center gap-2 self-start sm:self-center">
             <button
               onClick={triggerFleetBurst}
-              className="bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white px-4 py-2.5 rounded-xl text-xs font-extrabold flex items-center space-x-2 shadow-lg transition-all cursor-pointer ring-1 ring-purple-400/30"
+              className="bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 px-4 py-2.5 rounded-xl text-xs font-bold flex items-center space-x-2 shadow-xs transition-all cursor-pointer"
               title="Simular ingesta de telemetría IoT en toda la flota de maquinaria"
             >
-              <Radio className="w-4 h-4 animate-pulse text-purple-200" />
+              <Radio className="w-4 h-4 animate-pulse text-sky-400" />
               <span>📡 Ráfaga IoT Flota Completa</span>
             </button>
             <button
               onClick={() => setIsCreateAssetOpen(true)}
-              className="bg-emerald-600 hover:bg-emerald-500 text-white px-3 py-2.5 rounded-xl text-xs font-extrabold flex items-center space-x-2 shadow-lg transition-all cursor-pointer"
+              className="bg-sky-700 hover:bg-sky-800 text-white px-4 py-2.5 rounded-xl text-xs font-bold flex items-center space-x-2 shadow-xs transition-all cursor-pointer"
             >
               <PlusCircle className="w-4 h-4" />
               <span>＋ Crear Equipo IE01</span>
             </button>
           </div>
+
         </div>
 
         {/* Fleet KPI Summary Bar */}
@@ -309,7 +310,7 @@ export const AssetHierarchyTree = () => {
                       setEditingAsset(selectedAsset);
                       setIsEditModalOpen(true);
                     }}
-                    className="bg-sky-600 hover:bg-sky-500 text-white px-3.5 py-2 rounded-xl text-xs font-bold flex items-center space-x-1.5 shadow transition-all cursor-pointer"
+                    className="bg-sky-700 hover:bg-sky-800 text-white px-3.5 py-2 rounded-xl text-xs font-bold flex items-center space-x-1.5 shadow-xs transition-all cursor-pointer"
                     title="Editar datos de este equipo (IE02)"
                   >
                     <Settings className="w-4 h-4" />
@@ -318,12 +319,13 @@ export const AssetHierarchyTree = () => {
 
                   <button
                     onClick={() => triggerIoTBurst(selectedAsset)}
-                    className="bg-purple-600 hover:bg-purple-500 text-white px-3.5 py-2 rounded-xl text-xs font-bold flex items-center space-x-1.5 shadow transition-all cursor-pointer"
+                    className="bg-slate-100 hover:bg-slate-200 text-slate-800 dark:bg-slate-800 dark:hover:bg-slate-700 dark:text-slate-200 border border-slate-300 dark:border-slate-700 px-3.5 py-2 rounded-xl text-xs font-bold flex items-center space-x-1.5 shadow-xs transition-all cursor-pointer"
                     title="Enviar ráfaga de sensores IoT a este equipo"
                   >
-                    <Activity className="w-4 h-4 animate-pulse text-purple-200" />
+                    <Activity className="w-4 h-4 animate-pulse text-sky-400" />
                     <span>Inyectar Telemetría IoT</span>
                   </button>
+
 
                   <div className="text-right">
                     <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider block">Salud OEE</span>

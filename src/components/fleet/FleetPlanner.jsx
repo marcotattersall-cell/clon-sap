@@ -19,8 +19,10 @@ import {
   RefreshCw,
   XCircle,
   ChevronRight,
-  Trash2
+  Trash2,
+  PieChart as PieChartIcon
 } from 'lucide-react';
+
 
 import { CreateAssetModal } from '../modals/CreateAssetModal';
 import { UpdateVehicleExpirationsModal } from '../modals/UpdateVehicleExpirationsModal';
@@ -250,22 +252,22 @@ export const FleetPlanner = ({ onOpenCreateWOForVehicle }) => {
 
         <div className="flex flex-wrap items-center gap-3">
           {currentRole === 'FIELD_MECHANIC' ? (
-            <span className="bg-orange-100 text-orange-900 border border-orange-300 font-extrabold px-3.5 py-2 rounded-xl text-xs flex items-center space-x-1.5 shadow-sm">
-              <Wrench className="w-4 h-4 text-orange-600" />
+            <span className="bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-200 border border-slate-300 dark:border-slate-700 font-bold px-3.5 py-2 rounded-xl text-xs flex items-center space-x-1.5 shadow-xs">
+              <Wrench className="w-4 h-4 text-slate-600 dark:text-slate-400" />
               <span>Modo Mecánico: Control & Registros</span>
             </span>
           ) : (
             <>
               <button
                 onClick={() => setIsCreateAssetOpen(true)}
-                className="bg-emerald-600 hover:bg-emerald-500 text-white px-4 py-2.5 rounded-xl text-xs font-extrabold flex items-center space-x-2 shadow-lg transition-all"
+                className="bg-slate-100 hover:bg-slate-200 text-slate-800 dark:bg-slate-800 dark:hover:bg-slate-700 dark:text-slate-200 border border-slate-300 dark:border-slate-700 px-4 py-2.5 rounded-xl text-xs font-bold flex items-center space-x-2 shadow-xs transition-all cursor-pointer"
               >
                 <PlusCircle className="w-4 h-4" />
                 <span>＋ Alta de Flota (#flota-activos)</span>
               </button>
               <button
                 onClick={() => onOpenCreateWOForVehicle && onOpenCreateWOForVehicle()}
-                className="bg-sap-blue hover:bg-sap-blue-hover text-white px-4 py-2.5 rounded-xl text-xs font-extrabold flex items-center space-x-2 shadow-lg transition-all"
+                className="bg-sky-700 hover:bg-sky-800 text-white px-4 py-2.5 rounded-xl text-xs font-bold flex items-center space-x-2 shadow-xs transition-all cursor-pointer"
               >
                 <PlusCircle className="w-4 h-4" />
                 <span>Crear OT (#mnt-ordenes)</span>
@@ -276,16 +278,16 @@ export const FleetPlanner = ({ onOpenCreateWOForVehicle }) => {
       </div>
 
       {/* Main Sub-Tab Switcher (Mantenimiento vs Vencimientos Vehículo vs Dashboard General) */}
-      <div className="bg-white rounded-2xl border border-slate-200 p-1.5 flex flex-wrap gap-2 shadow-sm">
+      <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-1.5 flex flex-wrap gap-2 shadow-xs">
         <button
           onClick={() => setActiveSubTab('MAINTENANCE')}
-          className={`px-5 py-2.5 rounded-xl text-xs font-black transition-all flex items-center space-x-2 ${
+          className={`px-5 py-2.5 rounded-xl text-xs font-bold transition-all flex items-center space-x-2 ${
             activeSubTab === 'MAINTENANCE'
-              ? 'bg-slate-900 text-white shadow-md'
-              : 'text-slate-600 hover:bg-slate-100'
+              ? 'bg-sky-700 text-white shadow-xs'
+              : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800'
           }`}
         >
-          <Wrench className="w-4 h-4 text-amber-400" />
+          <Wrench className="w-4 h-4 text-slate-400" />
           <span>Pautas de Servicio & Horómetros (250h / 10k km)</span>
           {overdueCount > 0 && (
             <span className="bg-rose-600 text-white text-[10px] px-2 py-0.5 rounded-full font-mono font-bold">
@@ -296,13 +298,13 @@ export const FleetPlanner = ({ onOpenCreateWOForVehicle }) => {
 
         <button
           onClick={() => setActiveSubTab('EXPIRATIONS')}
-          className={`px-5 py-2.5 rounded-xl text-xs font-black transition-all flex items-center space-x-2 ${
+          className={`px-5 py-2.5 rounded-xl text-xs font-bold transition-all flex items-center space-x-2 ${
             activeSubTab === 'EXPIRATIONS'
-              ? 'bg-sky-800 text-white shadow-md'
-              : 'text-slate-600 hover:bg-slate-100'
+              ? 'bg-sky-700 text-white shadow-xs'
+              : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800'
           }`}
         >
-          <FileCheck className="w-4 h-4 text-sky-300" />
+          <FileCheck className="w-4 h-4 text-slate-400" />
           <span>Acreditación & Vencimientos Vehiculares</span>
           {expAlertCount + expExpiredCount > 0 && (
             <span className="bg-amber-500 text-white text-[10px] px-2 py-0.5 rounded-full font-mono font-bold">
@@ -313,84 +315,84 @@ export const FleetPlanner = ({ onOpenCreateWOForVehicle }) => {
 
         <button
           onClick={() => setActiveSubTab('GENERAL_DASHBOARD')}
-          className={`px-5 py-2.5 rounded-xl text-xs font-black transition-all flex items-center space-x-2 ${
+          className={`px-5 py-2.5 rounded-xl text-xs font-bold transition-all flex items-center space-x-2 ${
             activeSubTab === 'GENERAL_DASHBOARD'
-              ? 'bg-gradient-to-r from-amber-600 to-amber-700 text-white shadow-md'
-              : 'text-slate-600 hover:bg-slate-100 border border-amber-200/60'
+              ? 'bg-sky-700 text-white shadow-xs'
+              : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800'
           }`}
         >
-          <ShieldAlert className="w-4 h-4 text-amber-200" />
-          <span>📊 Dashboard General de Vencimientos (Empresa)</span>
+          <PieChartIcon className="w-4 h-4 text-slate-400" />
+          <span>Dashboard General de Vencimientos (Empresa)</span>
         </button>
       </div>
 
       {/* KPI Cards based on Active Sub-Tab */}
       {activeSubTab === 'MAINTENANCE' ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          <div className="fiori-card p-4 bg-white rounded-2xl border border-slate-200 shadow-sm flex items-center justify-between">
+          <div className="fiori-card p-4 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-xs flex items-center justify-between">
             <div>
-              <div className="text-xs font-bold text-slate-500 uppercase tracking-wider">Total Flota Registrada</div>
-              <div className="text-2xl font-black text-slate-900 mt-1">{totalFleet} Unidades</div>
-              <div className="text-[11px] text-slate-500 mt-0.5">{heavyCount} Maquinarias | {roadCount} Vehículos</div>
+              <div className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Total Flota Registrada</div>
+              <div className="text-2xl font-black text-slate-900 dark:text-white mt-1">{totalFleet} Unidades</div>
+              <div className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">{heavyCount} Maquinarias | {roadCount} Vehículos</div>
             </div>
-            <div className="w-12 h-12 rounded-xl bg-sky-50 text-sky-600 flex items-center justify-center font-bold">
+            <div className="w-12 h-12 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 flex items-center justify-center font-bold">
               <Truck className="w-6 h-6" />
             </div>
           </div>
 
-          <div className="fiori-card p-4 bg-white rounded-2xl border border-slate-200 shadow-sm flex items-center justify-between">
+          <div className="fiori-card p-4 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-xs flex items-center justify-between">
             <div>
-              <div className="text-xs font-bold text-slate-500 uppercase tracking-wider">Servicios al Día</div>
-              <div className="text-2xl font-black text-emerald-600 mt-1">{okCount} Unidades</div>
-              <div className="text-[11px] text-emerald-700 mt-0.5">Dentro del intervalo preventivo</div>
+              <div className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Servicios al Día</div>
+              <div className="text-2xl font-black text-slate-900 dark:text-white mt-1">{okCount} Unidades</div>
+              <div className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">Dentro del intervalo preventivo</div>
             </div>
-            <div className="w-12 h-12 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center font-bold">
+            <div className="w-12 h-12 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 flex items-center justify-center font-bold">
               <CheckCircle2 className="w-6 h-6" />
             </div>
           </div>
 
-          <div className="fiori-card p-4 bg-white rounded-2xl border border-slate-200 shadow-sm flex items-center justify-between">
+          <div className="fiori-card p-4 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-xs flex items-center justify-between">
             <div>
-              <div className="text-xs font-bold text-amber-700 uppercase tracking-wider">Mantenimiento Próximo</div>
-              <div className="text-2xl font-black text-amber-600 mt-1">{warningCount} Unidades</div>
-              <div className="text-[11px] text-amber-700 mt-0.5">Próximo a cumplir pauta</div>
+              <div className="text-xs font-bold text-amber-700 dark:text-amber-400 uppercase tracking-wider">Mantenimiento Próximo</div>
+              <div className="text-2xl font-black text-amber-600 dark:text-amber-400 mt-1">{warningCount} Unidades</div>
+              <div className="text-[11px] text-amber-700 dark:text-amber-400 mt-0.5">Próximo a cumplir pauta</div>
             </div>
-            <div className="w-12 h-12 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center font-bold">
+            <div className="w-12 h-12 rounded-xl bg-amber-50 dark:bg-amber-950/40 text-amber-600 dark:text-amber-400 border border-amber-200 dark:border-amber-800 flex items-center justify-center font-bold">
               <Clock className="w-6 h-6" />
             </div>
           </div>
 
-          <div className="fiori-card p-4 bg-white rounded-2xl border border-slate-200 shadow-sm flex items-center justify-between">
+          <div className="fiori-card p-4 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-xs flex items-center justify-between">
             <div>
-              <div className="text-xs font-bold text-rose-700 uppercase tracking-wider">Servicio Vencido</div>
-              <div className="text-2xl font-black text-rose-600 mt-1">{overdueCount} Unidades</div>
-              <div className="text-[11px] text-rose-700 mt-0.5">Requiere OT (#mnt-ordenes) Inmediata</div>
+              <div className="text-xs font-bold text-rose-700 dark:text-rose-400 uppercase tracking-wider">Servicio Vencido</div>
+              <div className="text-2xl font-black text-rose-600 dark:text-rose-400 mt-1">{overdueCount} Unidades</div>
+              <div className="text-[11px] text-rose-700 dark:text-rose-400 mt-0.5">Requiere OT (#mnt-ordenes) Inmediata</div>
             </div>
-            <div className="w-12 h-12 rounded-xl bg-rose-50 text-rose-600 flex items-center justify-center font-bold">
+            <div className="w-12 h-12 rounded-xl bg-rose-50 dark:bg-rose-950/40 text-rose-600 dark:text-rose-400 border border-rose-200 dark:border-rose-800 flex items-center justify-center font-bold">
               <AlertTriangle className="w-6 h-6" />
             </div>
           </div>
         </div>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          <div className="fiori-card p-4 bg-white rounded-2xl border border-slate-200 shadow-sm flex items-center justify-between">
+          <div className="fiori-card p-4 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-xs flex items-center justify-between">
             <div>
-              <div className="text-xs font-bold text-slate-500 uppercase tracking-wider">Total Flota Auditada</div>
-              <div className="text-2xl font-black text-slate-900 mt-1">{totalFleet} Vehículos</div>
-              <div className="text-[11px] text-slate-500 mt-0.5">Acreditaciones y Legalidad</div>
+              <div className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Total Flota Auditada</div>
+              <div className="text-2xl font-black text-slate-900 dark:text-white mt-1">{totalFleet} Vehículos</div>
+              <div className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">Acreditaciones y Legalidad</div>
             </div>
-            <div className="w-12 h-12 rounded-xl bg-sky-50 text-sky-600 flex items-center justify-center font-bold">
+            <div className="w-12 h-12 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 flex items-center justify-center font-bold">
               <ShieldCheck className="w-6 h-6" />
             </div>
           </div>
 
-          <div className="fiori-card p-4 bg-white rounded-2xl border border-slate-200 shadow-sm flex items-center justify-between">
+          <div className="fiori-card p-4 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-xs flex items-center justify-between">
             <div>
-              <div className="text-xs font-bold text-slate-500 uppercase tracking-wider">Documentación al Día</div>
-              <div className="text-2xl font-black text-emerald-600 mt-1">{expOkCount} Vehículos</div>
-              <div className="text-[11px] text-emerald-700 mt-0.5">Habilitados para faena</div>
+              <div className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Documentación al Día</div>
+              <div className="text-2xl font-black text-slate-900 dark:text-white mt-1">{expOkCount} Vehículos</div>
+              <div className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">Habilitados para faena</div>
             </div>
-            <div className="w-12 h-12 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center font-bold">
+            <div className="w-12 h-12 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 flex items-center justify-center font-bold">
               <CheckCircle2 className="w-6 h-6" />
             </div>
           </div>

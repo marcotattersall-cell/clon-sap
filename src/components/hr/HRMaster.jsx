@@ -238,7 +238,7 @@ export const HRMaster = ({ onOpenCreateEmployee, onOpenCreateAbsence }) => {
               reseedEmployees();
               resetAllFilters();
             }}
-            className="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold px-3.5 py-2.5 rounded-lg shadow-sm flex items-center space-x-1.5 transition-all"
+            className="bg-slate-100 hover:bg-slate-200 text-slate-800 dark:bg-slate-800 dark:hover:bg-slate-700 dark:text-slate-200 text-xs font-bold px-3.5 py-2.5 rounded-lg border border-slate-300 dark:border-slate-700 shadow-xs flex items-center space-x-1.5 transition-all"
             title="Cargar catálogo completo de 12 colaboradores mineros e industriales"
           >
             <RefreshCw className="w-3.5 h-3.5" />
@@ -246,16 +246,16 @@ export const HRMaster = ({ onOpenCreateEmployee, onOpenCreateAbsence }) => {
           </button>
           <button
             onClick={onOpenCreateEmployee}
-            className="bg-sap-blue hover:bg-sap-blue-hover text-white text-xs font-bold px-4 py-2.5 rounded-lg shadow-sm flex items-center space-x-2 transition-all"
+            className="bg-sky-700 hover:bg-sky-800 text-white text-xs font-bold px-4 py-2.5 rounded-lg shadow-xs flex items-center space-x-2 transition-all cursor-pointer"
           >
             <UserPlus className="w-4 h-4" />
             <span>Alta Empleado (#rrhh-personal)</span>
           </button>
           <button
             onClick={onOpenCreateAbsence}
-            className="bg-slate-100 hover:bg-slate-200 text-slate-800 text-xs font-bold px-4 py-2.5 rounded-lg border border-slate-200 flex items-center space-x-2 transition-all"
+            className="bg-slate-100 hover:bg-slate-200 text-slate-800 dark:bg-slate-800 dark:hover:bg-slate-700 dark:text-slate-200 text-xs font-bold px-4 py-2.5 rounded-lg border border-slate-300 dark:border-slate-700 flex items-center space-x-2 transition-all"
           >
-            <Calendar className="w-4 h-4 text-sky-700" />
+            <Calendar className="w-4 h-4 text-slate-600 dark:text-slate-400" />
             <span>Registrar Licencia</span>
           </button>
         </div>
@@ -266,28 +266,28 @@ export const HRMaster = ({ onOpenCreateEmployee, onOpenCreateAbsence }) => {
         {/* KPI 1: Total Empleados */}
         <div
           onClick={() => { setActiveSubTab('PA20_PA30'); resetAllFilters(); }}
-          className="fiori-glass p-4 rounded-xl border border-slate-200 cursor-pointer hover:border-sky-400 transition-all flex items-center justify-between group"
+          className="fiori-glass p-4 rounded-xl border border-slate-200 dark:border-slate-800 cursor-pointer hover:border-sky-400 transition-all flex items-center justify-between group"
         >
           <div>
-            <div className="text-xs font-bold text-slate-500 uppercase tracking-wider">Dotación Activa</div>
-            <div className="text-2xl font-black text-slate-900 mt-0.5">{activeEmployees.length} Colaboradores</div>
-            <div className="text-[11px] text-sky-700 font-medium group-hover:underline mt-1">Ver Listado General ➔</div>
+            <div className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Dotación Activa</div>
+            <div className="text-2xl font-black text-slate-900 dark:text-white mt-0.5">{activeEmployees.length} Colaboradores</div>
+            <div className="text-[11px] text-sky-700 dark:text-sky-400 font-medium group-hover:underline mt-1">Ver Listado General ➔</div>
           </div>
-          <div className="w-10 h-10 rounded-xl bg-sky-50 text-sky-700 flex items-center justify-center font-bold">
+          <div className="w-10 h-10 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 flex items-center justify-center font-bold">
             <Users className="w-5 h-5" />
           </div>
         </div>
 
         {/* KPI 2: Masa Salarial Mensual */}
-        <div className="fiori-glass p-4 rounded-xl border border-slate-200 flex items-center justify-between">
+        <div className="fiori-glass p-4 rounded-xl border border-slate-200 dark:border-slate-800 flex items-center justify-between">
           <div>
-            <div className="text-xs font-bold text-slate-500 uppercase tracking-wider">Masa Salarial Bruta</div>
-            <div className="text-xl font-black text-slate-900 mt-0.5">
+            <div className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Masa Salarial Bruta</div>
+            <div className="text-xl font-black text-slate-900 dark:text-white mt-0.5">
               ${totalGrossPayroll.toLocaleString('es-CL')} CLP
             </div>
-            <div className="text-[11px] text-slate-500 mt-1">Presupuesto Mensual HCM</div>
+            <div className="text-[11px] text-slate-500 dark:text-slate-400 mt-1">Presupuesto Mensual HCM</div>
           </div>
-          <div className="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-700 flex items-center justify-center font-bold">
+          <div className="w-10 h-10 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 flex items-center justify-center font-bold">
             <DollarSign className="w-5 h-5" />
           </div>
         </div>
@@ -295,45 +295,45 @@ export const HRMaster = ({ onOpenCreateEmployee, onOpenCreateAbsence }) => {
         {/* KPI 3: Alertas de Acreditación (30 Días) */}
         <div
           onClick={() => { setActiveSubTab('ACCREDITATION'); setComplianceFilter('ALERT_30'); }}
-          className="fiori-glass p-4 rounded-xl border border-amber-200 bg-amber-50/40 cursor-pointer hover:border-amber-400 transition-all flex items-center justify-between group"
+          className="fiori-glass p-4 rounded-xl border border-amber-200 dark:border-amber-800 bg-amber-50/40 dark:bg-amber-950/30 cursor-pointer hover:border-amber-400 transition-all flex items-center justify-between group"
         >
           <div>
-            <div className="text-xs font-bold text-amber-800 uppercase tracking-wider flex items-center gap-1">
-              <ShieldAlert className="w-3.5 h-3.5 text-amber-600" />
+            <div className="text-xs font-bold text-amber-800 dark:text-amber-300 uppercase tracking-wider flex items-center gap-1">
+              <ShieldAlert className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400" />
               Alertas Acreditación (≤30d)
             </div>
-            <div className="text-2xl font-black text-amber-900 mt-0.5">{alert30Employees.length} Alertas</div>
-            <div className="text-[11px] text-amber-700 font-medium group-hover:underline">
+            <div className="text-2xl font-black text-amber-900 dark:text-amber-200 mt-0.5">{alert30Employees.length} Alertas</div>
+            <div className="text-[11px] text-amber-700 dark:text-amber-400 font-medium group-hover:underline">
               Ver Semáforo de Faenas ➔
             </div>
           </div>
-          <div className="w-10 h-10 rounded-xl bg-amber-100 text-amber-700 flex items-center justify-center font-bold">
+          <div className="w-10 h-10 rounded-xl bg-amber-100 dark:bg-amber-900/60 text-amber-700 dark:text-amber-300 flex items-center justify-center font-bold">
             <HardHat className="w-5 h-5" />
           </div>
         </div>
 
         {/* KPI 4: Licencias y Ausentismo */}
-        <div className="fiori-glass p-4 rounded-xl border border-slate-200 flex items-center justify-between">
+        <div className="fiori-glass p-4 rounded-xl border border-slate-200 dark:border-slate-800 flex items-center justify-between">
           <div>
-            <div className="text-xs font-bold text-slate-500 uppercase tracking-wider">Ausentismo / Licencias</div>
-            <div className="text-2xl font-black text-slate-900 mt-0.5">{activeLeavesCount} Ausentes</div>
-            <div className="text-[11px] text-slate-500 mt-1">Vacaciones y Médicas</div>
+            <div className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Ausentismo / Licencias</div>
+            <div className="text-2xl font-black text-slate-900 dark:text-white mt-0.5">{activeLeavesCount} Ausentes</div>
+            <div className="text-[11px] text-slate-500 dark:text-slate-400 mt-1">Vacaciones y Médicas</div>
           </div>
-          <div className="w-10 h-10 rounded-xl bg-purple-50 text-purple-700 flex items-center justify-center font-bold">
+          <div className="w-10 h-10 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 flex items-center justify-center font-bold">
             <Calendar className="w-5 h-5" />
           </div>
         </div>
       </div>
 
       {/* Navigation Sub-Tabs Bar */}
-      <div className="bg-white rounded-xl border border-slate-200 p-1.5 flex flex-wrap gap-1 shadow-sm">
+      <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 p-1.5 flex flex-wrap gap-1 shadow-xs">
         <button
           onClick={() => {
             setActiveSubTab('PA20_PA30');
             resetAllFilters();
           }}
           className={`px-4 py-2 rounded-lg text-xs font-bold transition-all flex items-center space-x-2 ${
-            activeSubTab === 'PA20_PA30' ? 'bg-sap-blue text-white shadow-sm' : 'text-slate-600 hover:bg-slate-100'
+            activeSubTab === 'PA20_PA30' ? 'bg-sky-700 text-white shadow-xs' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800'
           }`}
         >
           <Users className="w-4 h-4" />
@@ -343,7 +343,7 @@ export const HRMaster = ({ onOpenCreateEmployee, onOpenCreateAbsence }) => {
         <button
           onClick={() => setActiveSubTab('ACCREDITATION')}
           className={`px-4 py-2 rounded-lg text-xs font-bold transition-all flex items-center space-x-2 ${
-            activeSubTab === 'ACCREDITATION' ? 'bg-amber-600 text-white shadow-sm' : 'text-slate-600 hover:bg-slate-100'
+            activeSubTab === 'ACCREDITATION' ? 'bg-sky-700 text-white shadow-xs' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800'
           }`}
         >
           <HardHat className="w-4 h-4" />
@@ -358,7 +358,7 @@ export const HRMaster = ({ onOpenCreateEmployee, onOpenCreateAbsence }) => {
         <button
           onClick={() => setActiveSubTab('PT_TIME')}
           className={`px-4 py-2 rounded-lg text-xs font-bold transition-all flex items-center space-x-2 ${
-            activeSubTab === 'PT_TIME' ? 'bg-sap-blue text-white shadow-sm' : 'text-slate-600 hover:bg-slate-100'
+            activeSubTab === 'PT_TIME' ? 'bg-sky-700 text-white shadow-xs' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800'
           }`}
         >
           <Calendar className="w-4 h-4" />
@@ -368,7 +368,7 @@ export const HRMaster = ({ onOpenCreateEmployee, onOpenCreateAbsence }) => {
         <button
           onClick={() => setActiveSubTab('PY_PAYROLL')}
           className={`px-4 py-2 rounded-lg text-xs font-bold transition-all flex items-center space-x-2 ${
-            activeSubTab === 'PY_PAYROLL' ? 'bg-sap-blue text-white shadow-sm' : 'text-slate-600 hover:bg-slate-100'
+            activeSubTab === 'PY_PAYROLL' ? 'bg-sky-700 text-white shadow-xs' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800'
           }`}
         >
           <DollarSign className="w-4 h-4" />
@@ -377,20 +377,21 @@ export const HRMaster = ({ onOpenCreateEmployee, onOpenCreateAbsence }) => {
 
         <button
           onClick={() => setActiveSubTab('PY01_ML_AUDIT')}
-          className={`px-4 py-2 rounded-lg text-xs font-bold transition-all flex items-center space-x-2 border transition-all ${
+          className={`px-4 py-2 rounded-lg text-xs font-bold transition-all flex items-center space-x-2 ${
             activeSubTab === 'PY01_ML_AUDIT'
-              ? 'bg-purple-600 text-white border-purple-500 shadow-md ring-2 ring-purple-400/40'
-              : 'bg-purple-900/95 text-purple-100 border-purple-700/60 hover:bg-purple-800 shadow-xs'
+              ? 'bg-sky-700 text-white shadow-xs'
+              : 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700'
           }`}
         >
-          <Sparkles className="w-4 h-4 text-amber-300 shrink-0" />
-          <span>🤖 Auditoría ML de Nóminas (PY01)</span>
+          <Sparkles className="w-4 h-4 text-sky-400 shrink-0" />
+          <span>Auditoría ML de Nóminas (PY01)</span>
           {mlCriticalCount > 0 && (
             <span className="bg-rose-500 text-white text-[10px] px-2 py-0.5 rounded-full font-mono font-bold animate-bounce shadow-xs">
               {mlCriticalCount}
             </span>
           )}
         </button>
+
 
         <button
           onClick={() => setActiveSubTab('OM_ORGANIZATION')}

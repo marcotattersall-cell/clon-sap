@@ -500,9 +500,8 @@ export const FioriHeader = ({ onOpenCreateWO, onOpenCreateMaterial, onOpenCreate
                   className={`px-2.5 py-1.5 rounded-lg text-[11px] xl:text-xs font-bold transition-all flex items-center space-x-1 ${
                     isActive
                       ? 'bg-sap-blue text-white shadow-md'
-                      : tabKey === 'USER_MGMT'
-                        ? 'text-purple-700 hover:bg-purple-50 dark:text-purple-300 font-extrabold'
-                        : 'text-slate-700 hover:bg-slate-100 font-semibold'
+                      : 'text-slate-700 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800 font-semibold'
+
                   }`}
                   title={config.desc}
                 >

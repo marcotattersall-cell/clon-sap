@@ -150,12 +150,12 @@ export const WorkOrderMaster = ({ onOpenCreateWO, onOpenMIGOForWO }) => {
   const paddingBottom = virtualItems.length > 0 ? totalSize - virtualItems[virtualItems.length - 1].end : 0;
 
   const kanbanColumns = [
-
-    { status: 'CRTE', label: 'Creada (CRTE)', borderClass: 'border-t-sky-500', badgeClass: 'bg-sky-100 text-sky-800 border-sky-300' },
-    { status: 'REL', label: 'Liberada (REL)', borderClass: 'border-t-amber-500', badgeClass: 'bg-amber-100 text-amber-900 border-amber-300' },
-    { status: 'PCNF', label: 'En Proceso (PCNF)', borderClass: 'border-t-purple-500', badgeClass: 'bg-purple-100 text-purple-900 border-purple-300' },
-    { status: 'TECO', label: 'Cierre Técnico (TECO)', borderClass: 'border-t-emerald-500', badgeClass: 'bg-emerald-100 text-emerald-900 border-emerald-300' }
+    { status: 'CRTE', label: 'Creada (CRTE)', borderClass: 'border-t-slate-400 dark:border-t-slate-600', badgeClass: 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700' },
+    { status: 'REL', label: 'Liberada (REL)', borderClass: 'border-t-slate-400 dark:border-t-slate-600', badgeClass: 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700' },
+    { status: 'PCNF', label: 'En Proceso (PCNF)', borderClass: 'border-t-slate-400 dark:border-t-slate-600', badgeClass: 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700' },
+    { status: 'TECO', label: 'Cierre Técnico (TECO)', borderClass: 'border-t-slate-400 dark:border-t-slate-600', badgeClass: 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700' }
   ];
+
 
   const handleIssueComponent = (woId, materialId) => {
     const qty = issueQtyInput[materialId] || 1;
@@ -205,7 +205,7 @@ export const WorkOrderMaster = ({ onOpenCreateWO, onOpenMIGOForWO }) => {
           <button
             onClick={handleSendStaleAlerts}
             disabled={isSendingStaleAlerts}
-            className="bg-rose-600 hover:bg-rose-500 text-white text-xs font-extrabold px-3.5 py-2 rounded-xl shadow-sm flex items-center space-x-1.5 transition-all disabled:opacity-50"
+            className="bg-slate-100 hover:bg-slate-200 text-slate-800 dark:bg-slate-800 dark:hover:bg-slate-700 dark:text-slate-200 border border-slate-300 dark:border-slate-700 text-xs font-bold px-3.5 py-2 rounded-xl shadow-xs flex items-center space-x-1.5 transition-all disabled:opacity-50"
             title="Despachar notificación de OTs abiertas >24 horas a Correo y Webhook"
           >
             <Send className={`w-3.5 h-3.5 ${isSendingStaleAlerts ? 'animate-bounce' : ''}`} />
@@ -215,7 +215,7 @@ export const WorkOrderMaster = ({ onOpenCreateWO, onOpenMIGOForWO }) => {
           <button
             onClick={handleRunCloudFunctionAudit}
             disabled={isAuditingCloudFn}
-            className="bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-extrabold px-3.5 py-2 rounded-xl shadow-sm flex items-center space-x-1.5 transition-all disabled:opacity-50"
+            className="bg-slate-100 hover:bg-slate-200 text-slate-800 dark:bg-slate-800 dark:hover:bg-slate-700 dark:text-slate-200 border border-slate-300 dark:border-slate-700 text-xs font-bold px-3.5 py-2 rounded-xl shadow-xs flex items-center space-x-1.5 transition-all disabled:opacity-50"
             title="Ejecutar Cloud Function Serverless bajo demanda para auditar OTs estancadas"
           >
             <RefreshCw className={`w-3.5 h-3.5 ${isAuditingCloudFn ? 'animate-spin' : ''}`} />
@@ -224,22 +224,22 @@ export const WorkOrderMaster = ({ onOpenCreateWO, onOpenMIGOForWO }) => {
 
           <button
             onClick={() => setIsConfigModalOpen(true)}
-            className="bg-slate-100 hover:bg-slate-200 text-slate-800 border border-slate-300 text-xs font-extrabold px-3 py-2 rounded-xl flex items-center space-x-1.5 transition-all"
+            className="bg-slate-100 hover:bg-slate-200 text-slate-800 dark:bg-slate-800 dark:hover:bg-slate-700 dark:text-slate-200 border border-slate-300 dark:border-slate-700 text-xs font-bold px-3 py-2 rounded-xl flex items-center space-x-1.5 transition-all"
             title="Configurar canales de notificación (Correo y Webhooks Slack/Teams)"
           >
-            <Settings className="w-3.5 h-3.5 text-slate-600" />
+            <Settings className="w-3.5 h-3.5 text-slate-600 dark:text-slate-400" />
             <span>⚙️ Canales</span>
           </button>
 
           {currentRole === 'FIELD_MECHANIC' ? (
-            <span className="bg-orange-100 text-orange-900 border border-orange-300 font-extrabold px-3 py-2 rounded-xl text-xs flex items-center space-x-1.5 shadow-xs">
-              <Wrench className="w-4 h-4 text-orange-600" />
+            <span className="bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-200 border border-slate-300 dark:border-slate-700 font-bold px-3 py-2 rounded-xl text-xs flex items-center space-x-1.5 shadow-xs">
+              <Wrench className="w-4 h-4 text-slate-600 dark:text-slate-400" />
               <span>Modo Mecánico</span>
             </span>
           ) : (
             <button
               onClick={onOpenCreateWO}
-              className="bg-sap-blue hover:bg-sap-blue-hover text-white text-xs font-extrabold px-4 py-2.5 rounded-xl shadow-sm flex items-center space-x-2 transition-all"
+              className="bg-sky-700 hover:bg-sky-800 text-white text-xs font-bold px-4 py-2.5 rounded-xl shadow-xs flex items-center space-x-2 transition-all cursor-pointer"
             >
               <Plus className="w-4 h-4" />
               <span>＋ Crear Orden IW31</span>
@@ -253,73 +253,74 @@ export const WorkOrderMaster = ({ onOpenCreateWO, onOpenMIGOForWO }) => {
       <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
         <div
           onClick={() => setSelectedStatusFilter('ALL')}
-          className="fiori-card p-4 bg-white rounded-2xl border border-slate-200 shadow-sm cursor-pointer hover:border-sap-blue transition-all flex items-center justify-between"
+          className="fiori-card p-4 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-xs cursor-pointer hover:border-sap-blue transition-all flex items-center justify-between"
         >
           <div>
-            <div className="text-xs font-bold text-slate-500 uppercase tracking-wider">Total Órdenes Registradas</div>
-            <div className="text-2xl font-black text-slate-900 mt-1">{totalCount} Órdenes</div>
-            <div className="text-[11px] text-slate-500 mt-0.5">{crteCount} Creadas | {relCount} Liberadas</div>
+            <div className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Total Órdenes Registradas</div>
+            <div className="text-2xl font-black text-slate-900 dark:text-white mt-1">{totalCount} Órdenes</div>
+            <div className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">{crteCount} Creadas | {relCount} Liberadas</div>
           </div>
-          <div className="w-12 h-12 rounded-xl bg-sky-50 text-sky-600 flex items-center justify-center font-bold">
+          <div className="w-12 h-12 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 flex items-center justify-center font-bold">
             <Wrench className="w-6 h-6" />
           </div>
         </div>
 
         <div
           onClick={() => setSelectedStatusFilter('REL')}
-          className="fiori-card p-4 bg-white rounded-2xl border border-amber-200 bg-amber-50/20 shadow-sm cursor-pointer hover:border-amber-400 transition-all flex items-center justify-between"
+          className="fiori-card p-4 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-xs cursor-pointer hover:border-sap-blue transition-all flex items-center justify-between"
         >
           <div>
-            <div className="text-xs font-bold text-amber-800 uppercase tracking-wider">Liberadas para Ejecución</div>
-            <div className="text-2xl font-black text-amber-600 mt-1">{relCount} Órdenes</div>
-            <div className="text-[11px] text-amber-700 mt-0.5">Listas para inicio de trabajo</div>
+            <div className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Liberadas para Ejecución</div>
+            <div className="text-2xl font-black text-slate-900 dark:text-white mt-1">{relCount} Órdenes</div>
+            <div className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">Listas para inicio de trabajo</div>
           </div>
-          <div className="w-12 h-12 rounded-xl bg-amber-100 text-amber-700 flex items-center justify-center font-bold">
+          <div className="w-12 h-12 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 flex items-center justify-center font-bold">
             <Clock className="w-6 h-6" />
           </div>
         </div>
 
         <div
           onClick={() => setSelectedStatusFilter('PCNF')}
-          className="fiori-card p-4 bg-white rounded-2xl border border-purple-200 bg-purple-50/20 shadow-sm cursor-pointer hover:border-purple-400 transition-all flex items-center justify-between"
+          className="fiori-card p-4 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-xs cursor-pointer hover:border-sap-blue transition-all flex items-center justify-between"
         >
           <div>
-            <div className="text-xs font-bold text-purple-800 uppercase tracking-wider">En Proceso Técnico</div>
-            <div className="text-2xl font-black text-purple-600 mt-1">{pcnfCount} Órdenes</div>
-            <div className="text-[11px] text-purple-700 mt-0.5">Mecánicos en faena</div>
+            <div className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">En Proceso Técnico</div>
+            <div className="text-2xl font-black text-slate-900 dark:text-white mt-1">{pcnfCount} Órdenes</div>
+            <div className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">Mecánicos en faena</div>
           </div>
-          <div className="w-12 h-12 rounded-xl bg-purple-100 text-purple-700 flex items-center justify-center font-bold">
+          <div className="w-12 h-12 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 flex items-center justify-center font-bold">
             <Play className="w-6 h-6" />
           </div>
         </div>
 
         <div
           onClick={() => setSelectedStatusFilter('STALE_24H')}
-          className="fiori-card p-4 bg-white rounded-2xl border border-rose-200 bg-rose-50/30 shadow-sm cursor-pointer hover:border-rose-400 transition-all flex items-center justify-between group"
+          className="fiori-card p-4 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-xs cursor-pointer hover:border-rose-400 transition-all flex items-center justify-between group"
         >
           <div>
-            <div className="text-xs font-bold text-rose-800 uppercase tracking-wider">Estancadas (&gt;24h)</div>
-            <div className="text-2xl font-black text-rose-600 mt-1">{staleCount} Alertas</div>
-            <div className="text-[11px] text-rose-700 group-hover:underline mt-0.5">Filtrar Abiertas &gt;24h ➔</div>
+            <div className="text-xs font-bold text-rose-600 dark:text-rose-400 uppercase tracking-wider">Estancadas (&gt;24h)</div>
+            <div className="text-2xl font-black text-rose-600 dark:text-rose-400 mt-1">{staleCount} Alertas</div>
+            <div className="text-[11px] text-rose-600 dark:text-rose-400 group-hover:underline mt-0.5">Filtrar Abiertas &gt;24h ➔</div>
           </div>
-          <div className="w-12 h-12 rounded-xl bg-rose-100 text-rose-700 flex items-center justify-center font-bold">
+          <div className="w-12 h-12 rounded-xl bg-rose-50 dark:bg-rose-950/40 text-rose-600 dark:text-rose-400 border border-rose-200 dark:border-rose-800 flex items-center justify-center font-bold">
             <AlertTriangle className="w-6 h-6 animate-pulse" />
           </div>
         </div>
 
         <div
           onClick={() => setSelectedStatusFilter('TECO')}
-          className="fiori-card p-4 bg-white rounded-2xl border border-emerald-200 bg-emerald-50/20 shadow-sm cursor-pointer hover:border-emerald-400 transition-all flex items-center justify-between"
+          className="fiori-card p-4 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-xs cursor-pointer hover:border-sap-blue transition-all flex items-center justify-between"
         >
           <div>
-            <div className="text-xs font-bold text-emerald-800 uppercase tracking-wider">Cierre Técnico (TECO)</div>
-            <div className="text-2xl font-black text-emerald-600 mt-1">{tecoCount} Órdenes</div>
-            <div className="text-[11px] text-emerald-700 mt-0.5">Certificado emitido</div>
+            <div className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Cierre Técnico (TECO)</div>
+            <div className="text-2xl font-black text-slate-900 dark:text-white mt-1">{tecoCount} Órdenes</div>
+            <div className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">Certificado emitido</div>
           </div>
-          <div className="w-12 h-12 rounded-xl bg-emerald-100 text-emerald-700 flex items-center justify-center font-bold">
+          <div className="w-12 h-12 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 flex items-center justify-center font-bold">
             <CheckCircle2 className="w-6 h-6" />
           </div>
         </div>
+
       </div>
 
 
