@@ -551,13 +551,16 @@ export const WorkOrderMaster = ({ onOpenCreateWO, onOpenMIGOForWO }) => {
                         {formatDateDDMMYYYY(wo.targetFinishDate || wo.startDate)}
                       </td>
                       <td className="p-3.5 text-center">
-                        <span className={`px-2.5 py-1 rounded-full text-[10px] font-extrabold border ${wo.status === 'TECO' ? 'bg-emerald-100 text-emerald-800 border-emerald-300' :
-                            wo.status === 'PCNF' ? 'bg-purple-100 text-purple-800 border-purple-300' :
-                              wo.status === 'REL' ? 'bg-amber-100 text-amber-800 border-amber-300' :
-                                'bg-sky-100 text-sky-800 border-sky-300'
-                          }`}>
+                        <span className={`px-2.5 py-1 rounded-full text-[10px] font-bold border ${
+                          wo.status === 'TECO' || wo.status === 'CLSD'
+                            ? 'bg-slate-100 text-slate-700 border-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:border-slate-700'
+                            : wo.status === 'PCNF' || wo.status === 'REL'
+                            ? 'bg-amber-50 text-amber-800 border-amber-200 dark:bg-amber-950/40 dark:text-amber-300 dark:border-amber-800'
+                            : 'bg-slate-100 text-slate-600 border-slate-200 dark:bg-slate-800 dark:text-slate-400 dark:border-slate-700'
+                        }`}>
                           {wo.status}
                         </span>
+
                       </td>
                       <td className="p-3.5 text-right">
                         <div className="flex items-center justify-end space-x-1.5">

@@ -552,18 +552,19 @@ export const GeneralExpirationsDashboard = () => {
 
                       <td className="p-3.5 text-center">
                         <span className={`inline-flex items-center space-x-1.5 px-2.5 py-1 rounded-full text-xs font-semibold border ${
-                          item.status === 'EXPIRED' ? 'bg-rose-50 text-rose-700 border-rose-200' :
-                          item.status === 'ALERT_30' ? 'bg-amber-50 text-amber-800 border-amber-200' :
-                          'bg-emerald-50 text-emerald-700 border-emerald-200'
+                          item.status === 'EXPIRED' ? 'bg-rose-50 text-rose-700 border-rose-200 dark:bg-rose-950/40 dark:text-rose-300 dark:border-rose-800' :
+                          item.status === 'ALERT_30' ? 'bg-amber-50 text-amber-800 border-amber-200 dark:bg-amber-950/40 dark:text-amber-300 dark:border-amber-800' :
+                          'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 border-slate-200 dark:border-slate-700'
                         }`}>
-                          <span className={`w-1.5 h-1.5 rounded-full ${
-                            item.status === 'EXPIRED' ? 'bg-rose-500 animate-pulse' :
-                            item.status === 'ALERT_30' ? 'bg-amber-500' :
-                            'bg-emerald-500'
-                          }`} />
+                          {item.status !== 'OK' && (
+                            <span className={`w-1.5 h-1.5 rounded-full ${
+                              item.status === 'EXPIRED' ? 'bg-rose-500 animate-pulse' : 'bg-amber-500'
+                            }`} />
+                          )}
                           <span>{item.status === 'EXPIRED' ? 'Vencido' : item.status === 'ALERT_30' ? 'Alerta (≤30d)' : 'Vigente'}</span>
                         </span>
                       </td>
+
 
                       <td className="p-3.5 text-right space-x-1.5 flex justify-end items-center">
                         <button
