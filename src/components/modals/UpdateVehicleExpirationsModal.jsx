@@ -244,7 +244,8 @@ export const UpdateVehicleExpirationsModal = ({ isOpen, onClose, vehicle }) => {
                   <button
                     type="button"
                     onClick={handleAddCustomExpiration}
-                    className="bg-emerald-600 hover:bg-emerald-500 text-white font-bold px-3.5 py-1.5 rounded-lg text-xs shadow-xs transition-all flex items-center space-x-1"
+                    className="bg-sky-700 hover:bg-sky-800 text-white font-bold px-3.5 py-1.5 rounded-lg text-xs shadow-xs transition-all flex items-center space-x-1"
+
                   >
                     <Plus className="w-3.5 h-3.5" />
                     <span>Guardar Vencimiento Adicional</span>

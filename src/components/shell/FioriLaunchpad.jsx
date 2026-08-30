@@ -118,25 +118,25 @@ export const FioriLaunchpad = ({ onOpenCreateWO, onOpenCreateMIGO }) => {
             className="fiori-glass p-5 rounded-xl cursor-pointer hover:border-sap-blue hover:shadow-md transition-all transform hover:-translate-y-0.5 group relative overflow-hidden"
           >
             <div className="flex items-center justify-between text-slate-500 mb-2">
-              <span className="text-xs font-bold uppercase tracking-wider text-slate-600">Órdenes (#mnt-ordenes)</span>
-              <div className="w-8 h-8 rounded-lg bg-amber-50 text-amber-600 flex items-center justify-center font-bold">
+              <span className="text-xs font-bold uppercase tracking-wider text-slate-600 dark:text-slate-400">Órdenes (#mnt-ordenes)</span>
+              <div className="w-8 h-8 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 flex items-center justify-center font-bold">
                 <Wrench className="w-4 h-4 group-hover:scale-110 transition-transform" />
               </div>
             </div>
             <div className="flex items-baseline justify-between">
-              <div className="text-3xl font-black text-slate-900 tracking-tight">
+              <div className="text-3xl font-black text-slate-900 dark:text-white tracking-tight">
                 {openWorkOrders.length}
               </div>
-              <span className="text-xs font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded flex items-center">
+              <span className="text-xs font-semibold text-slate-600 dark:text-slate-400 bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded flex items-center border border-slate-200 dark:border-slate-700">
                 <ArrowUpRight className="w-3 h-3 mr-0.5" /> +12.4%
               </span>
             </div>
-            <div className="flex items-center justify-between mt-3 pt-3 border-t border-slate-100 text-xs">
-              <span className="text-rose-600 font-bold flex items-center gap-1">
+            <div className="flex items-center justify-between mt-3 pt-3 border-t border-slate-100 dark:border-slate-800 text-xs">
+              <span className="text-rose-600 dark:text-rose-400 font-bold flex items-center gap-1">
                 <AlertTriangle className="w-3.5 h-3.5" />
                 {criticalWorkOrders.length} Urgentes
               </span>
-              <span className="text-sap-blue group-hover:underline flex items-center font-bold">
+              <span className="text-sky-700 dark:text-sky-400 group-hover:underline flex items-center font-bold">
                 Ver Órdenes <ArrowRight className="w-3 h-3 ml-1" />
               </span>
             </div>
@@ -148,24 +148,24 @@ export const FioriLaunchpad = ({ onOpenCreateWO, onOpenCreateMIGO }) => {
             className="fiori-glass p-5 rounded-xl cursor-pointer hover:border-sap-blue hover:shadow-md transition-all transform hover:-translate-y-0.5 group relative overflow-hidden"
           >
             <div className="flex items-center justify-between text-slate-500 mb-2">
-              <span className="text-xs font-bold uppercase tracking-wider text-slate-600">Inventario (#inv-materiales)</span>
-              <div className="w-8 h-8 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center font-bold">
+              <span className="text-xs font-bold uppercase tracking-wider text-slate-600 dark:text-slate-400">Inventario (#inv-materiales)</span>
+              <div className="w-8 h-8 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 flex items-center justify-center font-bold">
                 <DollarSign className="w-4 h-4 group-hover:scale-110 transition-transform" />
               </div>
             </div>
             <div className="flex items-baseline justify-between">
-              <div className="text-2xl font-black text-slate-900 tracking-tight">
+              <div className="text-2xl font-black text-slate-900 dark:text-white tracking-tight">
                 ${totalStockValuation.toLocaleString('es-CL', { minimumFractionDigits: 0 })}
               </div>
-              <span className="text-xs font-bold text-sky-700 bg-sky-50 px-2 py-0.5 rounded flex items-center">
+              <span className="text-xs font-semibold text-slate-600 dark:text-slate-400 bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded flex items-center border border-slate-200 dark:border-slate-700">
                 <ArrowUpRight className="w-3 h-3 mr-0.5" /> +4.2%
               </span>
             </div>
-            <div className="flex items-center justify-between mt-3 pt-3 border-t border-slate-100 text-xs">
-              <span className="text-slate-600 font-medium">
+            <div className="flex items-center justify-between mt-3 pt-3 border-t border-slate-100 dark:border-slate-800 text-xs">
+              <span className="text-slate-600 dark:text-slate-400 font-medium">
                 {materials.length} SKUs Stock
               </span>
-              <span className="text-sap-blue group-hover:underline flex items-center font-bold">
+              <span className="text-sky-700 dark:text-sky-400 group-hover:underline flex items-center font-bold">
                 Materiales <ArrowRight className="w-3 h-3 ml-1" />
               </span>
             </div>
@@ -177,25 +177,25 @@ export const FioriLaunchpad = ({ onOpenCreateWO, onOpenCreateMIGO }) => {
             className="fiori-glass p-5 rounded-xl cursor-pointer hover:border-sap-blue hover:shadow-md transition-all transform hover:-translate-y-0.5 group relative overflow-hidden"
           >
             <div className="flex items-center justify-between text-slate-500 mb-2">
-              <span className="text-xs font-bold uppercase tracking-wider text-slate-600">Movimientos (#inv-mov)</span>
-              <div className="w-8 h-8 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center font-bold">
+              <span className="text-xs font-bold uppercase tracking-wider text-slate-600 dark:text-slate-400">Movimientos (#inv-mov)</span>
+              <div className="w-8 h-8 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 flex items-center justify-center font-bold">
                 <Package className="w-4 h-4 group-hover:scale-110 transition-transform" />
               </div>
             </div>
             <div className="flex items-baseline justify-between">
-              <div className="text-3xl font-black text-slate-900 tracking-tight flex items-baseline gap-2">
+              <div className="text-3xl font-black text-slate-900 dark:text-white tracking-tight flex items-baseline gap-2">
                 <span>{lowStockItems.length}</span>
-                <span className="text-xs font-semibold text-rose-600">Recomprar</span>
+                <span className="text-xs font-semibold text-rose-600 dark:text-rose-400">Recomprar</span>
               </div>
-              <span className="text-xs font-bold text-rose-600 bg-rose-50 px-2 py-0.5 rounded">
+              <span className="text-xs font-bold text-rose-700 dark:text-rose-300 bg-rose-50 dark:bg-rose-950/40 px-2 py-0.5 rounded border border-rose-200 dark:border-rose-800">
                 Alert
               </span>
             </div>
-            <div className="flex items-center justify-between mt-3 pt-3 border-t border-slate-100 text-xs">
-              <span className="text-amber-700 font-medium">
+            <div className="flex items-center justify-between mt-3 pt-3 border-t border-slate-100 dark:border-slate-800 text-xs">
+              <span className="text-amber-700 dark:text-amber-400 font-medium">
                 Entradas / Salidas
               </span>
-              <span className="text-sap-blue group-hover:underline flex items-center font-bold">
+              <span className="text-sky-700 dark:text-sky-400 group-hover:underline flex items-center font-bold">
                 Operar <ArrowRight className="w-3 h-3 ml-1" />
               </span>
             </div>
@@ -207,25 +207,25 @@ export const FioriLaunchpad = ({ onOpenCreateWO, onOpenCreateMIGO }) => {
             className="fiori-glass p-5 rounded-xl cursor-pointer hover:border-sap-blue hover:shadow-md transition-all transform hover:-translate-y-0.5 group relative overflow-hidden"
           >
             <div className="flex items-center justify-between text-slate-500 mb-2">
-              <span className="text-xs font-bold uppercase tracking-wider text-slate-600">Activos (#flota-activos)</span>
-              <div className="w-8 h-8 rounded-lg bg-purple-50 text-purple-600 flex items-center justify-center font-bold">
+              <span className="text-xs font-bold uppercase tracking-wider text-slate-600 dark:text-slate-400">Activos (#flota-activos)</span>
+              <div className="w-8 h-8 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 flex items-center justify-center font-bold">
                 <Cpu className="w-4 h-4 group-hover:scale-110 transition-transform" />
               </div>
             </div>
             <div className="flex items-baseline justify-between">
-              <div className="text-3xl font-black text-slate-900 tracking-tight flex items-baseline gap-2">
+              <div className="text-3xl font-black text-slate-900 dark:text-white tracking-tight flex items-baseline gap-2">
                 <span>{availabilityRate}%</span>
-                <span className="text-xs font-semibold text-emerald-600">Disp.</span>
+                <span className="text-xs font-semibold text-slate-600 dark:text-slate-400">Disp.</span>
               </div>
-              <span className="text-xs font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded">
+              <span className="text-xs font-semibold text-slate-700 dark:text-slate-300 bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded border border-slate-200 dark:border-slate-700">
                 OK
               </span>
             </div>
-            <div className="flex items-center justify-between mt-3 pt-3 border-t border-slate-100 text-xs">
-              <span className="text-rose-600 font-semibold">
+            <div className="flex items-center justify-between mt-3 pt-3 border-t border-slate-100 dark:border-slate-800 text-xs">
+              <span className="text-rose-600 dark:text-rose-400 font-semibold">
                 {downAssets.length} Detenidos
               </span>
-              <span className="text-sap-blue group-hover:underline flex items-center font-bold">
+              <span className="text-sky-700 dark:text-sky-400 group-hover:underline flex items-center font-bold">
                 Ver Activos <ArrowRight className="w-3 h-3 ml-1" />
               </span>
             </div>
@@ -234,35 +234,36 @@ export const FioriLaunchpad = ({ onOpenCreateWO, onOpenCreateMIGO }) => {
           {/* Tile 5: Recursos Humanos & Acreditaciones HCM */}
           <div
             onClick={() => setActiveTab('HR')}
-            className="fiori-glass p-5 rounded-xl cursor-pointer hover:border-sap-blue hover:shadow-md transition-all transform hover:-translate-y-0.5 group relative overflow-hidden border-sky-200 bg-sky-50/30"
+            className="fiori-glass p-5 rounded-xl cursor-pointer hover:border-sap-blue hover:shadow-md transition-all transform hover:-translate-y-0.5 group relative overflow-hidden"
           >
             <div className="flex items-center justify-between text-slate-500 mb-2">
-              <span className="text-xs font-bold uppercase tracking-wider text-slate-700">Recursos Humanos (HCM)</span>
-              <div className="w-8 h-8 rounded-lg bg-sky-100 text-sky-700 flex items-center justify-center font-bold">
+              <span className="text-xs font-bold uppercase tracking-wider text-slate-600 dark:text-slate-400">Recursos Humanos (HCM)</span>
+              <div className="w-8 h-8 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 flex items-center justify-center font-bold">
                 <Users className="w-4 h-4 group-hover:scale-110 transition-transform" />
               </div>
             </div>
             <div className="flex items-baseline justify-between">
-              <div className="text-3xl font-black text-slate-900 tracking-tight flex items-baseline gap-2">
+              <div className="text-3xl font-black text-slate-900 dark:text-white tracking-tight flex items-baseline gap-2">
                 <span>{employees.length}</span>
-                <span className="text-xs font-semibold text-sky-700">Colaboradores</span>
+                <span className="text-xs font-semibold text-slate-600 dark:text-slate-400">Colaboradores</span>
               </div>
               {hrAlertsCount > 0 && (
-                <span className="text-xs font-bold text-amber-800 bg-amber-100 px-2 py-0.5 rounded animate-pulse">
+                <span className="text-xs font-bold text-amber-800 dark:text-amber-300 bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800 px-2 py-0.5 rounded">
                   {hrAlertsCount} Alertas
                 </span>
               )}
             </div>
-            <div className="flex items-center justify-between mt-3 pt-3 border-t border-slate-200/80 text-xs">
-              <span className="text-amber-800 font-bold flex items-center gap-1">
+            <div className="flex items-center justify-between mt-3 pt-3 border-t border-slate-100 dark:border-slate-800 text-xs">
+              <span className="text-amber-800 dark:text-amber-400 font-medium flex items-center gap-1">
                 <HardHat className="w-3.5 h-3.5 text-amber-600" />
                 Semáforo Faenas
               </span>
-              <span className="text-sap-blue group-hover:underline flex items-center font-bold">
+              <span className="text-sky-700 dark:text-sky-400 group-hover:underline flex items-center font-bold">
                 Ver HCM <ArrowRight className="w-3 h-3 ml-1" />
               </span>
             </div>
           </div>
+
         </div>
       </div>
 

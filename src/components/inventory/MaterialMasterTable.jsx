@@ -280,11 +280,7 @@ export const MaterialMasterTable = ({ onOpenCreateMaterial, onOpenMIGOForMateria
                       {mat.name}
                     </td>
                     <td>
-                      <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${
-                        mat.type === 'SPARE'
-                          ? 'bg-purple-100 text-purple-800 dark:bg-purple-950/80 dark:text-purple-300'
-                          : 'bg-blue-100 text-blue-800 dark:bg-blue-950/80 dark:text-blue-300'
-                      }`}>
+                      <span className="px-2 py-0.5 rounded text-[10px] font-semibold bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700">
                         {mat.type}
                       </span>
                     </td>
@@ -312,9 +308,10 @@ export const MaterialMasterTable = ({ onOpenCreateMaterial, onOpenMIGOForMateria
                     <td className="font-mono text-slate-700 dark:text-slate-300">
                       ${mat.unitPrice.toFixed(2)}
                     </td>
-                    <td className="font-mono font-bold text-emerald-600 dark:text-emerald-400">
+                    <td className="font-mono font-bold text-slate-900 dark:text-white">
                       ${matTotalValue.toFixed(2)}
                     </td>
+
                     <td className="text-xs text-slate-500 dark:text-slate-400 truncate max-w-[150px]">
                       {mat.supplier}
                     </td>

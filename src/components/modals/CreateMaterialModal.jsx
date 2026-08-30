@@ -78,7 +78,8 @@ export const CreateMaterialModal = ({ isOpen, onClose }) => {
           <button
             type="submit"
             form="mm01-form"
-            className="px-5 py-2 rounded-xl text-xs font-black bg-emerald-600 hover:bg-emerald-500 text-white shadow-lg shadow-emerald-600/20 transition-all flex items-center gap-2 cursor-pointer"
+            className="px-5 py-2 rounded-xl text-xs font-bold bg-sky-700 hover:bg-sky-800 text-white shadow-lg transition-all flex items-center gap-2 cursor-pointer"
+
           >
             <Package className="w-4 h-4" />
             <span>Guardar Material (#inv-materiales)</span>
@@ -267,7 +268,8 @@ export const CreateMaterialModal = ({ isOpen, onClose }) => {
           <button
             type="submit"
             form="mm01-form"
-            className="px-5 py-2 rounded-xl text-xs font-black bg-emerald-600 hover:bg-emerald-500 text-white shadow-lg shadow-emerald-600/20 transition-all flex items-center gap-2 cursor-pointer"
+            className="px-5 py-2 rounded-xl text-xs font-bold bg-sky-700 hover:bg-sky-800 text-white shadow-lg transition-all flex items-center gap-2 cursor-pointer"
+
           >
             <Package className="w-4 h-4" />
             <span>Guardar Material (#inv-materiales)</span>
