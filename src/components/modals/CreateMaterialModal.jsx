@@ -22,22 +22,40 @@ export const CreateMaterialModal = ({ isOpen, onClose }) => {
     e.preventDefault();
     if (!name) return;
 
+    const parsedStock = Number(stock);
+    const parsedUnitPrice = Number(unitPrice);
+    const parsedReorderPoint = Number(reorderPoint);
+
+    if (isNaN(parsedStock) || parsedStock < 0) {
+      alert('❌ El stock inicial no puede ser negativo.');
+      return;
+    }
+    if (isNaN(parsedUnitPrice) || parsedUnitPrice < 0) {
+      alert('❌ El precio unitario no puede ser negativo.');
+      return;
+    }
+    if (isNaN(parsedReorderPoint) || parsedReorderPoint < 0) {
+      alert('❌ El punto de reorden no puede ser negativo.');
+      return;
+    }
+
     createMaterial({
       id,
       name,
       type,
-      stock: Number(stock),
+      stock: parsedStock,
       unit,
       storageLocation,
       storageBin,
-      reorderPoint: Number(reorderPoint),
-      safetyStock: Math.floor(Number(reorderPoint) / 2),
-      unitPrice: Number(unitPrice),
+      reorderPoint: parsedReorderPoint,
+      safetyStock: Math.floor(parsedReorderPoint / 2),
+      unitPrice: parsedUnitPrice,
       supplier
     });
 
     onClose();
   };
+
 
   return (
     <div className="fixed inset-0 z-50 bg-slate-100 dark:bg-slate-950 text-slate-900 dark:text-white overflow-y-auto flex flex-col animate-in fade-in duration-200">

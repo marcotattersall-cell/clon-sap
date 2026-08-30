@@ -39,8 +39,13 @@ export const CreateEmployeeModal = ({ isOpen, onClose }) => {
       return;
     }
 
+    if (Number(formData.baseSalary || 0) <= 0) {
+      alert('❌ El sueldo base del trabajador debe ser mayor a $0.');
+      return;
+    }
 
     const success = createEmployee(formData);
+
     if (success) {
       onClose();
       setFormData({

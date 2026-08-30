@@ -328,7 +328,7 @@ export const MaterialMasterTable = ({ onOpenCreateMaterial, onOpenMIGOForMateria
                         <button
                           onClick={() => {
                             const newStockStr = window.prompt(`Modificar stock para ${mat.name} (${mat.id}):`, mat.stock);
-                            if (newStockStr !== null) {
+                            if (newStockStr !== null && newStockStr.trim() !== '') {
                               const newStock = Number(newStockStr);
                               if (!isNaN(newStock) && newStock >= 0) {
                                 updateMaterial(mat.id, { stock: newStock });
@@ -336,6 +336,7 @@ export const MaterialMasterTable = ({ onOpenCreateMaterial, onOpenMIGOForMateria
                                 addToast('❌ Cantidad de stock inválida.', 'error');
                               }
                             }
+
                           }}
                           className="p-1.5 bg-slate-100 hover:bg-sky-600 hover:text-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 rounded-lg transition-colors cursor-pointer"
                           title="Editar stock rápido"

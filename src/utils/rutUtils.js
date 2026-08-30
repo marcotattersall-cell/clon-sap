@@ -59,9 +59,10 @@ export const validateChileanRUT = (rut) => {
     return { isValid: false, formattedRUT: '', error: 'RUT Inválido' };
   }
 
-  if (cleaned.length < 8 || cleaned.length > 9) {
+  if (cleaned.length < 7 || cleaned.length > 9) {
     return { isValid: false, formattedRUT: rut, error: 'RUT Inválido' };
   }
+
 
   const givenDV = cleaned.slice(-1);
   const body = cleaned.slice(0, -1);
