@@ -191,7 +191,8 @@ export const WorkOrderMaster = ({ onOpenCreateWO, onOpenMIGOForWO }) => {
         <div>
           <div className="flex items-center space-x-2 text-xs font-bold uppercase tracking-wider text-sky-600 mb-1 font-mono">
             <Wrench className="w-4 h-4 text-sap-blue" />
-            <span>nebex:mantenimiento:ordenes <span className="bg-sky-100 text-sky-800 px-2 py-0.5 rounded border border-sky-300 ml-1">#mnt-ordenes</span></span>
+            <span>operam:mantenimiento:ordenes <span className="bg-sky-100 text-sky-800 dark:bg-sky-950 dark:text-sky-300 px-2 py-0.5 rounded border border-sky-300 dark:border-sky-800 ml-1">#mnt-ordenes</span></span>
+
           </div>
           <h1 className="text-xl sm:text-2xl font-black tracking-tight text-slate-900">
             Control & Ejecución de Órdenes de Trabajo

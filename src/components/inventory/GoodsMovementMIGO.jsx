@@ -66,7 +66,8 @@ const GoodsMovementMIGOComponent = ({ initialMaterialId = '' }) => {
         <div>
           <div className="flex items-center space-x-2 text-xs font-semibold text-sky-400 uppercase tracking-wider mb-1 font-mono">
             <Package className="w-4 h-4" />
-            <span>nebex:inventario:movimientos <span className="bg-sky-950 text-sky-300 px-2 py-0.5 rounded border border-sky-800/60 ml-1">#inv-mov</span></span>
+            <span>operam:inventario:movimientos <span className="bg-sky-950 text-sky-300 px-2 py-0.5 rounded border border-sky-800/60 ml-1">#inv-mov</span></span>
+
           </div>
           <h2 className="text-xl font-bold tracking-tight">
             Movimiento de Mercancías & Gestión de Stock

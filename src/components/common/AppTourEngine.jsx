@@ -22,10 +22,10 @@ import {
 export const TOUR_STEPS = [
   {
     id: 'INTRO',
-    title: 'Bienvenido a NEBEX Cloud Platform',
+    title: 'Bienvenido a OPERAM Cloud Platform',
     subtitle: 'El ERP de Próxima Generación para la Industria & Minería',
     tab: 'LAUNCHPAD',
-    narration: 'Bienvenido a la era de la gestión empresarial inteligente. Descubre NEBEX Cloud Platform: la arquitectura ERP cloud-native diseñada para transformar la operativa de mantenimiento, inventarios y recursos humanos en tiempo real.',
+    narration: 'Bienvenido a la era de la gestión empresarial inteligente. Descubre OPERAM Cloud Platform: la arquitectura ERP cloud-native diseñada para transformar la operativa de mantenimiento, inventarios y recursos humanos en tiempo real.',
     icon: Sparkles,
     badge: 'Paso 1 de 7 • Introducción'
   },
@@ -41,18 +41,18 @@ export const TOUR_STEPS = [
   {
     id: 'PM_MODULE',
     title: 'Mantenimiento (#mnt-ordenes)',
-    subtitle: 'Gestión de Órdenes de Trabajo (nebex:mantenimiento:ordenes)',
+    subtitle: 'Gestión de Órdenes de Trabajo (operam:mantenimiento:ordenes)',
     tab: 'WORK_ORDERS',
-    narration: 'Optimiza la disponibilidad operacional de tu maquinaria. Asigna órdenes de trabajo preventivas y correctivas, monitorea la salud estructural de tus equipos y reduce el tiempo de parada no programada con el slug nebex:mantenimiento:ordenes.',
+    narration: 'Optimiza la disponibilidad operacional de tu maquinaria. Asigna órdenes de trabajo preventivas y correctivas, monitorea la salud estructural de tus equipos y reduce el tiempo de parada no programada con el slug operam:mantenimiento:ordenes.',
     icon: Wrench,
     badge: 'Paso 3 de 7 • #mnt-ordenes'
   },
   {
     id: 'MM_MODULE',
     title: 'Inventario & Movimientos (#inv-mov)',
-    subtitle: 'Control de Stock & Movimientos (nebex:inventario:movimientos)',
+    subtitle: 'Control de Stock & Movimientos (operam:inventario:movimientos)',
     tab: 'INVENTORY',
-    narration: 'Gestiona tu cadena de suministro sin fricción. Registra salidas y entradas de mercancía con el flujo nebex:inventario:movimientos (#inv-mov) de forma atómica, automatiza reaprovisionamientos y mantiene trazado exacto de stock.',
+    narration: 'Gestiona tu cadena de suministro sin fricción. Registra salidas y entradas de mercancía con el flujo operam:inventario:movimientos (#inv-mov) de forma atómica, automatiza reaprovisionamientos y mantiene trazado exacto de stock.',
     icon: Package,
     badge: 'Paso 4 de 7 • #inv-mov'
   },
@@ -78,13 +78,14 @@ export const TOUR_STEPS = [
   {
     id: 'ANALYTICS_OUTRO',
     title: 'Analytics Cloud & Cierre Promocional',
-    subtitle: 'NEBEX ERP • Enterprise ERP for Mining & Heavy Industry',
+    subtitle: 'OPERAM ERP • Enterprise ERP for Mining & Heavy Industry',
     tab: 'ANALYTICS',
-    narration: 'NEBEX Cloud Platform: El poder de un ERP Enterprise con la agilidad de la nube. Pruébalo hoy en clon-sap-2026.web.app',
+    narration: 'OPERAM Cloud Platform: El poder de un ERP Enterprise con la agilidad de la nube. Pruébalo hoy en clon-sap-2026.web.app',
     icon: BarChart3,
     badge: 'Paso 7 de 7 • Resumen & Demo'
   }
 ];
+
 
 export const AppTourEngine = ({ isOpen, onClose }) => {
   const { setActiveTab } = useSAP();

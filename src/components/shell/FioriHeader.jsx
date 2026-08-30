@@ -70,7 +70,7 @@ export const FioriHeader = ({ onOpenCreateWO, onOpenCreateMaterial, onOpenCreate
       key: 'LAUNCHPAD',
       title: 'Home Launchpad',
       subtitle: 'Cockpit Principal ERP',
-      slug: 'nebex:home:cockpit',
+      slug: 'operam:home:cockpit',
       alias: '#home',
       tcode: 'SMSM',
       icon: Activity,
@@ -81,7 +81,7 @@ export const FioriHeader = ({ onOpenCreateWO, onOpenCreateMaterial, onOpenCreate
       key: 'WORK_ORDERS',
       title: 'Mantenimiento PM',
       subtitle: 'Órdenes de Trabajo & TECO',
-      slug: 'nebex:mantenimiento:ordenes',
+      slug: 'operam:mantenimiento:ordenes',
       alias: '#mnt-ordenes',
       tcode: 'IW31 / IW32',
       icon: Wrench,
@@ -92,7 +92,7 @@ export const FioriHeader = ({ onOpenCreateWO, onOpenCreateMaterial, onOpenCreate
       key: 'INVENTORY',
       title: 'Inventario & Stock',
       subtitle: 'Maestro de Materiales',
-      slug: 'nebex:inventario:materiales',
+      slug: 'operam:inventario:materiales',
       alias: '#inv-materiales',
       tcode: 'MM01 / MM03',
       icon: Boxes,
@@ -103,7 +103,7 @@ export const FioriHeader = ({ onOpenCreateWO, onOpenCreateMaterial, onOpenCreate
       key: 'MIGO',
       title: 'Movimientos de Stock',
       subtitle: 'Salidas 261 y Entradas 101',
-      slug: 'nebex:inventario:movimientos',
+      slug: 'operam:inventario:movimientos',
       alias: '#inv-mov',
       tcode: 'MIGO',
       icon: Package,
@@ -114,7 +114,7 @@ export const FioriHeader = ({ onOpenCreateWO, onOpenCreateMaterial, onOpenCreate
       key: 'ASSETS',
       title: 'Maestro Activos',
       subtitle: 'Jerarquía & IoT Telemetría',
-      slug: 'nebex:flota:activos',
+      slug: 'operam:flota:activos',
       alias: '#flota-activos',
       tcode: 'IE01 / IE03',
       icon: Layers,
@@ -125,7 +125,7 @@ export const FioriHeader = ({ onOpenCreateWO, onOpenCreateMaterial, onOpenCreate
       key: 'FLEET',
       title: 'Gestión de Flota',
       subtitle: 'Maquinaria & Vencimientos',
-      slug: 'nebex:flota:vencimientos',
+      slug: 'operam:flota:vencimientos',
       alias: '#flota-vencimientos',
       tcode: 'FLEET',
       icon: Building2,
@@ -136,7 +136,7 @@ export const FioriHeader = ({ onOpenCreateWO, onOpenCreateMaterial, onOpenCreate
       key: 'ANALYTICS',
       title: 'Executive Analytics',
       subtitle: 'Costos CO/FI & KPIs Planta',
-      slug: 'nebex:analitica:costos',
+      slug: 'operam:analitica:costos',
       alias: '#analitica-costos',
       tcode: 'S_ALR',
       icon: Database,
@@ -147,7 +147,7 @@ export const FioriHeader = ({ onOpenCreateWO, onOpenCreateMaterial, onOpenCreate
       key: 'HR',
       title: 'Recursos Humanos',
       subtitle: 'Ficha de Personal & HCM',
-      slug: 'nebex:rrhh:personal',
+      slug: 'operam:rrhh:personal',
       alias: '#rrhh-personal',
       tcode: 'PA30 / PA20',
       icon: HardHat,
@@ -158,7 +158,7 @@ export const FioriHeader = ({ onOpenCreateWO, onOpenCreateMaterial, onOpenCreate
       key: 'USER_MGMT',
       title: 'Usuarios & Tenants',
       subtitle: 'Gestión & Matriz RBAC',
-      slug: 'nebex:admin:usuarios',
+      slug: 'operam:admin:usuarios',
       alias: '#admin-usuarios',
       tcode: 'SU01 / SU10',
       icon: Users,
@@ -183,16 +183,17 @@ export const FioriHeader = ({ onOpenCreateWO, onOpenCreateMaterial, onOpenCreate
   const FAVORITES_STORAGE_KEY = 'sap_user_favorite_tabs';
 
   const ALL_TAB_CONFIG = {
-    LAUNCHPAD: { title: 'Launchpad', icon: Activity, desc: 'Cockpit principal (nebex:home:cockpit)', slug: 'nebex:home:cockpit', alias: '#home' },
-    WORK_ORDERS: { title: 'Órdenes (#mnt-ordenes)', icon: Wrench, desc: 'Órdenes PM (nebex:mantenimiento:ordenes)', slug: 'nebex:mantenimiento:ordenes', alias: '#mnt-ordenes' },
-    ASSETS: { title: 'Activos (#flota-activos)', icon: Layers, desc: 'Jerarquía de equipos (nebex:flota:activos)', slug: 'nebex:flota:activos', alias: '#flota-activos' },
-    FLEET: { title: 'Flota (#flota-vencimientos)', icon: Building2, desc: 'Maquinaria (nebex:flota:vencimientos)', slug: 'nebex:flota:vencimientos', alias: '#flota-vencimientos' },
-    INVENTORY: { title: 'Inventario (#inv-materiales)', icon: Boxes, desc: 'Materiales (nebex:inventario:materiales)', slug: 'nebex:inventario:materiales', alias: '#inv-materiales' },
-    MIGO: { title: 'Movimientos (#inv-mov)', icon: Package, desc: 'Entradas/Salidas (nebex:inventario:movimientos)', slug: 'nebex:inventario:movimientos', alias: '#inv-mov' },
-    ANALYTICS: { title: 'Analytics (#analitica-costos)', icon: Database, desc: 'Executive Analytics (nebex:analitica:costos)', slug: 'nebex:analitica:costos', alias: '#analitica-costos' },
-    HR: { title: 'Recursos Humanos (#rrhh-personal)', icon: HardHat, desc: 'Ficha personal (nebex:rrhh:personal)', slug: 'nebex:rrhh:personal', alias: '#rrhh-personal' },
-    USER_MGMT: { title: 'Usuarios (#admin-usuarios)', icon: Users, desc: 'Administración (nebex:admin:usuarios)', slug: 'nebex:admin:usuarios', alias: '#admin-usuarios' }
+    LAUNCHPAD: { title: 'Launchpad', icon: Activity, desc: 'Cockpit principal (operam:home:cockpit)', slug: 'operam:home:cockpit', alias: '#home' },
+    WORK_ORDERS: { title: 'Órdenes (#mnt-ordenes)', icon: Wrench, desc: 'Órdenes PM (operam:mantenimiento:ordenes)', slug: 'operam:mantenimiento:ordenes', alias: '#mnt-ordenes' },
+    ASSETS: { title: 'Activos (#flota-activos)', icon: Layers, desc: 'Jerarquía de equipos (operam:flota:activos)', slug: 'operam:flota:activos', alias: '#flota-activos' },
+    FLEET: { title: 'Flota (#flota-vencimientos)', icon: Building2, desc: 'Maquinaria (operam:flota:vencimientos)', slug: 'operam:flota:vencimientos', alias: '#flota-vencimientos' },
+    INVENTORY: { title: 'Inventario (#inv-materiales)', icon: Boxes, desc: 'Materiales (operam:inventario:materiales)', slug: 'operam:inventario:materiales', alias: '#inv-materiales' },
+    MIGO: { title: 'Movimientos (#inv-mov)', icon: Package, desc: 'Entradas/Salidas (operam:inventario:movimientos)', slug: 'operam:inventario:movimientos', alias: '#inv-mov' },
+    ANALYTICS: { title: 'Analytics (#analitica-costos)', icon: Database, desc: 'Executive Analytics (operam:analitica:costos)', slug: 'operam:analitica:costos', alias: '#analitica-costos' },
+    HR: { title: 'Recursos Humanos (#rrhh-personal)', icon: HardHat, desc: 'Ficha personal (operam:rrhh:personal)', slug: 'operam:rrhh:personal', alias: '#rrhh-personal' },
+    USER_MGMT: { title: 'Usuarios (#admin-usuarios)', icon: Users, desc: 'Administración (operam:admin:usuarios)', slug: 'operam:admin:usuarios', alias: '#admin-usuarios' }
   };
+
 
   const [favoriteTabs, setFavoriteTabs] = useState(() => {
     try {
@@ -816,7 +817,8 @@ export const FioriHeader = ({ onOpenCreateWO, onOpenCreateMaterial, onOpenCreate
                 autoFocus
                 value={launcherSearch}
                 onChange={(e) => setLauncherSearch(e.target.value)}
-                placeholder="Buscar comando, slug o hashtag (ej. nebex:inventario:movimientos, #inv-mov, MIGO)..."
+                placeholder="Buscar comando, slug o hashtag (ej. operam:inventario:movimientos, #inv-mov, MIGO)..."
+
                 className="w-full bg-slate-800/90 text-white placeholder-slate-400 text-xs rounded-xl pl-10 pr-9 py-2.5 border border-slate-700 focus:outline-none focus:ring-2 focus:ring-sap-blue focus:border-transparent transition-all"
               />
               {launcherSearch && (

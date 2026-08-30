@@ -6,12 +6,13 @@ export const MobileBottomNav = () => {
   const { activeTab, setActiveTab } = useSAP();
 
   const navItems = [
-    { id: 'LAUNCHPAD', label: 'Inicio', icon: LayoutGrid, slug: 'nebex:home:cockpit' },
-    { id: 'WORK_ORDERS', label: 'Órdenes', icon: Wrench, slug: 'nebex:mantenimiento:ordenes' },
-    { id: 'HR', label: 'Personal', icon: Users, slug: 'nebex:rrhh:personal' },
-    { id: 'ASSETS', label: 'Activos', icon: Cpu, slug: 'nebex:flota:activos' },
-    { id: 'INVENTORY', label: 'Stock', icon: Package, slug: 'nebex:inventario:materiales' },
-    { id: 'ANALYTICS', label: 'Analítica', icon: BarChart3, slug: 'nebex:analitica:costos' }
+    { id: 'LAUNCHPAD', label: 'Inicio', icon: LayoutGrid, slug: 'operam:home:cockpit' },
+    { id: 'WORK_ORDERS', label: 'Órdenes', icon: Wrench, slug: 'operam:mantenimiento:ordenes' },
+    { id: 'HR', label: 'Personal', icon: Users, slug: 'operam:rrhh:personal' },
+    { id: 'ASSETS', label: 'Activos', icon: Cpu, slug: 'operam:flota:activos' },
+    { id: 'INVENTORY', label: 'Stock', icon: Package, slug: 'operam:inventario:materiales' },
+    { id: 'ANALYTICS', label: 'Analítica', icon: BarChart3, slug: 'operam:analitica:costos' }
+
   ];
 
   return (

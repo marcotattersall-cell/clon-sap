@@ -1017,7 +1017,8 @@ export const UserManagementSU01 = () => {
                 </div>
                 <h2 className="text-base font-black text-white flex items-center gap-2 mt-0.5">
                   <UserPlus className="w-4 h-4 text-purple-400" />
-                  <span>Gestión de Usuarios (nebex:admin:usuarios) — {editingUser ? 'Edición de Permisos & Tenant Corporativo' : 'Alta de Usuario & Asignación Multi-Tenant'}</span>
+                  <span>Gestión de Usuarios (operam:admin:usuarios) — {editingUser ? 'Edición de Permisos & Tenant Corporativo' : 'Alta de Usuario & Asignación Multi-Tenant'}</span>
+
                 </h2>
               </div>
             </div>

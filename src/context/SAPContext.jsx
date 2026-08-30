@@ -1016,7 +1016,7 @@ export const SAPProvider = ({ children }) => {
 
   // Reset to Factory Demo State
   const resetData = () => {
-    localStorage.removeItem(`nebex_is_wiped_${activeTenantId}`);
+    localStorage.removeItem(`operam_is_wiped_${activeTenantId}`);
     setPlants(DEFAULT_PLANTS);
     setActivePlant(DEFAULT_PLANTS[0]);
     setMaterials(DEFAULT_MATERIALS);
@@ -1028,12 +1028,13 @@ export const SAPProvider = ({ children }) => {
     setEmployees(DEFAULT_EMPLOYEES);
     setAbsences(DEFAULT_ABSENCES);
     setPayrollRuns(DEFAULT_PAYROLL_RUNS);
-    addToast('✨ Datos de demostración de NEBEX restaurados exitosamente.', 'success');
+    addToast('✨ Datos de demostración de OPERAM restaurados exitosamente.', 'success');
   };
 
   // Clear All Tenant Data to 0 (Clean Production State)
   const clearAllTenantData = () => {
-    localStorage.setItem(`nebex_is_wiped_${activeTenantId}`, 'true');
+    localStorage.setItem(`operam_is_wiped_${activeTenantId}`, 'true');
+
     setWorkOrders([]);
     setMaterials([]);
     setAssets([]);

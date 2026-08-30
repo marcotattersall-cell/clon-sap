@@ -201,7 +201,7 @@ export const CreateWOModal = ({ isOpen, onClose, initialAssetId }) => {
             </div>
             <h2 className="text-base font-black text-white flex items-center gap-2 mt-0.5">
               <Wrench className="w-4 h-4 text-amber-400" />
-              <span>Crear Orden de Trabajo de Mantenimiento (nebex:mantenimiento:ordenes)</span>
+              <span>Crear Orden de Trabajo de Mantenimiento (operam:mantenimiento:ordenes)</span>
             </h2>
           </div>
         </div>
@@ -227,15 +227,15 @@ export const CreateWOModal = ({ isOpen, onClose, initialAssetId }) => {
             <Plus className="w-4 h-4" />
             <span>
               {!targetAssetExists
-                ? 'ERR: NEBEX-001 (Equipo Inexistente)'
+                ? 'ERR: OPERAM-001 (Equipo Inexistente)'
                 : !targetTechExists
-                ? 'ERR: NEBEX-002 (Técnico Inexistente)'
+                ? 'ERR: OPERAM-002 (Técnico Inexistente)'
                 : duplicateActiveWO
-                ? 'ERR: NEBEX-003 (Orden Duplicada)'
+                ? 'ERR: OPERAM-003 (Orden Duplicada)'
                 : isLowerValueDetected && !isCounterCorrection
-                ? 'ERR: NEBEX-004 (Lectura Menor)'
+                ? 'ERR: OPERAM-004 (Lectura Menor)'
                 : !selectedPlannedMaterial
-                ? 'ERR: NEBEX-005 (Seleccione Repuesto)'
+                ? 'ERR: OPERAM-005 (Seleccione Repuesto)'
                 : 'Guardar y Contabilizar Orden (#mnt-ordenes)'}
             </span>
           </button>
@@ -245,41 +245,42 @@ export const CreateWOModal = ({ isOpen, onClose, initialAssetId }) => {
       {/* Main Canvas Workspace */}
       <div className="flex-1 max-w-7xl w-full mx-auto p-6 space-y-6">
         <form id="iw31-form" onSubmit={handleSubmit} className="space-y-6 text-xs">
-          {/* 🚫 Banners de Error Ultra-Compactos (Micro Badges Estándar NEBEX) */}
+          {/* 🚫 Banners de Error Ultra-Compactos (Micro Badges Estándar OPERAM) */}
           {(!equipmentId || !targetAssetExists) && (
             <div className="bg-rose-500/10 border border-rose-500/30 px-3 py-1.5 rounded-lg text-rose-600 dark:text-rose-400 text-[11px] flex items-center space-x-2 font-mono font-bold animate-in fade-in">
               <AlertTriangle className="w-3.5 h-3.5 text-rose-500 shrink-0" />
-              <span>ERR: NEBEX-001 — Equipo "{equipmentId || 'Sin código'}" no existe en Activos (#flota-activos)</span>
+              <span>ERR: OPERAM-001 — Equipo "{equipmentId || 'Sin código'}" no existe en Activos (#flota-activos)</span>
             </div>
           )}
 
           {(!assignedTechName || !targetTechExists) && (
             <div className="bg-rose-500/10 border border-rose-500/30 px-3 py-1.5 rounded-lg text-rose-600 dark:text-rose-400 text-[11px] flex items-center space-x-2 font-mono font-bold animate-in fade-in">
               <AlertTriangle className="w-3.5 h-3.5 text-rose-500 shrink-0" />
-              <span>ERR: NEBEX-002 — Técnico "{assignedTechName || 'Sin asignar'}" no existe en HCM</span>
+              <span>ERR: OPERAM-002 — Técnico "{assignedTechName || 'Sin asignar'}" no existe en HCM</span>
             </div>
           )}
 
           {duplicateActiveWO && (
             <div className="bg-rose-500/10 border border-rose-500/30 px-3 py-1.5 rounded-lg text-rose-600 dark:text-rose-400 text-[11px] flex items-center space-x-2 font-mono font-bold animate-in fade-in">
               <AlertTriangle className="w-3.5 h-3.5 text-rose-500 shrink-0" />
-              <span>ERR: NEBEX-003 — Orden activa duplicada ({duplicateActiveWO.id})</span>
+              <span>ERR: OPERAM-003 — Orden activa duplicada ({duplicateActiveWO.id})</span>
             </div>
           )}
 
           {isLowerValueDetected && !isCounterCorrection && (
             <div className="bg-amber-500/10 border border-amber-500/30 px-3 py-1.5 rounded-lg text-amber-600 dark:text-amber-400 text-[11px] flex items-center space-x-2 font-mono font-bold animate-in fade-in">
               <AlertTriangle className="w-3.5 h-3.5 text-amber-500 shrink-0" />
-              <span>ERR: NEBEX-004 — Contador menor al previo (Marque "Autorizar Corrección")</span>
+              <span>ERR: OPERAM-004 — Contador menor al previo (Marque "Autorizar Corrección")</span>
             </div>
           )}
 
           {!selectedPlannedMaterial && (
             <div className="bg-rose-500/10 border border-rose-500/30 px-3 py-1.5 rounded-lg text-rose-600 dark:text-rose-400 text-[11px] flex items-center space-x-2 font-mono font-bold animate-in fade-in">
               <AlertTriangle className="w-3.5 h-3.5 text-rose-500 shrink-0" />
-              <span>ERR: NEBEX-005 — Reserva de Repuesto Obligatoria (Seleccione un componente)</span>
+              <span>ERR: OPERAM-005 — Reserva de Repuesto Obligatoria (Seleccione un componente)</span>
             </div>
           )}
+
 
           {/* 3-Column Structured Layout */}
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">

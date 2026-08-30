@@ -45,7 +45,8 @@ export const NebexEntranceSplash = ({ onComplete }) => {
       {/* Glow de fondo difuminado de alta gama con pulsación continua */}
       <div className="absolute w-96 h-96 rounded-full bg-gradient-to-tr from-sky-500/25 via-blue-600/30 to-indigo-500/25 blur-3xl animate-pulse" />
 
-      {/* Contenedor del Logo de NEBEX con animación sutil de escala e iluminación */}
+      {/* Contenedor del Logo de OPERAM con animación sutil de escala e iluminación */}
+
       <div className="relative z-10 flex flex-col items-center space-y-6 animate-in fade-in zoom-in-95 duration-500 max-w-sm px-4 text-center">
         <AxomiraLogo
           variant="full"
