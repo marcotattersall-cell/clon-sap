@@ -15,26 +15,20 @@ import {
   CheckCircle2,
   Clock,
   AlertTriangle,
-  FileCheck2,
-  Briefcase,
-  ChevronRight,
-  TrendingUp,
   RefreshCw,
   XCircle,
-  FileText,
-  Award,
-  Layers,
   MapPin,
   Mail,
   Edit,
   Cpu,
   Sparkles,
-  Zap,
-  Activity,
   Trash2
 } from 'lucide-react';
 import { UpdateComplianceModal } from '../modals/UpdateComplianceModal';
 import { EditEmployeeModal } from '../modals/EditEmployeeModal';
+import { HRAccreditationTab } from './HRAccreditationTab';
+import { HRAbsenceTab } from './HRAbsenceTab';
+import { HRPayrollTab } from './HRPayrollTab';
 import { formatDateDDMMYYYY } from '../../utils/dateUtils';
 import { detectPayrollAnomalies } from '../../services/hcmAnomalyDetectionService';
 
@@ -46,7 +40,6 @@ export const HRMaster = ({ onOpenCreateEmployee, onOpenCreateAbsence }) => {
     plants = [],
     reseedEmployees,
     deleteEmployee,
-    updateEmployeeStatus,
     updateAbsenceStatus,
     processPayrollRun,
     searchTerm,
@@ -672,310 +665,33 @@ export const HRMaster = ({ onOpenCreateEmployee, onOpenCreateAbsence }) => {
 
       {/* ----------------- SUB-TAB 2: ACREDITACIÓN Y CONTROL DE FAENAS ----------------- */}
       {activeSubTab === 'ACCREDITATION' && (
-        <div className="space-y-4">
-          {/* Header Banner & Alert Notice */}
-          <div className="bg-amber-50 border border-amber-200 p-4 rounded-xl text-xs space-y-2">
-            <div className="flex items-center space-x-2 font-bold text-amber-900 text-sm">
-              <HardHat className="w-5 h-5 text-amber-600" />
-              <span>Control y Monitor de Acreditaciones por Faena (Regla Alerta 30 Días)</span>
-            </div>
-            <p className="text-amber-800">
-              El sistema evalúa continuamente la vigencia de los <strong>Exámenes Ocupacionales</strong>, <strong>Pases de Acreditación de Faena</strong> y <strong>Cursos de Prevención</strong>. Si faltan 30 días o menos para el vencimiento, la alerta permanecerá activa <strong>sin cambiar automáticamente hasta que se ingrese la renovación</strong>.
-            </p>
-
-            <div className="flex flex-wrap items-center gap-3 pt-2">
-              <button
-                onClick={() => setComplianceFilter('ALL')}
-                className={`px-3 py-1 rounded-lg text-xs font-bold border transition-all ${
-                  complianceFilter === 'ALL' ? 'bg-slate-900 text-white border-slate-900' : 'bg-white text-slate-700 border-slate-300'
-                }`}
-              >
-                Todos ({employees.length})
-              </button>
-              <button
-                onClick={() => setComplianceFilter('ALERT_30')}
-                className={`px-3 py-1 rounded-lg text-xs font-bold border transition-all flex items-center gap-1 ${
-                  complianceFilter === 'ALERT_30' ? 'bg-amber-600 text-white border-amber-600' : 'bg-amber-100 text-amber-900 border-amber-300'
-                }`}
-              >
-                <AlertTriangle className="w-3.5 h-3.5" />
-                Por Vencer (≤30 Días)
-              </button>
-              <button
-                onClick={() => setComplianceFilter('EXPIRED')}
-                className={`px-3 py-1 rounded-lg text-xs font-bold border transition-all flex items-center gap-1 ${
-                  complianceFilter === 'EXPIRED' ? 'bg-rose-600 text-white border-rose-600' : 'bg-rose-100 text-rose-900 border-rose-300'
-                }`}
-              >
-                <XCircle className="w-3.5 h-3.5" />
-                Vencidos
-              </button>
-              <button
-                onClick={() => setComplianceFilter('OK')}
-                className={`px-3 py-1 rounded-lg text-xs font-bold border transition-all flex items-center gap-1 ${
-                  complianceFilter === 'OK' ? 'bg-sky-700 text-white border-sky-700' : 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-300 dark:border-slate-700'
-                }`}
-              >
-                <CheckCircle2 className="w-3.5 h-3.5 text-slate-500 dark:text-slate-400" />
-                Vigentes
-              </button>
-
-            </div>
-          </div>
-
-          {/* Compliance Semáforo Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {filteredEmployees.map(emp => {
-              const comp = getEmployeeComplianceSummary(emp);
-              return (
-                <div
-                  key={emp.id}
-                  className={`p-4 rounded-xl border bg-white shadow-xs space-y-3 relative overflow-hidden transition-all ${
-                    comp.overallStatus === 'EXPIRED' ? 'border-rose-300 ring-1 ring-rose-200' :
-                    comp.overallStatus === 'ALERT_30' ? 'border-amber-300 ring-1 ring-amber-200' :
-                    'border-slate-200'
-                  }`}
-                >
-                  <div className="flex items-start justify-between gap-2">
-                    <div className="flex items-center space-x-3">
-                      {emp.photoUrl ? (
-                        <img src={emp.photoUrl} alt={emp.name} className="w-12 h-12 rounded-xl object-cover border-2 border-slate-200 shadow-xs shrink-0" />
-                      ) : (
-                        <div className="w-12 h-12 rounded-xl bg-slate-200 text-slate-700 font-bold flex items-center justify-center border border-slate-300 shrink-0 text-base">
-                          {emp.name ? emp.name.charAt(0) : 'U'}
-                        </div>
-                      )}
-                      <div>
-                        <span className="font-mono text-[10px] font-bold text-slate-500 uppercase">{emp.id} • {emp.rut}</span>
-                        <h4 className="font-bold text-slate-900 text-sm leading-snug">{emp.name}</h4>
-                        <p className="text-xs text-slate-600">{emp.position}</p>
-                      </div>
-                    </div>
-                    <span className={`px-2 py-0.5 rounded text-[10px] font-bold border shrink-0 ${comp.color}`}>
-                      {comp.label}
-                    </span>
-                  </div>
-
-                  <div className="bg-slate-50 p-2.5 rounded-lg border border-slate-200 text-xs space-y-2">
-                    <div className="text-[11px] font-bold text-slate-700 uppercase tracking-wider mb-1 flex items-center justify-between">
-                      <span>Faenas Acreditadas ({emp.faenasAccredited ? emp.faenasAccredited.length : 1}):</span>
-                      <span className="text-[10px] text-slate-500 font-normal">Estado Operativo</span>
-                    </div>
-
-                    {(emp.faenasAccredited && emp.faenasAccredited.length > 0 ? emp.faenasAccredited : [
-                      { id: '1', faenaName: emp.faena, medicalExamExpiry: emp.medicalExamExpiry, accreditationExpiry: emp.accreditationExpiry, safetyCourseExpiry: emp.safetyCourseExpiry }
-                    ]).map(f => {
-                      const fMed = calculateDaysRemaining(f.medicalExamExpiry);
-                      const fAcc = calculateDaysRemaining(f.accreditationExpiry);
-                      const fSaf = calculateDaysRemaining(f.safetyCourseExpiry);
-                      const isFBlocked = fMed.status === 'EXPIRED' || fAcc.status === 'EXPIRED' || fSaf.status === 'EXPIRED';
-                      const isFAlert = !isFBlocked && (fMed.status === 'ALERT_30' || fAcc.status === 'ALERT_30' || fSaf.status === 'ALERT_30');
-
-                      return (
-                        <div key={f.id || f.faenaName} className="bg-white p-2 rounded border border-slate-200 space-y-1">
-                          <div className="flex items-center justify-between font-bold text-slate-800 text-[11px]">
-                            <span className="flex items-center gap-1">
-                              <MapPin className="w-3 h-3 text-sky-600 shrink-0" />
-                              {f.faenaName}
-                            </span>
-                            <span className={`inline-flex items-center space-x-1 px-1.5 py-0.5 rounded-full text-[9px] font-bold border ${
-                              isFBlocked ? 'bg-rose-50 text-rose-700 border-rose-200' :
-                              isFAlert ? 'bg-amber-50 text-amber-800 border-amber-200' :
-                              'bg-emerald-50 text-emerald-700 border-emerald-200'
-                            }`}>
-                              <span className={`w-1.5 h-1.5 rounded-full ${isFBlocked ? 'bg-rose-500' : isFAlert ? 'bg-amber-500' : 'bg-emerald-500'}`} />
-                              <span>{isFBlocked ? 'Bloqueado' : isFAlert ? 'Alerta (≤30d)' : 'Habilitado'}</span>
-                            </span>
-                          </div>
-
-                          <div className="grid grid-cols-3 gap-1 text-[10px] text-slate-600 pt-1 font-mono">
-                            <div className="bg-slate-50 p-1 rounded">
-                              <span className="block text-[9px] text-slate-400 font-sans">Examen</span>
-                              <span className={fMed.status === 'EXPIRED' ? 'text-rose-600 font-bold' : fMed.status === 'ALERT_30' ? 'text-amber-700 font-bold' : 'text-slate-700'}>
-                                {fMed.days}d ({formatDateDDMMYYYY(f.medicalExamExpiry)})
-                              </span>
-                            </div>
-                            <div className="bg-slate-50 p-1 rounded">
-                              <span className="block text-[9px] text-slate-400 font-sans">Pase</span>
-                              <span className={fAcc.status === 'EXPIRED' ? 'text-rose-600 font-bold' : fAcc.status === 'ALERT_30' ? 'text-amber-700 font-bold' : 'text-slate-700'}>
-                                {fAcc.days}d ({formatDateDDMMYYYY(f.accreditationExpiry)})
-                              </span>
-                            </div>
-                            <div className="bg-slate-50 p-1 rounded">
-                              <span className="block text-[9px] text-slate-400 font-sans">Inducción</span>
-                              <span className={fSaf.status === 'EXPIRED' ? 'text-rose-600 font-bold' : fSaf.status === 'ALERT_30' ? 'text-amber-700 font-bold' : 'text-slate-700'}>
-                                {fSaf.days}d ({formatDateDDMMYYYY(f.safetyCourseExpiry)})
-                              </span>
-                            </div>
-                          </div>
-                        </div>
-                      );
-                    })}
-
-                    <div className="flex items-center justify-between border-t border-slate-200/60 pt-1.5 text-xs">
-                      <span className="text-slate-600">Vigencia Contrato:</span>
-                      {emp.contractType === 'Plazo Fijo' ? (
-                        <span className={`font-mono font-bold ${comp.ctr.status === 'EXPIRED' ? 'text-rose-600' : comp.ctr.status === 'ALERT_30' ? 'text-amber-700' : 'text-slate-700'}`}>
-                          Plazo Fijo: {formatDateDDMMYYYY(emp.contractExpiry)} ({comp.ctr.days}d)
-                        </span>
-                      ) : (
-                        <span className="font-semibold text-emerald-700">
-                          {emp.contractType || 'Indefinido'} ({formatDateDDMMYYYY(emp.hireDate)})
-                        </span>
-                      )}
-                    </div>
-                  </div>
-
-                  <button
-                    onClick={() => handleOpenComplianceModal(emp)}
-                    className="w-full bg-amber-600 hover:bg-amber-500 text-white font-bold py-2 rounded-lg text-xs transition-all flex items-center justify-center space-x-1.5 shadow-xs"
-                  >
-                    <RefreshCw className="w-3.5 h-3.5" />
-                    <span>Ingresar Nuevas Fechas (Renovar)</span>
-                  </button>
-                </div>
-              );
-            })}
-          </div>
-        </div>
+        <HRAccreditationTab
+          employees={employees}
+          complianceFilter={complianceFilter}
+          setComplianceFilter={setComplianceFilter}
+          onOpenComplianceModal={(emp) => {
+            setComplianceEmployee(emp);
+            setIsUpdateComplianceOpen(true);
+          }}
+          calculateDaysRemaining={calculateDaysRemaining}
+        />
       )}
 
       {/* ----------------- SUB-TAB 3: GESTIÓN DE TIEMPOS Y LICENCIAS (PT) ----------------- */}
       {activeSubTab === 'PT_TIME' && (
-        <div className="space-y-4">
-          <div className="fiori-glass p-4 rounded-xl border border-slate-200 flex items-center justify-between">
-            <div>
-              <h3 className="text-sm font-bold text-slate-900 flex items-center gap-2">
-                <Calendar className="w-4 h-4 text-sky-600" />
-                <span>Control de Asistencias, Ausentismos y Licencias (PT)</span>
-              </h3>
-              <p className="text-xs text-slate-500">
-                Flujo de revisión y aprobación de solicitudes de vacaciones, licencias médicas Achs y horas extra.
-              </p>
-            </div>
-
-            <button
-              onClick={onOpenCreateAbsence}
-              className="bg-sky-700 hover:bg-sky-600 text-white text-xs font-bold px-3 py-2 rounded-lg flex items-center space-x-1.5 shadow-xs"
-            >
-              <FileCheck2 className="w-4 h-4" />
-              <span>Solicitar Ausentismo</span>
-            </button>
-          </div>
-
-          <div className="bg-white rounded-xl border border-slate-200 overflow-hidden shadow-xs">
-            <table className="w-full text-left text-xs divide-y divide-slate-200">
-              <thead className="bg-slate-100 text-slate-700 font-bold uppercase tracking-wider">
-                <tr>
-                  <th className="p-3">Código Folio</th>
-                  <th className="p-3">Colaborador</th>
-                  <th className="p-3">Tipo de Ausencia</th>
-                  <th className="p-3">Fechas Vigencia</th>
-                  <th className="p-3">Días Total</th>
-                  <th className="p-3">Motivo / Justificación</th>
-                  <th className="p-3 text-center">Estado Solicitud</th>
-                  <th className="p-3 text-right">Acciones</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-100 font-medium text-slate-800">
-                {absences.map(abs => (
-                  <tr key={abs.id} className="hover:bg-slate-50 transition-colors">
-                    <td className="p-3 font-mono font-bold text-sky-700">{abs.id}</td>
-                    <td className="p-3 font-bold text-slate-900">{abs.employeeName}</td>
-                    <td className="p-3">
-                      <span className="bg-sky-50 text-sky-800 border border-sky-200 px-2 py-0.5 rounded font-semibold text-[11px]">
-                        {abs.type}
-                      </span>
-                    </td>
-                    <td className="p-3 font-mono text-slate-700">
-                      {formatDateDDMMYYYY(abs.startDate)} ➔ {formatDateDDMMYYYY(abs.endDate)}
-                    </td>
-                    <td className="p-3 font-bold text-slate-900">{abs.daysCount} días</td>
-                    <td className="p-3 text-slate-600 max-w-xs truncate">{abs.reason || 'Sin observación'}</td>
-                    <td className="p-3 text-center">
-                      <span className={`px-2 py-0.5 rounded text-[10px] font-bold border ${
-                        abs.status === 'Aprobado' ? 'bg-emerald-50 text-emerald-700 border-emerald-200' :
-                        abs.status === 'Rechazado' ? 'bg-rose-50 text-rose-700 border-rose-200' :
-                        'bg-amber-50 text-amber-800 border-amber-200'
-                      }`}>
-                        {abs.status}
-                      </span>
-                    </td>
-                    <td className="p-3 text-right space-x-1">
-                      {abs.status === 'Pendiente Aprobación' && (
-                        <>
-                          <button
-                            onClick={() => updateAbsenceStatus(abs.id, 'Aprobado')}
-                            className="bg-emerald-600 text-white px-2 py-1 rounded text-[11px] font-bold hover:bg-emerald-500"
-                          >
-                            Aprobar
-                          </button>
-                          <button
-                            onClick={() => updateAbsenceStatus(abs.id, 'Rechazado')}
-                            className="bg-rose-600 text-white px-2 py-1 rounded text-[11px] font-bold hover:bg-rose-500"
-                          >
-                            Rechazar
-                          </button>
-                        </>
-                      )}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </div>
+        <HRAbsenceTab
+          absences={absences}
+          onOpenCreateAbsence={onOpenCreateAbsence}
+          updateAbsenceStatus={updateAbsenceStatus}
+        />
       )}
 
       {/* ----------------- SUB-TAB 4: NÓMINA Y LIQUIDACIONES (PY) ----------------- */}
       {activeSubTab === 'PY_PAYROLL' && (
-        <div className="space-y-4">
-          <div className="fiori-glass p-5 rounded-xl border border-slate-200 space-y-4">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-100">
-              <div>
-                <h3 className="text-sm font-bold text-slate-900 flex items-center gap-2">
-                  <DollarSign className="w-4 h-4 text-emerald-600" />
-                  <span>Liquidación de Nómina y Remuneraciones (PY)</span>
-                </h3>
-                <p className="text-xs text-slate-500">
-                  Cálculo automático de haberes, descuentos previsionales (AFP/Salud 17%) y liquidaciones líquidas.
-                </p>
-              </div>
-
-              <button
-                onClick={() => processPayrollRun('Agosto 2026')}
-                className="bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs px-4 py-2 rounded-lg shadow-sm flex items-center space-x-2 transition-all"
-              >
-                <DollarSign className="w-4 h-4" />
-                <span>Ejecutar Proceso de Nómina Agosto 2026</span>
-              </button>
-            </div>
-
-            {/* Payroll Runs History */}
-            <div className="space-y-3">
-              <h4 className="font-bold text-xs uppercase tracking-wider text-slate-500">Histórico de Procesos de Nómina</h4>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {payrollRuns.map(run => (
-                  <div key={run.id} className="p-4 rounded-xl bg-slate-50 border border-slate-200 text-xs space-y-2">
-                    <div className="flex items-center justify-between font-mono">
-                      <span className="font-bold text-slate-900 text-sm">{run.id} • {run.period}</span>
-                      <span className="bg-emerald-100 text-emerald-800 font-bold px-2 py-0.5 rounded border border-emerald-300">
-                        {run.status}
-                      </span>
-                    </div>
-
-                    <div className="grid grid-cols-2 gap-2 text-slate-600 font-medium">
-                      <div>Colaboradores: <strong className="text-slate-900">{run.totalEmployees}</strong></div>
-                      <div>Fecha Proceso: <strong>{run.runDate}</strong></div>
-                      <div>Total Bruto: <strong className="text-slate-900">${run.grossSalaryTotal.toLocaleString('es-CL')}</strong></div>
-                      <div>Total Líquido: <strong className="text-emerald-700">${run.netSalaryTotal.toLocaleString('es-CL')}</strong></div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-        </div>
+        <HRPayrollTab
+          payrollRuns={payrollRuns}
+          processPayrollRun={processPayrollRun}
+        />
       )}
 
       {/* ----------------- SUB-TAB 5: ESTRUCTURA ORGANIZACIONAL (OM) ----------------- */}

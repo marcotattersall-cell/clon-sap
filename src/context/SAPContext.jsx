@@ -21,7 +21,7 @@ import {
   DEFAULT_ABSENCES,
   DEFAULT_PAYROLL_RUNS
 } from '../fixtures/sapInitialFixtures';
-import { validateChileanRUT, formatChileanRUT } from '../utils/rutUtils';
+import { validateChileanRUT } from '../utils/rutUtils';
 
 const SAPContext = createContext(null);
 
@@ -194,7 +194,7 @@ export const SAPProvider = ({ children }) => {
   }, []);
 
   // MIGO Goods Movement Transaction engine (Types 101, 261, 311)
-  const executeGoodsMovement = async ({ movementType, materialId, qty, storageLocation, targetStorageLocation, refDocument, notes }) => {
+  const executeGoodsMovement = async ({ movementType, materialId, qty, storageLocation, targetStorageLocation, refDocument, notes: _notes }) => {
     const quantity = Number(qty);
     if (!materialId || isNaN(quantity) || quantity <= 0) {
       addToast('Error en MIGO: Debe especificar un material y una cantidad válida.', 'error');

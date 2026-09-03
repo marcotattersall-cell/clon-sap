@@ -5,7 +5,6 @@ import { RBAC_PERMISSIONS, SAP_ROLES } from '../../utils/rbacRules';
 import {
   Users,
   ShieldCheck,
-  ShieldAlert,
   Building2,
   KeyRound,
   Lock,
@@ -14,32 +13,22 @@ import {
   Edit3,
   Search,
   CheckCircle2,
-  AlertTriangle,
-  RefreshCw,
   Mail,
   UserCheck,
   Globe,
-  Sliders,
   X,
-  CheckSquare,
-  Square,
-  Shield,
   Grid,
   Check,
-  Settings,
   Database,
   Trash2,
-  Layers,
   Server,
   Download,
-  Eye,
-  Play,
-  ArrowRight
+  Eye
 } from 'lucide-react';
 
 export const UserManagementSU01 = () => {
-  const { employees, addToast, plants } = useSAP();
-  const { user, sendPasswordReset, switchTenant } = useAuth();
+  const { addToast } = useSAP();
+  const { sendPasswordReset, switchTenant } = useAuth();
 
   // Navigation Sub-tab ('VISTA_CLIENTES' | 'DIRECTORIO_USUARIOS' | 'MATRIZ_RBAC')
   const [activeSubTab, setActiveSubTab] = useState('VISTA_CLIENTES');

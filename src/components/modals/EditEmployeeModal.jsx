@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useSAP } from '../../context/SAPContext';
-import { X, Edit, ShieldCheck, Building2, Calendar, FileText, DollarSign, Mail, Phone, HardHat, AlertCircle, Save } from 'lucide-react';
+import { X, Edit, AlertCircle, Save } from 'lucide-react';
 import { formatChileanRUT, validateChileanRUT } from '../../utils/rutUtils';
 
 export const EditEmployeeModal = ({ isOpen, onClose, employee }) => {

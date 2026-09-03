@@ -16,7 +16,6 @@ import { upsertDocument } from '../services/dbService';
 
 const AuthContext = createContext(null);
 
-const CURRENT_AUTH_SESSION_KEY = 'sap_current_auth_session';
 const DEFAULT_SAP_USER = null;
 
 export const UNIVERSAL_ADMIN_EMAIL = 'marco.tattersall@gmail.com';
@@ -297,7 +296,7 @@ export const AuthProvider = ({ children }) => {
         try {
           const userCredential = await signInWithEmailAndPassword(auth, target.email, target.pass);
           fbUser = userCredential.user;
-        } catch (e) {
+        } catch (_err) {
           // If demo account does not exist in Firebase Auth yet, create it automatically
           const userCredential = await createUserWithEmailAndPassword(auth, target.email, target.pass);
           fbUser = userCredential.user;

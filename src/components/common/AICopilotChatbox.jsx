@@ -9,14 +9,9 @@ import {
   Wrench,
   Package,
   HardHat,
-  Layers,
   ChevronRight,
   RefreshCw,
-  Zap,
-  ShieldAlert,
-  FileText,
-  Printer,
-  Download
+  FileText
 } from 'lucide-react';
 const ExecutiveReportGeneratorModal = React.lazy(() => import('../modals/ExecutiveReportGeneratorModal').then(m => ({ default: m.ExecutiveReportGeneratorModal })));
 
