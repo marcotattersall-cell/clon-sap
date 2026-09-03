@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useSAP } from '../../context/SAPContext';
 import { useAuth } from '../../context/AuthContext';
 import { RBAC_PERMISSIONS, SAP_ROLES } from '../../utils/rbacRules';
+import { GlobalTenantDashboard } from './GlobalTenantDashboard';
 import {
   Users,
   ShieldCheck,
@@ -30,8 +31,8 @@ export const UserManagementSU01 = () => {
   const { addToast } = useSAP();
   const { sendPasswordReset, switchTenant } = useAuth();
 
-  // Navigation Sub-tab ('VISTA_CLIENTES' | 'DIRECTORIO_USUARIOS' | 'MATRIZ_RBAC')
-  const [activeSubTab, setActiveSubTab] = useState('VISTA_CLIENTES');
+  // Navigation Sub-tab ('DASHBOARD_GLOBAL' | 'VISTA_CLIENTES' | 'DIRECTORIO_USUARIOS' | 'MATRIZ_RBAC')
+  const [activeSubTab, setActiveSubTab] = useState('DASHBOARD_GLOBAL');
 
   // Lista de Tenants Corporativos Conocidos
   const tenantOptions = [
@@ -446,6 +447,19 @@ export const UserManagementSU01 = () => {
       {/* Sub-tab Navigation Ribbon */}
       <div className="flex border-b border-slate-200 dark:border-slate-800 space-x-2 text-xs font-bold">
         <button
+          onClick={() => setActiveSubTab('DASHBOARD_GLOBAL')}
+          className={`pb-3 px-4 flex items-center space-x-2 border-b-2 transition-all ${
+            activeSubTab === 'DASHBOARD_GLOBAL'
+              ? 'border-sap-blue text-sap-blue dark:text-blue-400'
+              : 'border-transparent text-slate-500 hover:text-slate-800 dark:hover:text-slate-200'
+          }`}
+        >
+          <Building2 className="w-4 h-4 text-sap-blue" />
+          <span>Dashboard Global de Clientes</span>
+          <span className="bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300 text-[10px] px-1.5 py-0.5 rounded-full font-mono">11 Métricas</span>
+        </button>
+
+        <button
           onClick={() => setActiveSubTab('VISTA_CLIENTES')}
           className={`pb-3 px-4 flex items-center space-x-2 border-b-2 transition-all ${
             activeSubTab === 'VISTA_CLIENTES'
@@ -483,6 +497,11 @@ export const UserManagementSU01 = () => {
           <span className="bg-purple-100 text-purple-800 text-[10px] px-1.5 py-0.5 rounded-full font-mono">Configurable</span>
         </button>
       </div>
+
+      {/* SUB-TAB 0: DASHBOARD GLOBAL DE CLIENTES (11 MÉTIRCAS SUPERADMIN) */}
+      {activeSubTab === 'DASHBOARD_GLOBAL' && (
+        <GlobalTenantDashboard />
+      )}
 
       {/* SUB-TAB 1: VISTA POR CLIENTES CORPORATIVOS (TENANTS) */}
       {activeSubTab === 'VISTA_CLIENTES' && (
