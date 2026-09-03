@@ -93,13 +93,40 @@ export const mapDataToRelationalColumns = (data) => {
 };
 
 /**
- * Suscribe a una colección de Supabase con cambios en tiempo real filtrada por Tenant.
+ * Mapea una fila de PostgreSQL al objeto JS consumible por los módulos del ERP.
+ */
+export const formatRowToItem = (row, activeTenant = DEFAULT_TENANT_ID) => {
+  if (!row) return null;
+  const baseData = row.data && typeof row.data === 'object' ? row.data : {};
+  const item = {
+    ...baseData,
+    id: String(row.id || baseData.id || ''),
+    tenantId: row.tenant_id || baseData.tenantId || activeTenant
+  };
+
+  // Sincronizar campos relacionales explícitos si fueron mutados en la base de datos
+  if (row.stock !== undefined && row.stock !== null) item.stock = Number(row.stock);
+  if (row.unit_price !== undefined && row.unit_price !== null) item.unitPrice = Number(row.unit_price);
+  if (row.planned_cost !== undefined && row.planned_cost !== null) item.plannedCost = Number(row.planned_cost);
+  if (row.actual_cost !== undefined && row.actual_cost !== null) item.actualCost = Number(row.actual_cost);
+  if (row.total_cost !== undefined && row.total_cost !== null) item.totalCost = Number(row.total_cost);
+  if (row.status !== undefined && row.status !== null) item.status = row.status;
+  if (row.title !== undefined && row.title !== null) item.title = row.title;
+  if (row.name !== undefined && row.name !== null) item.name = row.name;
+
+  return item;
+};
+
+/**
+ * Suscribe a una colección de Supabase con cambios en tiempo real filtrada por Tenant
+ * utilizando un Motor de Actualización Delta en Memoria (Zero-Query Realtime Engine).
  */
 export const subscribeCollection = (collectionName, onUpdate, onError, constraints = [], tenantId = DEFAULT_TENANT_ID) => {
   const activeTenant = tenantId || DEFAULT_TENANT_ID;
   const tableName = getTableName(collectionName);
+  let currentItems = [];
 
-  // 1. Obtener datos iniciales de la tabla para este tenant
+  // 1. Obtener datos iniciales de la tabla para este tenant (Única consulta inicial)
   const fetchInitialData = async () => {
     try {
       let query = supabase
@@ -113,20 +140,17 @@ export const subscribeCollection = (collectionName, onUpdate, onError, constrain
       const { data, error } = await query;
       if (error) {
         console.warn(`[Supabase fetchInitialData] Error consultando ${tableName}:`, error.message);
+        currentItems = [];
         onUpdate([]);
         if (onError) onError(error);
         return;
       }
 
-      const items = (data || []).map(row => ({
-        ...(row.data || {}),
-        id: row.id,
-        tenantId: row.tenant_id || activeTenant
-      }));
-
-      onUpdate(items);
+      currentItems = (data || []).map(row => formatRowToItem(row, activeTenant));
+      onUpdate(currentItems);
     } catch (err) {
       console.warn(`[Supabase Multi-Tenant] Error leyendo ${tableName} (${activeTenant}):`, err);
+      currentItems = [];
       onUpdate([]);
       if (onError) onError(err);
     }
@@ -134,7 +158,47 @@ export const subscribeCollection = (collectionName, onUpdate, onError, constrain
 
   fetchInitialData();
 
-  // 2. Crear canal de tiempo real para escuchar eventos INSERT, UPDATE y DELETE
+  // 2. Manejador de Actualizaciones Delta en Tiempo Real (Realtime Delta Engine)
+  const handleRealtimeDelta = (payload) => {
+    const eventType = payload.eventType || payload.event;
+    const newRow = payload.new;
+    const oldRow = payload.old;
+
+    if (eventType === 'INSERT' || eventType === 'UPDATE') {
+      if (!newRow || !newRow.id) {
+        fetchInitialData();
+        return;
+      }
+
+      const updatedItem = formatRowToItem(newRow, activeTenant);
+      const existingIndex = currentItems.findIndex(item => String(item.id) === String(updatedItem.id));
+
+      if (existingIndex >= 0) {
+        currentItems = [
+          ...currentItems.slice(0, existingIndex),
+          { ...currentItems[existingIndex], ...updatedItem },
+          ...currentItems.slice(existingIndex + 1)
+        ];
+      } else {
+        currentItems = [updatedItem, ...currentItems];
+      }
+    } else if (eventType === 'DELETE') {
+      if (!oldRow || (!oldRow.id && !oldRow.data?.id)) {
+        fetchInitialData();
+        return;
+      }
+      const targetId = String(oldRow.id || oldRow.data?.id);
+      currentItems = currentItems.filter(item => String(item.id) !== targetId);
+    } else {
+      fetchInitialData();
+      return;
+    }
+
+    // Notificar actualización delta sin realizar ninguna consulta select(*) adicional a PostgreSQL
+    onUpdate([...currentItems]);
+  };
+
+  // 3. Crear canal de tiempo real para escuchar eventos INSERT, UPDATE y DELETE
   const channelName = `realtime_${tableName}_${activeTenant}_${Date.now()}`;
   const channel = supabase
     .channel(channelName)
@@ -146,9 +210,7 @@ export const subscribeCollection = (collectionName, onUpdate, onError, constrain
         table: tableName,
         filter: tableName !== 'users' ? `tenant_id=eq.${activeTenant}` : undefined
       },
-      () => {
-        fetchInitialData();
-      }
+      handleRealtimeDelta
     )
     .subscribe((status, err) => {
       if (status === 'SUBSCRIPTION_ERROR' && onError) {
@@ -174,13 +236,21 @@ const safeUpsertWithSchemaGuard = async (tableName, payload, options = { onConfl
     if (error.code === '42703' || error.message?.includes('column') || error.code === 'PGRST204') {
       console.warn(`[Schema Guard Protection] Columna no existente en ${tableName} (${error.message}). Reejecutando con respaldo en data (JSONB)...`);
       
-      // Fallback seguro: Usar únicamente el contrato base (id, tenant_id, data, updated_at)
+      // Fallback seguro: Usar únicamente el contrato base (id, tenant_id, data, updated_at) y columnas requeridas
       const safeFallbackPayload = {
         id: payload.id,
         tenant_id: payload.tenant_id,
         data: payload.data,
         updated_at: payload.updated_at || new Date().toISOString()
       };
+      if (payload.title) safeFallbackPayload.title = payload.title;
+      if (payload.name) safeFallbackPayload.name = payload.name;
+      if (payload.type) safeFallbackPayload.type = payload.type;
+      if (payload.status) safeFallbackPayload.status = payload.status;
+      if (payload.equipment_id) safeFallbackPayload.equipment_id = payload.equipment_id;
+      if (payload.material_id) safeFallbackPayload.material_id = payload.material_id;
+      if (payload.plant_id) safeFallbackPayload.plant_id = payload.plant_id;
+      if (payload.employee_id) safeFallbackPayload.employee_id = payload.employee_id;
 
       const { error: fallbackError } = await supabase
         .from(tableName)
@@ -521,5 +591,80 @@ export const getCollectionDocs = async (collectionName, tenantId = DEFAULT_TENAN
   } catch (err) {
     console.warn(`[Supabase Service Multi-Tenant] Error leyendo colección ${tableName} (${activeTenant}):`, err);
     return [];
+  }
+};
+
+/**
+ * Consulta paginada desde PostgreSQL (Server-Side Pagination & Filter Engine).
+ * Retorna un objeto con la página solicitada, metadatos de paginación y total de registros.
+ *
+ * @param {string} collectionName Nombre de la colección (ej: 'materials', 'workOrders')
+ * @param {number} [page=1] Número de página (1-based)
+ * @param {number} [pageSize=50] Cantidad de elementos por página
+ * @param {Object} [filters={}] Filtros opcionales (ej: { status: 'REL', category: 'SPARE', search: 'Filtro' })
+ * @param {string} [tenantId=DEFAULT_TENANT_ID] Tenant activo
+ * @returns {Promise<{ data: Array, totalCount: number, page: number, pageSize: number, totalPages: number }>}
+ */
+export const getPagedCollectionDocs = async (
+  collectionName,
+  page = 1,
+  pageSize = 50,
+  filters = {},
+  tenantId = DEFAULT_TENANT_ID
+) => {
+  const activeTenant = tenantId || DEFAULT_TENANT_ID;
+  const tableName = getTableName(collectionName);
+
+  const safePage = Math.max(1, Number(page) || 1);
+  const safePageSize = Math.max(1, Math.min(500, Number(pageSize) || 50));
+  const from = (safePage - 1) * safePageSize;
+  const to = from + safePageSize - 1;
+
+  try {
+    let query = supabase
+      .from(tableName)
+      .select('*', { count: 'exact' });
+
+    if (tableName !== 'users') {
+      query = query.eq('tenant_id', activeTenant);
+    }
+
+    if (filters.status) query = query.eq('status', filters.status);
+    if (filters.type) query = query.eq('type', filters.type);
+    if (filters.category) query = query.eq('category', filters.category);
+    if (filters.plantId) query = query.eq('plant_id', filters.plantId);
+    if (filters.equipmentId) query = query.eq('equipment_id', filters.equipmentId);
+    if (filters.search) {
+      const term = `%${filters.search}%`;
+      query = query.or(`id.ilike.${term},name.ilike.${term},title.ilike.${term}`);
+    }
+
+    query = query
+      .order('created_at', { ascending: false })
+      .range(from, to);
+
+    const { data, count, error } = await query;
+    if (error) throw error;
+
+    const totalCount = count || 0;
+    const totalPages = Math.ceil(totalCount / safePageSize) || 1;
+    const formattedItems = (data || []).map(row => formatRowToItem(row, activeTenant));
+
+    return {
+      data: formattedItems,
+      totalCount,
+      page: safePage,
+      pageSize: safePageSize,
+      totalPages
+    };
+  } catch (err) {
+    console.warn(`[Supabase Paged Query Error] ${tableName} (${activeTenant}):`, err);
+    return {
+      data: [],
+      totalCount: 0,
+      page: safePage,
+      pageSize: safePageSize,
+      totalPages: 1
+    };
   }
 };

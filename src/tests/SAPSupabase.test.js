@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { getTableName, tableNameMap } from '../services/supabaseService';
+import { getTableName, tableNameMap, formatRowToItem } from '../services/supabaseService';
 import { getActiveDbService } from '../services/dbService';
 
 describe('Integración de Base de Datos Supabase (Multi-Tenancy & Mapeo)', () => {
@@ -39,5 +39,26 @@ describe('Integración de Base de Datos Supabase (Multi-Tenancy & Mapeo)', () =>
 
     expect(formattedPayload.tenant_id).toBe('tenant_minera_atacama');
     expect(formattedPayload.data.tenantId).toBe('tenant_minera_atacama');
+  });
+
+  it('debe formatear filas de Supabase PostgreSQL a objetos JS del ERP con formatRowToItem', () => {
+    const rawRow = {
+      id: 'MAT-1001',
+      tenant_id: 'tenant_demo',
+      stock: 450,
+      unit_price: 12.50,
+      data: {
+        id: 'MAT-1001',
+        name: 'Filtro Aceite Hidráulico',
+        category: 'Filtros'
+      }
+    };
+
+    const formatted = formatRowToItem(rawRow, 'tenant_demo');
+    expect(formatted.id).toBe('MAT-1001');
+    expect(formatted.tenantId).toBe('tenant_demo');
+    expect(formatted.stock).toBe(450);
+    expect(formatted.unitPrice).toBe(12.50);
+    expect(formatted.name).toBe('Filtro Aceite Hidráulico');
   });
 });

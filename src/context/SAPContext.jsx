@@ -23,7 +23,11 @@ import {
 } from '../fixtures/sapInitialFixtures';
 import { validateChileanRUT } from '../utils/rutUtils';
 
-const SAPContext = createContext(null);
+export const UIContext = createContext(null);
+export const MMContext = createContext(null);
+export const PMContext = createContext(null);
+export const HCMContext = createContext(null);
+export const SAPContext = createContext(null);
 
 
 
@@ -1073,19 +1077,52 @@ export const SAPProvider = ({ children }) => {
     addToast('🗑️ Base de datos limpiada por completo a 0. Sistema listo para ingresar datos reales.', 'info');
   };
 
-  const contextValue = useMemo(() => ({
+  const uiValue = useMemo(() => ({
+    currentRole,
+    setCurrentRole,
+    themeMode,
+    setThemeMode,
+    activeTab,
+    setActiveTab,
+    searchTerm,
+    setSearchTerm,
+    globalToasts,
+    addToast,
+    tecoModalData,
+    setTecoModalData
+  }), [currentRole, themeMode, activeTab, searchTerm, globalToasts, tecoModalData, addToast]);
+
+  const mmValue = useMemo(() => ({
     plants,
     activePlant,
     setActivePlant,
     createPlant,
     materials,
+    purchaseOrders,
+    migoDocuments,
+    executeGoodsMovement,
+    createMaterial,
+    updateMaterial,
+    deleteMaterial
+  }), [plants, activePlant, materials, purchaseOrders, migoDocuments, executeGoodsMovement, createMaterial, updateMaterial, deleteMaterial]);
+
+  const pmValue = useMemo(() => ({
     assets,
     createAsset,
     updateAsset,
     notifications,
     workOrders,
-    purchaseOrders,
-    migoDocuments,
+    updateWorkOrderStatus,
+    issueComponentToWorkOrder,
+    createWorkOrder,
+    deleteWorkOrder,
+    deleteAsset,
+    deleteNotification,
+    createNotification,
+    convertNotificationToWO
+  }), [assets, createAsset, updateAsset, notifications, workOrders, updateWorkOrderStatus, issueComponentToWorkOrder, createWorkOrder, deleteWorkOrder, deleteAsset, deleteNotification, createNotification, convertNotificationToWO]);
+
+  const hcmValue = useMemo(() => ({
     employees,
     absences,
     payrollRuns,
@@ -1099,64 +1136,67 @@ export const SAPProvider = ({ children }) => {
     createAbsenceRequest,
     updateAbsenceStatus,
     processPayrollRun,
+    deleteEmployee
+  }), [employees, absences, payrollRuns, createEmployee, updateEmployee, reseedEmployees, updateEmployeeStatus, updateEmployeeCompliance, updateAssetExpirations, addFaenaAccreditation, createAbsenceRequest, updateAbsenceStatus, processPayrollRun, deleteEmployee]);
+
+  const contextValue = useMemo(() => ({
+    ...uiValue,
+    ...mmValue,
+    ...pmValue,
+    ...hcmValue,
     auditLogs,
-    currentRole,
-    setCurrentRole,
-    themeMode,
-    setThemeMode,
-    activeTab,
-    setActiveTab,
-    searchTerm,
-    setSearchTerm,
-    globalToasts,
-    addToast,
-    tecoModalData,
-    setTecoModalData,
-    executeGoodsMovement,
-    updateWorkOrderStatus,
-    issueComponentToWorkOrder,
-    createWorkOrder,
-    createMaterial,
-    updateMaterial,
-    deleteMaterial,
-    deleteWorkOrder,
-    deleteEmployee,
-    deleteAsset,
-    deleteNotification,
-    createNotification,
-    convertNotificationToWO,
     resetData,
     clearAllTenantData,
     injectMassiveActionSimulation
-  }), [
-    plants,
-    activePlant,
-    materials,
-    assets,
-    notifications,
-    workOrders,
-    purchaseOrders,
-    migoDocuments,
-    employees,
-    absences,
-    payrollRuns,
-    auditLogs,
-    currentRole,
-    themeMode,
-    activeTab,
-    searchTerm,
-    globalToasts,
-    tecoModalData,
-    addToast
-  ]);
+  }), [uiValue, mmValue, pmValue, hcmValue, auditLogs]);
 
   return (
-    <SAPContext.Provider value={contextValue}>
-      <div className={themeMode === 'dark' ? 'dark' : ''}>
-        {children}
-      </div>
-    </SAPContext.Provider>
+    <UIContext.Provider value={uiValue}>
+      <MMContext.Provider value={mmValue}>
+        <PMContext.Provider value={pmValue}>
+          <HCMContext.Provider value={hcmValue}>
+            <SAPContext.Provider value={contextValue}>
+              <div className={themeMode === 'dark' ? 'dark' : ''}>
+                {children}
+              </div>
+            </SAPContext.Provider>
+          </HCMContext.Provider>
+        </PMContext.Provider>
+      </MMContext.Provider>
+    </UIContext.Provider>
   );
+};
+
+export const useUI = () => {
+  const context = useContext(UIContext);
+  if (!context) {
+    throw new Error('useUI debe ser usado dentro de un SAPProvider');
+  }
+  return context;
+};
+
+export const useMM = () => {
+  const context = useContext(MMContext);
+  if (!context) {
+    throw new Error('useMM debe ser usado dentro de un SAPProvider');
+  }
+  return context;
+};
+
+export const usePM = () => {
+  const context = useContext(PMContext);
+  if (!context) {
+    throw new Error('usePM debe ser usado dentro de un SAPProvider');
+  }
+  return context;
+};
+
+export const useHCM = () => {
+  const context = useContext(HCMContext);
+  if (!context) {
+    throw new Error('useHCM debe ser usado dentro de un SAPProvider');
+  }
+  return context;
 };
 
 export const useSAP = () => {

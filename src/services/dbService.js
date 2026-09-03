@@ -94,6 +94,10 @@ export const getCollectionDocs = async (collectionName, tenantId = DEFAULT_TENAN
   return await getActiveDbService().getCollectionDocs(collectionName, tenantId);
 };
 
+export const getPagedCollectionDocs = async (collectionName, page = 1, pageSize = 50, filters = {}, tenantId = DEFAULT_TENANT_ID) => {
+  return await getActiveDbService().getPagedCollectionDocs(collectionName, page, pageSize, filters, tenantId);
+};
+
 export const getTenantDocRef = (collectionName, docId, tenantId = DEFAULT_TENANT_ID) => {
   return firestoreService.getTenantDocRef(collectionName, docId, tenantId);
 };
