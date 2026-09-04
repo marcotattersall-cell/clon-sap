@@ -14,6 +14,7 @@ import {
   ChevronDown,
   Layers,
   ShieldAlert,
+  ShieldCheck,
   Database,
   Building2,
   CheckCircle2,
@@ -30,6 +31,8 @@ import {
   LayoutGrid,
   ArrowRight
 } from 'lucide-react';
+import { getPendingApprovals } from '../../services/approvalWorkflowService';
+import ApprovalInboxModal from '../modals/ApprovalInboxModal';
 
 export const FioriHeader = ({ onOpenCreateWO, onOpenCreateMaterial, onOpenCreateMIGO, onOpenAuthModal, onOpenCreatePlant, onOpenCreateEmployee, onOpenReportModal }) => {
   const {
@@ -53,6 +56,7 @@ export const FioriHeader = ({ onOpenCreateWO, onOpenCreateMaterial, onOpenCreate
   const [showNotifications, setShowNotifications] = useState(false);
   const [showUserMenu, setShowUserMenu] = useState(false);
   const [showQuickActions, setShowQuickActions] = useState(false);
+  const [isApprovalModalOpen, setIsApprovalModalOpen] = useState(false);
   const [deferredPrompt, setDeferredPrompt] = useState(null);
   const [isResendingHeaderEmail, setIsResendingHeaderEmail] = useState(false);
   const [isCheckingHeaderEmail, setIsCheckingHeaderEmail] = useState(false);
@@ -613,6 +617,22 @@ export const FioriHeader = ({ onOpenCreateWO, onOpenCreateMaterial, onOpenCreate
             )}
           </div>
 
+          {/* ⚡ SAP Approval Inbox ME28 Button */}
+          <div className="relative">
+            <button
+              onClick={() => setIsApprovalModalOpen(true)}
+              className="p-2 rounded-lg bg-blue-50 hover:bg-blue-100 text-blue-700 relative transition-colors border border-blue-200"
+              title="Centro de Liberaciones y Aprobaciones SAP (ME28)"
+            >
+              <ShieldCheck className="w-4 h-4 text-blue-600" />
+              {getPendingApprovals(user?.tenantId || 'tenant_demo').length > 0 && (
+                <span className="absolute -top-1 -right-1 bg-amber-500 text-slate-950 text-[10px] font-black w-4 h-4 rounded-full flex items-center justify-center ring-2 ring-white animate-pulse">
+                  {getPendingApprovals(user?.tenantId || 'tenant_demo').length}
+                </span>
+              )}
+            </button>
+          </div>
+
           {/* Real-time Notifications Bell */}
           <div className="relative">
             <button
@@ -963,7 +983,13 @@ export const FioriHeader = ({ onOpenCreateWO, onOpenCreateMaterial, onOpenCreate
             </div>
           </div>
         </div>
-      )}
+      {/* ⚡ MODAL DE APROBACIONES & ESTRATEGIA DE LIBERACIÓN SAP (ME28) */}
+      <ApprovalInboxModal
+        isOpen={isApprovalModalOpen}
+        onClose={() => setIsApprovalModalOpen(false)}
+        user={user}
+        tenantId={user?.tenantId || 'tenant_demo'}
+      />
     </header>
   );
 };
