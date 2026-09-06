@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import AxomiraLogo from '../common/AxomiraLogo';
+import { RequestDemoModal } from '../modals/RequestDemoModal';
 import { 
   ShieldCheck, 
   Zap, 
@@ -21,11 +22,13 @@ import {
   ChevronRight,
   Globe,
   Sliders,
-  Play
+  Play,
+  LogIn
 } from 'lucide-react';
 
 export function LandingPage({ onEnterERP }) {
   const [activeTab, setActiveTab] = useState('features');
+  const [isDemoModalOpen, setIsDemoModalOpen] = useState(false);
 
   return (
     <div className="min-h-screen bg-slate-950 text-slate-100 font-sans selection:bg-sky-500 selection:text-white overflow-x-hidden">
@@ -51,12 +54,13 @@ export function LandingPage({ onEnterERP }) {
           <div className="flex items-center space-x-3">
             <button
               onClick={onEnterERP}
-              className="bg-slate-900 hover:bg-slate-800 text-slate-200 text-xs font-bold px-3.5 py-2 rounded-xl border border-slate-700 transition-all hidden sm:block"
+              className="bg-slate-900 hover:bg-slate-800 text-slate-200 text-xs font-bold px-4 py-2 rounded-xl border border-slate-700 hover:border-slate-500 transition-all flex items-center space-x-1.5 cursor-pointer uppercase tracking-wider"
             >
-              Iniciar Sesión
+              <LogIn className="w-3.5 h-3.5 text-sky-400" />
+              <span>SIGN IN</span>
             </button>
             <button
-              onClick={onEnterERP}
+              onClick={() => setIsDemoModalOpen(true)}
               className="bg-sky-500 hover:bg-sky-400 text-slate-950 text-xs font-black px-4 py-2 rounded-xl shadow-lg shadow-sky-500/20 transition-all flex items-center space-x-1.5 cursor-pointer uppercase tracking-wider"
             >
               <span>SOLICITAR DEMO</span>
@@ -104,18 +108,18 @@ export function LandingPage({ onEnterERP }) {
           {/* Call to Actions */}
           <div className="flex flex-col sm:flex-row justify-center gap-4 mb-12">
             <button
-              onClick={onEnterERP}
+              onClick={() => setIsDemoModalOpen(true)}
               className="bg-sky-500 hover:bg-sky-400 text-slate-950 font-black text-sm px-6 py-3.5 rounded-2xl shadow-xl shadow-sky-500/25 transition-all flex items-center justify-center space-x-2 cursor-pointer uppercase tracking-wider"
             >
-              <span>SOLICITAR DEMO (ACCESO INSTANTÁNEO)</span>
+              <span>SOLICITAR DEMO (FORMULARIO CORPORATIVO)</span>
               <ArrowRight className="w-4 h-4" />
             </button>
             <button
               onClick={onEnterERP}
               className="bg-slate-900 hover:bg-slate-800 text-slate-200 font-bold text-sm px-6 py-3.5 rounded-2xl border border-slate-800 flex items-center justify-center space-x-2 transition-all cursor-pointer"
             >
-              <Play className="w-4 h-4 text-sky-400 fill-sky-400" />
-              <span>Ver Flujo Transaccional</span>
+              <LogIn className="w-4 h-4 text-sky-400" />
+              <span>SIGN IN (INGRESAR AL SISTEMA)</span>
             </button>
           </div>
 
@@ -494,6 +498,13 @@ export function LandingPage({ onEnterERP }) {
           </div>
         </div>
       </footer>
+
+      {/* 8. REQUEST DEMO MODAL FORM */}
+      <RequestDemoModal
+        isOpen={isDemoModalOpen}
+        onClose={() => setIsDemoModalOpen(false)}
+        onEnterERP={onEnterERP}
+      />
 
     </div>
   );
