@@ -19,6 +19,7 @@ export const tableNameMap = {
   payrollRuns: 'payroll_runs',
   auditLogs: 'audit_logs',
   telemetryLogs: 'telemetry_logs',
+  demoRequests: 'demo_requests',
   users: 'users',
   tenants: 'tenants'
 };
@@ -47,6 +48,19 @@ export const mapDataToRelationalColumns = (data) => {
   if (data.type) rel.type = data.type;
   if (data.category) rel.category = data.category;
   if (data.location) rel.location = data.location;
+
+  // Demo Requests
+  if (data.ticketId) rel.ticket_id = data.ticketId;
+  if (data.fullName) rel.full_name = data.fullName;
+  if (data.email) rel.email = data.email;
+  if (data.company) rel.company = data.company;
+  if (data.industry) rel.industry = data.industry;
+  if (data.employeeCount) rel.employee_count = data.employeeCount;
+  if (data.phone) rel.phone = data.phone;
+  if (data.primaryModule) rel.primary_module = data.primaryModule;
+  if (data.assetCount) rel.asset_count = data.assetCount;
+  if (data.notes) rel.notes = data.notes;
+  if (data.responseNotes) rel.response_notes = data.responseNotes;
 
   // Assets
   if (data.healthScore !== undefined) rel.health_score = Number(data.healthScore);
@@ -113,6 +127,19 @@ export const formatRowToItem = (row, activeTenant = DEFAULT_TENANT_ID) => {
   if (row.status !== undefined && row.status !== null) item.status = row.status;
   if (row.title !== undefined && row.title !== null) item.title = row.title;
   if (row.name !== undefined && row.name !== null) item.name = row.name;
+
+  // Demo Requests
+  if (row.ticket_id) item.ticketId = row.ticket_id;
+  if (row.full_name) item.fullName = row.full_name;
+  if (row.email) item.email = row.email;
+  if (row.company) item.company = row.company;
+  if (row.industry) item.industry = row.industry;
+  if (row.employee_count) item.employeeCount = row.employee_count;
+  if (row.phone) item.phone = row.phone;
+  if (row.primary_module) item.primaryModule = row.primary_module;
+  if (row.asset_count) item.assetCount = row.asset_count;
+  if (row.notes) item.notes = row.notes;
+  if (row.response_notes) item.responseNotes = row.response_notes;
 
   return item;
 };
@@ -251,6 +278,10 @@ const safeUpsertWithSchemaGuard = async (tableName, payload, options = { onConfl
       if (payload.material_id) safeFallbackPayload.material_id = payload.material_id;
       if (payload.plant_id) safeFallbackPayload.plant_id = payload.plant_id;
       if (payload.employee_id) safeFallbackPayload.employee_id = payload.employee_id;
+      if (payload.ticket_id) safeFallbackPayload.ticket_id = payload.ticket_id;
+      if (payload.full_name) safeFallbackPayload.full_name = payload.full_name;
+      if (payload.email) safeFallbackPayload.email = payload.email;
+      if (payload.company) safeFallbackPayload.company = payload.company;
 
       const { error: fallbackError } = await supabase
         .from(tableName)

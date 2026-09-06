@@ -10,6 +10,7 @@ describe('Integración de Base de Datos Supabase (Multi-Tenancy & Mapeo)', () =>
     expect(getTableName('payrollRuns')).toBe('payroll_runs');
     expect(getTableName('auditLogs')).toBe('audit_logs');
     expect(getTableName('telemetryLogs')).toBe('telemetry_logs');
+    expect(getTableName('demoRequests')).toBe('demo_requests');
     expect(getTableName('materials')).toBe('materials');
     expect(getTableName('plants')).toBe('plants');
     expect(getTableName('assets')).toBe('assets');

@@ -211,6 +211,27 @@ CREATE TABLE IF NOT EXISTS public.telemetry_logs (
     updated_at TIMESTAMPTZ DEFAULT NOW()
 );
 
+-- 15. Tabla de Solicitudes de DEMO Corporativa (Demo Requests)
+CREATE TABLE IF NOT EXISTS public.demo_requests (
+    id TEXT PRIMARY KEY,
+    ticket_id TEXT UNIQUE NOT NULL,
+    full_name TEXT NOT NULL,
+    email TEXT NOT NULL,
+    company TEXT NOT NULL,
+    industry TEXT,
+    employee_count TEXT,
+    phone TEXT,
+    primary_module TEXT,
+    asset_count TEXT,
+    notes TEXT,
+    status TEXT DEFAULT 'Pendiente',
+    response_notes TEXT,
+    tenant_id TEXT REFERENCES public.tenants(id) ON DELETE CASCADE DEFAULT 'tenant_demo',
+    data JSONB NOT NULL DEFAULT '{}'::jsonb,
+    created_at TIMESTAMPTZ DEFAULT NOW(),
+    updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
 -- ====================================================================
 -- CREAR ÍNDICES DE CLAVE FORÁNEA Y RENDIMIENTO MULTI-TENANT
 -- ====================================================================
@@ -236,6 +257,9 @@ CREATE INDEX IF NOT EXISTS idx_payroll_runs_employee ON public.payroll_runs(empl
 CREATE INDEX IF NOT EXISTS idx_audit_logs_tenant ON public.audit_logs(tenant_id);
 CREATE INDEX IF NOT EXISTS idx_telemetry_logs_tenant ON public.telemetry_logs(tenant_id);
 CREATE INDEX IF NOT EXISTS idx_telemetry_logs_equipment ON public.telemetry_logs(equipment_id);
+CREATE INDEX IF NOT EXISTS idx_demo_requests_ticket ON public.demo_requests(ticket_id);
+CREATE INDEX IF NOT EXISTS idx_demo_requests_status ON public.demo_requests(status);
+CREATE INDEX IF NOT EXISTS idx_demo_requests_email ON public.demo_requests(email);
 
 -- ====================================================================
 -- ROW LEVEL SECURITY (RLS) PARA ACCESO PÚBLICO/ANON (O AUTENTICADO)
@@ -254,6 +278,7 @@ ALTER TABLE public.absences ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.payroll_runs ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.audit_logs ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.telemetry_logs ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.demo_requests ENABLE ROW LEVEL SECURITY;
 
 CREATE POLICY "Acceso total a tenants" ON public.tenants FOR ALL USING (true);
 CREATE POLICY "Acceso total a users" ON public.users FOR ALL USING (true);
@@ -269,6 +294,7 @@ CREATE POLICY "Acceso total a absences" ON public.absences FOR ALL USING (true);
 CREATE POLICY "Acceso total a payroll_runs" ON public.payroll_runs FOR ALL USING (true);
 CREATE POLICY "Acceso total a audit_logs" ON public.audit_logs FOR ALL USING (true);
 CREATE POLICY "Acceso total a telemetry_logs" ON public.telemetry_logs FOR ALL USING (true);
+CREATE POLICY "Acceso total a demo_requests" ON public.demo_requests FOR ALL USING (true);
 
 -- ====================================================================
 -- ACTIVAR SUPABASE REALTIME EN LAS TABLAS DE CLON SAP
@@ -285,3 +311,5 @@ ALTER PUBLICATION supabase_realtime ADD TABLE public.absences;
 ALTER PUBLICATION supabase_realtime ADD TABLE public.payroll_runs;
 ALTER PUBLICATION supabase_realtime ADD TABLE public.audit_logs;
 ALTER PUBLICATION supabase_realtime ADD TABLE public.telemetry_logs;
+ALTER PUBLICATION supabase_realtime ADD TABLE public.demo_requests;
+

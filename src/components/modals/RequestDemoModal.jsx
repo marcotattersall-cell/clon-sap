@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import AxomiraLogo from '../common/AxomiraLogo';
+import { upsertDocument } from '../../services/dbService';
 import { 
   X, 
   Send, 
@@ -78,6 +79,10 @@ export function RequestDemoModal({ isOpen, onClose, onEnterERP }) {
       };
 
       try {
+        upsertDocument('demoRequests', ticketId, newRequest).catch(err => {
+          console.warn('[RequestDemoModal] Warning syncing demo request to Supabase:', err);
+        });
+
         const stored = JSON.parse(localStorage.getItem('axomira_demo_requests') || '[]');
         const updated = [newRequest, ...stored];
         localStorage.setItem('axomira_demo_requests', JSON.stringify(updated));

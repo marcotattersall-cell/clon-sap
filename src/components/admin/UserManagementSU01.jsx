@@ -3,6 +3,7 @@ import { useSAP } from '../../context/SAPContext';
 import { useAuth } from '../../context/AuthContext';
 import { RBAC_PERMISSIONS, SAP_ROLES } from '../../utils/rbacRules';
 import { GlobalTenantDashboard } from './GlobalTenantDashboard';
+import { upsertDocument, deleteDocument, subscribeCollection } from '../../services/dbService';
 import {
   Users,
   ShieldCheck,
@@ -432,15 +433,16 @@ export const UserManagementSU01 = () => {
     e.preventDefault();
     if (!editingDemoReq) return;
 
-    setDemoRequests(prev => prev.map(r => {
-      if (r.id === editingDemoReq.id) {
-        return {
-          ...r,
-          ...editDemoForm
-        };
-      }
-      return r;
-    }));
+    const updatedData = {
+      ...editingDemoReq,
+      ...editDemoForm
+    };
+
+    upsertDocument('demoRequests', editingDemoReq.ticketId, updatedData).catch(err => {
+      console.warn('[UserManagementSU01] Warning syncing demo request to Supabase:', err);
+    });
+
+    setDemoRequests(prev => prev.map(r => r.id === editingDemoReq.id ? updatedData : r));
 
     addToast(`✏️ Solicitud ${editingDemoReq.ticketId} actualizada correctamente.`, 'success');
     setIsEditDemoModalOpen(false);
@@ -532,20 +534,22 @@ AXOMIRA Cloud ERP Enterprise`;
     const mailtoUrl = `mailto:${encodeURIComponent(emailTo)}?subject=${encodeURIComponent(emailSubject)}&body=${encodeURIComponent(emailBody)}`;
     window.open(mailtoUrl, '_blank');
 
+    const nextStatus = autoMarkRespondido ? 'Respondido' : respondingDemoReq.status;
+    const newNote = `[${new Date().toLocaleDateString()}] Correo enviado: "${emailSubject}"`;
+    const updatedNotes = respondingDemoReq.responseNotes ? `${respondingDemoReq.responseNotes}\n${newNote}` : newNote;
+
+    const updatedData = {
+      ...respondingDemoReq,
+      status: nextStatus,
+      responseNotes: updatedNotes
+    };
+
+    upsertDocument('demoRequests', respondingDemoReq.ticketId, updatedData).catch(err => {
+      console.warn('[UserManagementSU01] Warning syncing demo response to Supabase:', err);
+    });
+
     // Update state
-    setDemoRequests(prev => prev.map(r => {
-      if (r.id === respondingDemoReq.id) {
-        const nextStatus = autoMarkRespondido ? 'Respondido' : r.status;
-        const newNote = `[${new Date().toLocaleDateString()}] Correo enviado: "${emailSubject}"`;
-        const updatedNotes = r.responseNotes ? `${r.responseNotes}\n${newNote}` : newNote;
-        return {
-          ...r,
-          status: nextStatus,
-          responseNotes: updatedNotes
-        };
-      }
-      return r;
-    }));
+    setDemoRequests(prev => prev.map(r => r.id === respondingDemoReq.id ? updatedData : r));
 
     addToast(`📧 Respuesta preparada y enviada por correo para ${respondingDemoReq.company}.`, 'success');
     setIsEmailModalOpen(false);
@@ -553,6 +557,9 @@ AXOMIRA Cloud ERP Enterprise`;
 
   const handleDeleteDemoReq = (ticketId, companyName) => {
     if (window.confirm(`¿Está seguro de eliminar la solicitud ${ticketId} de ${companyName}?`)) {
+      deleteDocument('demoRequests', ticketId).catch(err => {
+        console.warn('[UserManagementSU01] Warning deleting demo request from Supabase:', err);
+      });
       setDemoRequests(prev => prev.filter(r => r.ticketId !== ticketId));
       addToast(`🗑️ Solicitud ${ticketId} eliminada del sistema.`, 'info');
     }
