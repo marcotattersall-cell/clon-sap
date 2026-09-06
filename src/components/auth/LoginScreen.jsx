@@ -350,9 +350,23 @@ export const LoginScreen = () => {
                 </div>
 
                 {(localError || authError) && (
-                  <div className="p-3 rounded-lg bg-rose-50 dark:bg-rose-950/70 border border-rose-300 dark:border-rose-800 text-rose-800 dark:text-rose-200 text-xs flex items-start space-x-2 animate-in fade-in">
-                    <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
-                    <span>{localError || authError}</span>
+                  <div className="p-3.5 rounded-xl bg-rose-950/80 border border-rose-700/80 text-rose-200 text-xs space-y-2 animate-in fade-in">
+                    <div className="flex items-start space-x-2">
+                      <AlertCircle className="w-4 h-4 shrink-0 text-rose-400 mt-0.5" />
+                      <span className="font-medium leading-relaxed">{localError || authError}</span>
+                    </div>
+                    {(localError || authError)?.includes('Dominio no autorizado') && (
+                      <div className="mt-2 pt-2 border-t border-rose-800/80 text-[11px] text-rose-300 space-y-1 font-mono">
+                        <p className="font-bold text-amber-300">💡 Pasos para solucionar en Firebase Console:</p>
+                        <ol className="list-decimal list-inside space-y-1 text-slate-300">
+                          <li>Abre la <a href="https://console.firebase.google.com" target="_blank" rel="noreferrer" className="underline text-sky-400 font-bold">Firebase Console</a>.</li>
+                          <li>Selecciona el proyecto <strong>clon-sap-2026</strong>.</li>
+                          <li>Ir a <strong>Authentication ➔ Settings ➔ Authorized Domains</strong>.</li>
+                          <li>Haz clic en <strong>Agregar Dominio</strong> e ingresa: <code className="bg-slate-900 px-1 py-0.5 rounded text-amber-300 font-bold">operam-erp-enterprise.web.app</code>.</li>
+                        </ol>
+                        <p className="text-slate-400 pt-1">💡 Mientras tanto, puedes usar el botón <strong>"Entrar como Administrador Universal"</strong> para ingresar inmediatamente.</p>
+                      </div>
+                    )}
                   </div>
                 )}
 
