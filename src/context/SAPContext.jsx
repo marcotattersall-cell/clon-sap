@@ -83,7 +83,7 @@ export const SAPProvider = ({ children }) => {
   }, []);
 
   // Generador de Simulación Masiva en Vivo (Transacciones Instantáneas ERP)
-  const injectMassiveActionSimulation = () => {
+  const injectMassiveActionSimulation = useCallback(() => {
     // 1. Inyectar Órdenes de Trabajo PM
     const newWOs = Array.from({ length: 10 }, (_, i) => ({
       id: `WO-9001${i + 10}`,
@@ -130,7 +130,7 @@ export const SAPProvider = ({ children }) => {
     setMigoDocuments(prev => [...newMigoDocs, ...prev]);
 
     addToast('⚡ 25 Transacciones de Mantenimiento (PM) y Almacén (MM) inyectadas en vivo.', 'success');
-  };
+  }, [addToast]);
 
   // Real-Time Subscriptions & Dynamic Sync per Tenant
   useEffect(() => {
@@ -224,7 +224,7 @@ export const SAPProvider = ({ children }) => {
   }, []);
 
   // MIGO Goods Movement Transaction engine (Types 101, 261, 311)
-  const executeGoodsMovement = async ({ movementType, materialId, qty, storageLocation, targetStorageLocation, refDocument, notes: _notes }) => {
+  const executeGoodsMovement = useCallback(async ({ movementType, materialId, qty, storageLocation, targetStorageLocation, refDocument, notes: _notes }) => {
     const quantity = Number(qty);
     if (!materialId || isNaN(quantity) || quantity <= 0) {
       addToast('Error en MIGO: Debe especificar un material y una cantidad válida.', 'error');
@@ -298,10 +298,11 @@ export const SAPProvider = ({ children }) => {
       addToast(`Falla Transaccional MIGO: ${err.message || 'Error al procesar la transacción atómica.'}`, 'error');
       return false;
     }
-  };
+  }, [materials, addToast]);
+
 
   // Work Order Status Update & Workflow Audit Traceability
-  const updateWorkOrderStatus = (woId, newStatus, userName = 'Marco Vidal (Especialista PM)', comment = '') => {
+  const updateWorkOrderStatus = useCallback((woId, newStatus, userName = 'Marco Vidal (Especialista PM)', comment = '') => {
     const wo = workOrders.find(w => w.id === woId);
     if (!wo) return;
 
@@ -348,10 +349,10 @@ export const SAPProvider = ({ children }) => {
     } else {
       addToast(`Estado de OT ${woId} actualizado a [${newStatus}] por ${userName}.`, 'info');
     }
-  };
+  }, [workOrders, addToast]);
 
   // Issue Material Component to Work Order
-  const issueComponentToWorkOrder = (woId, materialId, qty) => {
+  const issueComponentToWorkOrder = useCallback((woId, materialId, qty) => {
     const quantity = Number(qty);
     if (isNaN(quantity) || quantity <= 0) {
       addToast(`❌ Cantidad de repuesto a consumir inválida. Debe ser un número mayor a 0.`, 'error');
@@ -367,10 +368,10 @@ export const SAPProvider = ({ children }) => {
       refDocument: woId
     });
     return success;
-  };
+  }, [workOrders, executeGoodsMovement, addToast]);
 
   // Create Work Order
-  const createWorkOrder = (newWO) => {
+  const createWorkOrder = useCallback((newWO) => {
     // ⛔ IW31-E001: El equipo debe existir en la base de datos de Activos (IE03)
     const targetAssetExists = (assets || []).some(a => {
       if (!newWO.equipmentId) return false;
@@ -450,9 +451,7 @@ export const SAPProvider = ({ children }) => {
         { id: 2, text: 'Ejecución de trabajos de mantenimiento', duration: 3.0, assigned: newWO.assignedTech, status: 'Pending' }
       ],
       components: newWO.components || [],
-      logs: [
-        { timestamp: new Date().toLocaleString('es-CL'), user: 'OPERADOR SISTEMA', text: `Orden ${nextId} creada con Reserva de Almacén ${reservationNum}.` }
-      ],
+      logs: [],
       ...newWO
     };
 
@@ -495,10 +494,10 @@ export const SAPProvider = ({ children }) => {
 
     addToast(`✅ Nueva Orden de Trabajo ${nextId} guardada con éxito con Reserva Almacén ${reservationNum}.`, 'success');
     return true;
-  };
+  }, [assets, employees, workOrders, addToast]);
 
   // Delete Work Order
-  const deleteWorkOrder = (woId) => {
+  const deleteWorkOrder = useCallback((woId) => {
     const wo = workOrders.find(w => w.id === woId);
     setWorkOrders(prev => prev.filter(w => w.id !== woId));
     deleteDocument('workOrders', woId);
@@ -511,10 +510,10 @@ export const SAPProvider = ({ children }) => {
     });
     addToast(`🗑️ Orden de Trabajo ${woId} eliminada correctamente del sistema.`, 'info');
     return true;
-  };
+  }, [workOrders, addToast]);
 
   // Add new Material
-  const createMaterial = (newMat) => {
+  const createMaterial = useCallback((newMat) => {
     const id = newMat.id || `MAT-${Math.floor(1000 + Math.random() * 9000)}`;
     const formattedMat = {
       ...newMat,
@@ -529,10 +528,10 @@ export const SAPProvider = ({ children }) => {
     upsertDocument('materials', id, formattedMat);
     addToast(`✅ Material ${formattedMat.id} (${formattedMat.name}) guardado con éxito en Maestro de Materiales.`, 'success');
     return formattedMat;
-  };
+  }, [addToast]);
 
   // Update Material
-  const updateMaterial = (matId, updatedFields) => {
+  const updateMaterial = useCallback((matId, updatedFields) => {
     const mat = materials.find(m => m.id === matId);
     if (!mat) return false;
     const updatedMat = { ...mat, ...updatedFields };
@@ -540,10 +539,10 @@ export const SAPProvider = ({ children }) => {
     upsertDocument('materials', matId, updatedMat);
     addToast(`✏️ Material ${matId} (${updatedMat.name}) modificado con éxito.`, 'success');
     return true;
-  };
+  }, [materials, addToast]);
 
   // Delete Material (Con Validaciones Estrictas de Negocio MM/PM)
-  const deleteMaterial = (matId) => {
+  const deleteMaterial = useCallback((matId) => {
     const mat = materials.find(m => m.id === matId);
     if (!mat) {
       addToast('❌ El material especificado no existe en el catálogo.', 'error');
@@ -581,11 +580,11 @@ export const SAPProvider = ({ children }) => {
     });
     addToast(`🗑️ Material ${matId} (${mat.name}) desincorporado correctamente del maestro.`, 'info');
     return true;
-  };
+  }, [materials, workOrders, addToast]);
 
 
   // Delete Employee
-  const deleteEmployee = (empId) => {
+  const deleteEmployee = useCallback((empId) => {
     const emp = employees.find(e => e.id === empId);
     setEmployees(prev => prev.filter(e => e.id !== empId));
     deleteDocument('employees', empId);
@@ -598,10 +597,10 @@ export const SAPProvider = ({ children }) => {
     });
     addToast(`🗑️ Ficha de colaborador ${empId} (${emp?.name || ''}) eliminada correctamente.`, 'info');
     return true;
-  };
+  }, [employees, addToast]);
 
   // Delete Asset / Equipment
-  const deleteAsset = (assetId) => {
+  const deleteAsset = useCallback((assetId) => {
     const asset = assets.find(a => a.id === assetId);
     setAssets(prev => prev.filter(a => a.id !== assetId));
     deleteDocument('assets', assetId);
@@ -614,18 +613,18 @@ export const SAPProvider = ({ children }) => {
     });
     addToast(`🗑️ Equipo/Vehículo ${assetId} (${asset?.name || ''}) eliminado correctamente de la flota.`, 'info');
     return true;
-  };
+  }, [assets, addToast]);
 
   // Delete Notification
-  const deleteNotification = (notifId) => {
+  const deleteNotification = useCallback((notifId) => {
     setNotifications(prev => prev.filter(n => n.id !== notifId));
     deleteDocument('notifications', notifId);
     addToast(`🗑️ Aviso de Mantenimiento ${notifId} eliminado correctamente.`, 'info');
     return true;
-  };
+  }, [addToast]);
 
   // Add new Notification
-  const createNotification = (newNotif) => {
+  const createNotification = useCallback((newNotif) => {
     const nextId = `NOT-2026-00${notifications.length + 1}`;
     const formatted = {
       id: nextId,
@@ -636,10 +635,10 @@ export const SAPProvider = ({ children }) => {
     setNotifications(prev => [formatted, ...prev]);
     upsertDocument('notifications', nextId, formatted);
     addToast(`✅ Aviso de Mantenimiento ${nextId} guardado con éxito.`, 'success');
-  };
+  }, [notifications, addToast]);
 
   // Convert Notification to Work Order
-  const convertNotificationToWO = (notifId) => {
+  const convertNotificationToWO = useCallback((notifId) => {
     const notif = notifications.find(n => n.id === notifId);
     if (!notif) return;
 
@@ -661,10 +660,10 @@ export const SAPProvider = ({ children }) => {
     setNotifications(prev => prev.map(n => n.id === notifId ? updatedNotif : n));
     upsertDocument('notifications', notifId, updatedNotif);
     addToast(`🔗 Aviso ${notifId} vinculado y convertido a la Orden ${nextWOId}.`, 'success');
-  };
+  }, [notifications, workOrders, createWorkOrder, addToast]);
 
   // Add new Asset / Fleet Equipment
-  const createAsset = (newAsset) => {
+  const createAsset = useCallback((newAsset) => {
     const nextId = newAsset.id || `EQ-${100 + assets.length + 1}`;
 
     // ⛔ UNICIDAD DE PATENTE / ID: No se permite registrar patente o ID duplicada en la flota
@@ -706,11 +705,11 @@ export const SAPProvider = ({ children }) => {
     upsertDocument('assets', nextId, formattedAsset);
     addToast(`Nuevo equipo ${nextId} (${formattedAsset.name}) ingresado a la flota con éxito!`, 'success');
     return formattedAsset;
-  };
+  }, [assets, addToast]);
 
 
   // Update Existing Asset Record (IE02 - Modificación de Equipo)
-  const updateAsset = (assetId, updatedFields) => {
+  const updateAsset = useCallback((assetId, updatedFields) => {
     const existing = assets.find(a => a.id === assetId);
     if (!existing) return false;
 
@@ -745,10 +744,10 @@ export const SAPProvider = ({ children }) => {
     });
     addToast(`✅ Equipo ${assetId} (${mergedAsset.name}) actualizado con éxito en Maestro IE02.`, 'success');
     return mergedAsset;
-  };
+  }, [assets, addToast]);
 
   // Add new Plant Center
-  const createPlant = (newPlant) => {
+  const createPlant = useCallback((newPlant) => {
     const nextCode = newPlant.id || `000${plants.length + 1}`;
     const formattedPlant = {
       id: nextCode,
@@ -762,10 +761,10 @@ export const SAPProvider = ({ children }) => {
     setActivePlant(formattedPlant);
     upsertDocument('plants', nextCode, formattedPlant);
     addToast(`Nuevo Centro ${formattedPlant.id} (${formattedPlant.name}) creado exitosamente!`, 'success');
-  };
+  }, [plants, addToast]);
 
   // HCM: Create New Employee (PA30)
-  const createEmployee = (newEmp) => {
+  const createEmployee = useCallback((newEmp) => {
     // 🇨🇱 VALIDACIÓN DE RUT CHILENO (Módulo 11)
     if (newEmp.rut) {
       const rutCheck = validateChileanRUT(newEmp.rut);
@@ -829,20 +828,20 @@ export const SAPProvider = ({ children }) => {
     upsertDocument('employees', nextId, formatted);
     addToast(`Empleado ${nextId} (${formatted.name}) registrado en el Maestro de Personal HCM (#rrhh-personal).`, 'success');
     return true;
-  };
+  }, [employees, addToast]);
 
   // HCM: Update Employee Status
-  const updateEmployeeStatus = (empId, newStatus) => {
+  const updateEmployeeStatus = useCallback((empId, newStatus) => {
     const emp = employees.find(e => e.id === empId);
     if (!emp) return;
     const updated = { ...emp, status: newStatus };
     setEmployees(prev => prev.map(e => e.id === empId ? updated : e));
     upsertDocument('employees', empId, updated);
     addToast(`Estado de empleado ${emp.name} cambiado a [${newStatus}].`, 'info');
-  };
+  }, [employees, addToast]);
 
   // HCM: Update / Edit Full Employee Record (PA30)
-  const updateEmployee = (empId, updatedFields) => {
+  const updateEmployee = useCallback((empId, updatedFields) => {
     const emp = employees.find(e => e.id === empId);
     if (!emp) {
       addToast(`❌ Error: Colaborador ${empId} no encontrado.`, 'error');
@@ -884,19 +883,19 @@ export const SAPProvider = ({ children }) => {
     });
     addToast(`✅ Empleado ${empId} (${updatedEmp.name}) actualizado con éxito en el Maestro HCM (#rrhh-personal).`, 'success');
     return true;
-  };
+  }, [employees, addToast]);
 
   // HCM: Reseed/Reload Full Master Employees (12 Colaboradores)
-  const reseedEmployees = () => {
+  const reseedEmployees = useCallback(() => {
     setEmployees(DEFAULT_EMPLOYEES);
     DEFAULT_EMPLOYEES.forEach(emp => {
       upsertDocument('employees', emp.id, emp);
     });
     addToast('✅ Se han cargado los 12 colaboradores completos en el Maestro de Personal HCM (#rrhh-personal).', 'success');
-  };
+  }, [addToast]);
 
   // HCM: Add New Faena Accreditation to Employee
-  const addFaenaAccreditation = (employeeId, accreditationData) => {
+  const addFaenaAccreditation = useCallback((employeeId, accreditationData) => {
     const emp = employees.find(e => e.id === employeeId);
     if (!emp) return false;
     const currentAccred = emp.faenasAccredited || [];
@@ -919,10 +918,10 @@ export const SAPProvider = ({ children }) => {
     upsertDocument('employees', employeeId, updatedEmp);
     addToast(`✅ Nueva acreditación en faena [${newAccredObj.faenaName}] asignada a ${emp.name}.`, 'success');
     return true;
-  };
+  }, [employees, addToast]);
 
   // HCM: Update Compliance / Worksite Expiration Dates
-  const updateEmployeeCompliance = (employeeId, newDates, targetFaenaId = null) => {
+  const updateEmployeeCompliance = useCallback((employeeId, newDates, targetFaenaId = null) => {
     const emp = employees.find(e => e.id === employeeId);
     if (!emp) return false;
 
@@ -983,10 +982,10 @@ export const SAPProvider = ({ children }) => {
     });
     addToast(`✅ Fechas de acreditación actualizadas con éxito para ${emp.name}. Semáforo actualizado.`, 'success');
     return true;
-  };
+  }, [employees, addToast]);
 
   // Fleet: Update Vehicle Document Expirations (Acreditación, Permiso de Circulación, SOAP, Personalizados)
-  const updateAssetExpirations = (assetId, expirationData) => {
+  const updateAssetExpirations = useCallback((assetId, expirationData) => {
     const asset = assets.find(a => a.id === assetId);
     if (!asset) return false;
 
@@ -1010,10 +1009,10 @@ export const SAPProvider = ({ children }) => {
     });
     addToast(`✅ Fechas de vencimiento actualizadas con éxito para ${asset.name}.`, 'success');
     return true;
-  };
+  }, [assets, addToast]);
 
   // HCM: Absence & Leave Request (PT)
-  const createAbsenceRequest = (newAbsence) => {
+  const createAbsenceRequest = useCallback((newAbsence) => {
     const nextId = `ABS-2026-00${absences.length + 1}`;
     const emp = employees.find(e => e.id === newAbsence.employeeId);
     const formatted = {
@@ -1032,20 +1031,20 @@ export const SAPProvider = ({ children }) => {
     upsertDocument('absences', nextId, formatted);
     addToast(`Solicitud de ausentismo ${nextId} registrada correctamente.`, 'info');
     return true;
-  };
+  }, [absences, employees, addToast]);
 
   // HCM: Update Absence Status (Approve/Reject)
-  const updateAbsenceStatus = (absId, newStatus) => {
+  const updateAbsenceStatus = useCallback((absId, newStatus) => {
     const abs = absences.find(a => a.id === absId);
     if (!abs) return;
     const updated = { ...abs, status: newStatus };
     setAbsences(prev => prev.map(a => a.id === absId ? updated : a));
     upsertDocument('absences', absId, updated);
     addToast(`Solicitud ${absId} actualizada a [${newStatus}].`, 'success');
-  };
+  }, [absences, addToast]);
 
   // HCM: Process Payroll Run (PY)
-  const processPayrollRun = (periodStr = 'Agosto 2026') => {
+  const processPayrollRun = useCallback((periodStr = 'Agosto 2026') => {
     const activeEmployees = employees.filter(e => e.status !== 'Finiquitado');
     const grossSalaryTotal = activeEmployees.reduce((acc, e) => acc + (Number(e.baseSalary) || 0), 0);
     const totalDeductions = Math.round(grossSalaryTotal * 0.20);
@@ -1068,10 +1067,10 @@ export const SAPProvider = ({ children }) => {
     upsertDocument('payrollRuns', nextId, formattedRun);
     addToast(`✨ Liquidación de Nómina ${nextId} (${periodStr}) procesada con éxito para ${activeEmployees.length} colaboradores!`, 'success');
     return true;
-  };
+  }, [employees, payrollRuns, addToast]);
 
   // Reset to Factory Demo State
-  const resetData = () => {
+  const resetData = useCallback(() => {
     localStorage.removeItem(`operam_is_wiped_${activeTenantId}`);
     setPlants(DEFAULT_PLANTS);
     setActivePlant(DEFAULT_PLANTS[0]);
@@ -1085,10 +1084,10 @@ export const SAPProvider = ({ children }) => {
     setAbsences(DEFAULT_ABSENCES);
     setPayrollRuns(DEFAULT_PAYROLL_RUNS);
     addToast('✨ Datos de demostración de AXOMIRA INTELLIGENT CLOUD ERP restaurados exitosamente.', 'success');
-  };
+  }, [activeTenantId, addToast]);
 
   // Clear All Tenant Data to 0 (Clean Production State)
-  const clearAllTenantData = () => {
+  const clearAllTenantData = useCallback(() => {
     localStorage.setItem(`axomira_is_wiped_${activeTenantId}`, 'true');
 
     setWorkOrders([]);
@@ -1101,7 +1100,7 @@ export const SAPProvider = ({ children }) => {
     setAbsences([]);
     setPayrollRuns([]);
     addToast('🗑️ Base de datos limpiada por completo a 0. Sistema listo para ingresar datos reales.', 'info');
-  };
+  }, [activeTenantId, addToast]);
 
   const uiValue = useMemo(() => ({
     currentRole,
@@ -1131,7 +1130,7 @@ export const SAPProvider = ({ children }) => {
     createMaterial,
     updateMaterial,
     deleteMaterial
-  }), [plants, activePlant, materials, purchaseOrders, migoDocuments, executeGoodsMovement, createMaterial, updateMaterial, deleteMaterial]);
+  }), [plants, activePlant, setActivePlant, createPlant, materials, purchaseOrders, migoDocuments, executeGoodsMovement, createMaterial, updateMaterial, deleteMaterial]);
 
   const pmValue = useMemo(() => ({
     assets,
@@ -1175,7 +1174,8 @@ export const SAPProvider = ({ children }) => {
     resetData,
     clearAllTenantData,
     injectMassiveActionSimulation
-  }), [uiValue, mmValue, pmValue, hcmValue, auditLogs]);
+  }), [uiValue, mmValue, pmValue, hcmValue, auditLogs, resetData, clearAllTenantData, injectMassiveActionSimulation]);
+
 
   return (
     <UIContext.Provider value={uiValue}>

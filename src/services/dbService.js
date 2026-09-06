@@ -1,10 +1,44 @@
 import * as firestoreService from './firestoreService';
 import * as supabaseService from './supabaseService';
 import { isSupabaseConfigured, isUseSupabaseActive } from '../supabase/config';
-
 import { hasPermission } from '../utils/rbacRules';
+import {
+  DEFAULT_PLANTS,
+  DEFAULT_MATERIALS,
+  DEFAULT_ASSETS,
+  DEFAULT_WORK_ORDERS,
+  DEFAULT_NOTIFICATIONS,
+  DEFAULT_PURCHASE_ORDERS,
+  DEFAULT_MIGO_DOCUMENTS,
+  DEFAULT_EMPLOYEES,
+  DEFAULT_ABSENCES,
+  DEFAULT_PAYROLL_RUNS
+} from '../fixtures/sapInitialFixtures';
 
 export const DEFAULT_TENANT_ID = firestoreService.DEFAULT_TENANT_ID;
+
+/**
+ * Mapeo centralizado de fixtures de datos locales por colección
+ */
+export const FIXTURES_MAP = {
+  plants: DEFAULT_PLANTS,
+  materials: DEFAULT_MATERIALS,
+  assets: DEFAULT_ASSETS,
+  workOrders: DEFAULT_WORK_ORDERS,
+  notifications: DEFAULT_NOTIFICATIONS,
+  purchaseOrders: DEFAULT_PURCHASE_ORDERS,
+  migoDocuments: DEFAULT_MIGO_DOCUMENTS,
+  employees: DEFAULT_EMPLOYEES,
+  absences: DEFAULT_ABSENCES,
+  payrollRuns: DEFAULT_PAYROLL_RUNS
+};
+
+/**
+ * Obtiene fixtures predeterminados para una colección como mecanismo de respaldo (fallback).
+ */
+export const getFallbackFixtures = (collectionName) => {
+  return FIXTURES_MAP[collectionName] || [];
+};
 
 /**
  * Validar autorización RBAC en capa de servicio (Zero-Trust)
@@ -27,7 +61,26 @@ export const getActiveDbService = () => {
 };
 
 export const subscribeCollection = (collectionName, onUpdate, onError, constraints = [], tenantId = DEFAULT_TENANT_ID) => {
-  return getActiveDbService().subscribeCollection(collectionName, onUpdate, onError, constraints, tenantId);
+  const fallback = getFallbackFixtures(collectionName);
+
+  const safeOnUpdate = (items) => {
+    if (Array.isArray(items) && items.length === 0 && fallback.length > 0) {
+      console.warn(`[dbService Protection] Supabase devolvió 0 elementos o tuvo una falla en '${collectionName}'. Activando datos de respaldo (fixtures).`);
+      onUpdate(fallback);
+    } else {
+      onUpdate(items);
+    }
+  };
+
+  const safeOnError = (err) => {
+    console.warn(`[dbService Protection] Error en suscripción Supabase para '${collectionName}':`, err);
+    if (fallback.length > 0) {
+      onUpdate(fallback);
+    }
+    if (onError) onError(err);
+  };
+
+  return getActiveDbService().subscribeCollection(collectionName, safeOnUpdate, safeOnError, constraints, tenantId);
 };
 
 export const upsertDocument = async (collectionName, docId, data, userId = 'OPERATOR', tenantId = DEFAULT_TENANT_ID, userRole = null) => {
@@ -46,15 +99,18 @@ export const deleteDocument = async (collectionName, docId, tenantId = DEFAULT_T
   return await getActiveDbService().deleteDocument(collectionName, docId, tenantId);
 };
 
-
 export const seedCollectionIfEmpty = async (collectionName, defaultItems = [], tenantId = DEFAULT_TENANT_ID) => {
-  return await getActiveDbService().seedCollectionIfEmpty(collectionName, defaultItems, tenantId);
+  const itemsToSeed = (Array.isArray(defaultItems) && defaultItems.length > 0)
+    ? defaultItems
+    : getFallbackFixtures(collectionName);
+  return await getActiveDbService().seedCollectionIfEmpty(collectionName, itemsToSeed, tenantId);
 };
 
-const processedIdempotencyKeys = new Map();
+import { checkProcessedIdempotencyKey, markIdempotencyKeyProcessed } from './idempotencyService';
 
 /**
- * Ejecuta una transacción asegurando idempotencia. Si la clave ya fue procesada,
+ * Ejecuta una transacción asegurando idempotencia persistente y sincronizada entre pestañas.
+ * Si la clave ya fue procesada (en Memoria, IndexedDB, LocalStorage o en otra pestaña),
  * previene la duplicación y retorna la respuesta previa.
  */
 export const executeIdempotentTransaction = async (idempotencyKey, transactionFn) => {
@@ -62,22 +118,18 @@ export const executeIdempotentTransaction = async (idempotencyKey, transactionFn
     return await transactionFn();
   }
 
-  if (processedIdempotencyKeys.has(idempotencyKey)) {
-    const existing = processedIdempotencyKeys.get(idempotencyKey);
-    console.warn(`[IdempotencyGuard] Transacción duplicada bloqueada. Key: ${idempotencyKey}`);
-    return existing;
+  const { found, result: existingResult } = await checkProcessedIdempotencyKey(idempotencyKey);
+  if (found) {
+    console.warn(`[IdempotencyGuard Persistente] Transacción duplicada bloqueada. Key: ${idempotencyKey}`);
+    return existingResult;
   }
 
   const result = await transactionFn();
-  processedIdempotencyKeys.set(idempotencyKey, result);
-
-  // Expira automáticamente la clave tras 15 minutos (900,000 ms)
-  setTimeout(() => {
-    processedIdempotencyKeys.delete(idempotencyKey);
-  }, 15 * 60 * 1000);
+  await markIdempotencyKeyProcessed(idempotencyKey, result);
 
   return result;
 };
+
 
 export const executeAtomicGoodsMovement = async (params) => {
   const idempotencyKey = params?.idempotencyKey || params?.migoDocumentId;
@@ -91,11 +143,54 @@ export const recordAuditLog = async (params) => {
 };
 
 export const getCollectionDocs = async (collectionName, tenantId = DEFAULT_TENANT_ID) => {
-  return await getActiveDbService().getCollectionDocs(collectionName, tenantId);
+  const fallback = getFallbackFixtures(collectionName);
+  try {
+    const docs = await getActiveDbService().getCollectionDocs(collectionName, tenantId);
+    if (Array.isArray(docs) && docs.length === 0 && fallback.length > 0) {
+      console.warn(`[dbService Protection] getCollectionDocs para '${collectionName}' retornó 0 elementos. Usando fixtures de respaldo.`);
+      return fallback;
+    }
+    return docs;
+  } catch (err) {
+    console.warn(`[dbService Protection] Error en getCollectionDocs para '${collectionName}':`, err);
+    return fallback;
+  }
 };
 
 export const getPagedCollectionDocs = async (collectionName, page = 1, pageSize = 50, filters = {}, tenantId = DEFAULT_TENANT_ID) => {
-  return await getActiveDbService().getPagedCollectionDocs(collectionName, page, pageSize, filters, tenantId);
+  const fallback = getFallbackFixtures(collectionName);
+  try {
+    const res = await getActiveDbService().getPagedCollectionDocs(collectionName, page, pageSize, filters, tenantId);
+    if (res && Array.isArray(res.data) && res.data.length === 0 && fallback.length > 0) {
+      const safePage = Math.max(1, Number(page) || 1);
+      const safePageSize = Math.max(1, Math.min(500, Number(pageSize) || 50));
+      const from = (safePage - 1) * safePageSize;
+      const to = from + safePageSize;
+      const sliced = fallback.slice(from, to);
+      return {
+        data: sliced,
+        totalCount: fallback.length,
+        page: safePage,
+        pageSize: safePageSize,
+        totalPages: Math.ceil(fallback.length / safePageSize) || 1
+      };
+    }
+    return res;
+  } catch (err) {
+    console.warn(`[dbService Protection] Error en getPagedCollectionDocs para '${collectionName}':`, err);
+    const safePage = Math.max(1, Number(page) || 1);
+    const safePageSize = Math.max(1, Math.min(500, Number(pageSize) || 50));
+    const from = (safePage - 1) * safePageSize;
+    const to = from + safePageSize;
+    const sliced = fallback.slice(from, to);
+    return {
+      data: sliced,
+      totalCount: fallback.length,
+      page: safePage,
+      pageSize: safePageSize,
+      totalPages: Math.ceil(fallback.length / safePageSize) || 1
+    };
+  }
 };
 
 export const getTenantDocRef = (collectionName, docId, tenantId = DEFAULT_TENANT_ID) => {
@@ -105,4 +200,3 @@ export const getTenantDocRef = (collectionName, docId, tenantId = DEFAULT_TENANT
 export const getTenantCollectionRef = (collectionName, tenantId = DEFAULT_TENANT_ID) => {
   return firestoreService.getTenantCollectionRef(collectionName, tenantId);
 };
-

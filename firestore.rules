@@ -2,48 +2,78 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
+    // Función auxiliar: verifica si la petición proviene de un usuario autenticado
     function isAuthenticated() {
       return request.auth != null;
     }
 
-    // Regla estricta para perfiles de usuario
+    // Función auxiliar: obtiene el tenantId registrado en el documento del usuario en /users/{uid}
+    function getUserTenantId() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data.tenantId;
+    }
+
+    // Función principal de autorización Multi-Tenant:
+    // Valida que request.auth.token.tenantId == tenantId 
+    // O que el tenantId del documento del usuario autenticado en Firestore coincida con el tenantId solicitado.
+    function isTenantUser(tenantId) {
+      return isAuthenticated() && (
+        (request.auth.token != null && 'tenantId' in request.auth.token && request.auth.token.tenantId == tenantId) ||
+        (exists(/databases/$(database)/documents/users/$(request.auth.uid)) && getUserTenantId() == tenantId)
+      );
+    }
+
+    // Regla estricta para perfiles de usuario (/users/{userId})
     match /users/{userId} {
-      allow read, write: if isAuthenticated();
+      allow read, write: if isAuthenticated() && request.auth.uid == userId;
     }
 
     // Regla de Seguridad Multi-Tenant Aislada por Ruta (/tenants/{tenantId}/{collectionId}/{document})
-    // Exige sesión autenticada para leer o escribir en la base de datos de cualquier empresa
+    // Garantiza aislamiento de datos verificando el tenantId contra los datos del usuario o su token JWT
     match /tenants/{tenantId}/{collectionId}/{document=**} {
-      allow read, write: if isAuthenticated();
+      allow read, write: if isTenantUser(tenantId);
     }
 
-    // Reglas de compatibilidad legacy para colecciones raíz
+    // Reglas de compatibilidad legacy para colecciones raíz (validando tenantId si existe en el recurso)
     match /plants/{document} {
-      allow read, write: if isAuthenticated();
+      allow read, write: if isAuthenticated() && (
+        !('tenantId' in resource.data) || isTenantUser(resource.data.tenantId)
+      );
     }
 
     match /materials/{document} {
-      allow read, write: if isAuthenticated();
+      allow read, write: if isAuthenticated() && (
+        !('tenantId' in resource.data) || isTenantUser(resource.data.tenantId)
+      );
     }
 
     match /assets/{document} {
-      allow read, write: if isAuthenticated();
+      allow read, write: if isAuthenticated() && (
+        !('tenantId' in resource.data) || isTenantUser(resource.data.tenantId)
+      );
     }
 
     match /notifications/{document} {
-      allow read, write: if isAuthenticated();
+      allow read, write: if isAuthenticated() && (
+        !('tenantId' in resource.data) || isTenantUser(resource.data.tenantId)
+      );
     }
 
     match /workOrders/{document} {
-      allow read, write: if isAuthenticated();
+      allow read, write: if isAuthenticated() && (
+        !('tenantId' in resource.data) || isTenantUser(resource.data.tenantId)
+      );
     }
 
     match /purchaseOrders/{document} {
-      allow read, write: if isAuthenticated();
+      allow read, write: if isAuthenticated() && (
+        !('tenantId' in resource.data) || isTenantUser(resource.data.tenantId)
+      );
     }
 
     match /migoDocuments/{document} {
-      allow read, write: if isAuthenticated();
+      allow read, write: if isAuthenticated() && (
+        !('tenantId' in resource.data) || isTenantUser(resource.data.tenantId)
+      );
     }
 
     // Regla de salvaguarda global

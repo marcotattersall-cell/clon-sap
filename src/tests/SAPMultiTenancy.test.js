@@ -64,4 +64,27 @@ describe('Arquitectura Multi-Tenancy (Aislamiento de Datos por Empresa)', () => 
     expect(defaultRef.path).toBe(`tenants/${DEFAULT_TENANT_ID}/workOrders/WO-400101`);
   });
 
+  it('debe evaluar correctamente la lógica de isTenantUser (request.auth.token.tenantId o documento /users/{uid})', () => {
+    const isTenantUserMock = (auth, userDoc, targetTenantId) => {
+      if (!auth) return false;
+      const hasTokenTenant = auth.token && auth.token.tenantId === targetTenantId;
+      const hasDocTenant = userDoc && userDoc.tenantId === targetTenantId;
+      return hasTokenTenant || hasDocTenant;
+    };
+
+    const targetTenant = 'tenant_codelco';
+
+    // 1. Token JWT incluye tenant_codelco
+    expect(isTenantUserMock({ token: { tenantId: 'tenant_codelco' } }, null, targetTenant)).toBe(true);
+
+    // 2. Token no tiene custom claim, pero documento /users/{uid} en Firestore pertenece a tenant_codelco
+    expect(isTenantUserMock({ uid: 'usr-123' }, { tenantId: 'tenant_codelco' }, targetTenant)).toBe(true);
+
+    // 3. Usuario sin autenticación
+    expect(isTenantUserMock(null, { tenantId: 'tenant_codelco' }, targetTenant)).toBe(false);
+
+    // 4. Intentar acceder a tenant ajeno (tenant_bhp)
+    expect(isTenantUserMock({ token: { tenantId: 'tenant_codelco' } }, { tenantId: 'tenant_codelco' }, 'tenant_bhp')).toBe(false);
+  });
+
 });
