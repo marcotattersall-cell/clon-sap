@@ -50,11 +50,37 @@ export const SAPProvider = ({ children }) => {
   const [auditLogs, setAuditLogs] = useState([]);
 
   const [currentRole, setCurrentRole] = useState('MAINTENANCE_MGR');
-  const [themeMode, setThemeMode] = useState('light');
+  const [themeMode, setThemeMode] = useState(() => {
+    try {
+      return localStorage.getItem('sap_theme_mode') || 'dark';
+    } catch (e) {
+      return 'dark';
+    }
+  });
   const [activeTab, setActiveTab] = useState('LAUNCHPAD');
   const [searchTerm, setSearchTerm] = useState('');
   const [globalToasts, setGlobalToasts] = useState([]);
   const [tecoModalData, setTecoModalData] = useState(null);
+
+  // 🎨 Sincronización Síncrona del Tema Global (SAP Fiori Dark Stealth / Morning Horizon)
+  useEffect(() => {
+    try {
+      localStorage.setItem('sap_theme_mode', themeMode);
+    } catch (e) {
+      console.warn('Error al guardar la preferencia de tema:', e);
+    }
+    if (themeMode === 'dark') {
+      document.documentElement.classList.add('dark');
+      document.documentElement.setAttribute('data-theme', 'dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+      document.documentElement.setAttribute('data-theme', 'light');
+    }
+  }, [themeMode]);
+
+  const toggleTheme = useCallback(() => {
+    setThemeMode(prev => (prev === 'dark' ? 'light' : 'dark'));
+  }, []);
 
   // Generador de Simulación Masiva en Vivo (Transacciones Instantáneas ERP)
   const injectMassiveActionSimulation = () => {
@@ -1082,6 +1108,7 @@ export const SAPProvider = ({ children }) => {
     setCurrentRole,
     themeMode,
     setThemeMode,
+    toggleTheme,
     activeTab,
     setActiveTab,
     searchTerm,
@@ -1090,7 +1117,7 @@ export const SAPProvider = ({ children }) => {
     addToast,
     tecoModalData,
     setTecoModalData
-  }), [currentRole, themeMode, activeTab, searchTerm, globalToasts, tecoModalData, addToast]);
+  }), [currentRole, themeMode, toggleTheme, activeTab, searchTerm, globalToasts, tecoModalData, addToast]);
 
   const mmValue = useMemo(() => ({
     plants,

@@ -29,7 +29,9 @@ import {
   Activity,
   Zap,
   LayoutGrid,
-  ArrowRight
+  ArrowRight,
+  Sun,
+  Moon
 } from 'lucide-react';
 import { getPendingApprovals } from '../../services/approvalWorkflowService';
 import ApprovalInboxModal from '../modals/ApprovalInboxModal';
@@ -49,7 +51,8 @@ export const FioriHeader = ({ onOpenCreateWO, onOpenCreateMaterial, onOpenCreate
     materials = [],
     workOrders = [],
     employees = [],
-    injectMassiveActionSimulation
+    themeMode,
+    toggleTheme
   } = useSAP();
   const { user, logout, switchTenant, sendVerificationEmail, reloadUser } = useAuth();
 
@@ -326,7 +329,11 @@ export const FioriHeader = ({ onOpenCreateWO, onOpenCreateMaterial, onOpenCreate
   });
 
   return (
-    <header className="sticky top-0 z-40 bg-white text-slate-900 border-b border-slate-200 shadow-sm w-full">
+    <header className={`sticky top-0 z-40 w-full transition-colors border-b ${
+      themeMode === 'dark'
+        ? 'bg-slate-900 text-slate-100 border-slate-800'
+        : 'bg-white text-slate-900 border-slate-200 shadow-sm'
+    }`}>
       {/* 📧 Unverified Email Warning Banner */}
       {user && !user.emailVerified && user.provider === 'firebase-password' && (
         <div className="bg-amber-500 text-slate-950 px-4 py-2 text-xs font-bold flex flex-col sm:flex-row items-center justify-between gap-2 border-b border-amber-600 shadow-inner">
@@ -376,7 +383,11 @@ export const FioriHeader = ({ onOpenCreateWO, onOpenCreateMaterial, onOpenCreate
       )}
 
       {/* Top System Status Ribbon */}
-      <div className="bg-slate-100 px-4 sm:px-6 lg:px-8 py-1.5 flex items-center justify-between text-xs text-slate-600 border-b border-slate-200">
+      <div className={`px-4 sm:px-6 lg:px-8 py-1.5 flex items-center justify-between text-xs border-b transition-colors ${
+        themeMode === 'dark'
+          ? 'bg-slate-950 text-slate-300 border-slate-800'
+          : 'bg-slate-100 text-slate-600 border-slate-200'
+      }`}>
         <div className="flex items-center space-x-3">
           <span className="flex items-center space-x-1.5 text-emerald-600 font-mono">
             <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
@@ -703,6 +714,19 @@ export const FioriHeader = ({ onOpenCreateWO, onOpenCreateMaterial, onOpenCreate
                 </div>
               </div>
             )}
+          {/* 🎨 Theme Toggle Button (Fiori Dark Stealth vs Morning Horizon) */}
+          <div className="relative">
+            <button
+              onClick={toggleTheme}
+              className={`p-2 rounded-lg relative transition-colors border ${
+                themeMode === 'dark'
+                  ? 'bg-slate-800 hover:bg-slate-700 text-amber-400 border-slate-700'
+                  : 'bg-slate-100 hover:bg-slate-200 text-slate-700 border-slate-200'
+              }`}
+              title={themeMode === 'dark' ? 'Cambiar a Tema Fiori Morning Horizon (Light)' : 'Cambiar a Tema Fiori Dark Stealth'}
+            >
+              {themeMode === 'dark' ? <Sun className="w-4 h-4 text-amber-400 animate-spin-slow" /> : <Moon className="w-4 h-4 text-slate-600" />}
+            </button>
           </div>
 
           {/* User Profile Controls */}
