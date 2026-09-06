@@ -2,6 +2,7 @@ import React, { useState, Suspense, lazy } from 'react';
 import { SAPProvider, useSAP } from './context/SAPContext';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { FioriHeader } from './components/shell/FioriHeader';
+import { FioriBreadcrumbs } from './components/shell/FioriBreadcrumbs';
 import { FioriLaunchpad } from './components/shell/FioriLaunchpad';
 import { CreateWOModal } from './components/modals/CreateWOModal';
 import { CreateMaterialModal } from './components/modals/CreateMaterialModal';
@@ -260,6 +261,9 @@ const SAPAppContent = () => {
         onOpenCreateEmployee={() => setIsCreateEmployeeOpen(true)}
         onOpenReportModal={() => setIsExecutiveReportOpen(true)}
       />
+
+      {/* 📌 Migas de Pan (Fiori Breadcrumbs Navigation) */}
+      <FioriBreadcrumbs />
 
       {/* Main Content Area - Full Screen Width with Mobile Bottom Bar Clearance */}
       <main className="flex-1 w-full px-3 sm:px-6 lg:px-8 py-4 sm:py-6 pb-20 lg:pb-6 space-y-4 sm:space-y-6">
