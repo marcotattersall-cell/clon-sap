@@ -86,7 +86,7 @@ const INITIAL_DEMO_REQUESTS = [
     assetCount: '51 a 200 Equipos/Maquinarias',
     notes: 'Evaluando integración telemetría GPS y mantenimiento preventivo por kilometraje.',
     status: 'Respondido',
-    responseNotes: 'Se envió propuesta técnica personalizada y credenciales de acceso al Sandbox ERP.'
+    responseNotes: 'Se envió propuesta técnica personalizada y credenciales de acceso a Axomira.'
   },
   {
     id: 'DEMO-REQ-2026-1509',
@@ -459,9 +459,9 @@ export const UserManagementSU01 = () => {
 
 Gracias por su interés en AXOMIRA Cloud ERP para ${company}.
 
-Hemos procesado su solicitud de demostración (Ticket: ${ticket}). Nos complace habilitarle el acceso directo a nuestro Sandbox ERP Interactivo de pruebas, donde podrá explorar el módulo de "${module}" y simular operaciones en vivo.
+Hemos procesado su solicitud de demostración (Ticket: ${ticket}). Nos complace habilitarle el acceso directo a nuestro entorno Axomira Interactivo de pruebas, donde podrá explorar el módulo de "${module}" y simular operaciones en vivo.
 
-🔗 Acceso al Sandbox ERP: https://axomira-erp.cloud/sandbox
+🔗 Acceso a Axomira: https://axomira-erp.cloud/sandbox
 👤 Usuario de prueba: demo.evaluador@axomira.cl
 🔑 Clave temporal: Axomira2026!
 
@@ -1991,7 +1991,7 @@ AXOMIRA Cloud ERP Enterprise`;
                     onChange={(e) => handleTemplateChange(e.target.value)}
                     className="w-full bg-slate-950 border border-emerald-500/40 rounded-xl px-3 py-2 text-emerald-300 font-bold focus:outline-none focus:border-emerald-400 cursor-pointer"
                   >
-                    <option value="SANDBOX_ACCESS" className="bg-slate-900 text-slate-100">🔗 Acceso Inmediato a Sandbox ERP + Credenciales</option>
+                    <option value="SANDBOX_ACCESS" className="bg-slate-900 text-slate-100">🔗 Acceso Inmediato a Axomira + Credenciales</option>
                     <option value="MEETING_SCHEDULE" className="bg-slate-900 text-slate-100">📅 Coordinación de Reunión Demostrativa (Teams)</option>
                     <option value="PROPOSAL_QUOTE" className="bg-slate-900 text-slate-100">📄 Propuesta Técnica & Cotización Comercial</option>
                   </select>

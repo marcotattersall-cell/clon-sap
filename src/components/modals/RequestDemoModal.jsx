@@ -177,7 +177,7 @@ export function RequestDemoModal({ isOpen, onClose, onEnterERP }) {
                 onClick={() => { handleResetAndClose(); onEnterERP(); }}
                 className="bg-sky-500 hover:bg-sky-400 text-slate-950 font-black text-xs px-6 py-3 rounded-xl shadow-lg shadow-sky-500/20 transition-all flex items-center justify-center space-x-2 cursor-pointer"
               >
-                <span>Probar Sandbox ERP Ahora</span>
+                <span>Probar Axomira Ahora</span>
                 <ArrowRight className="w-4 h-4" />
               </button>
               <button
