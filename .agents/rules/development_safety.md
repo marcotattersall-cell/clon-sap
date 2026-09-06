@@ -7,9 +7,9 @@ Después de **CADA** iteración o modificación de código en la aplicación, se
 3. **Ejecutar Auditoría Estática (`npm run lint`):** Correr `oxlint` para asegurar cero errores sintácticos.
 4. **Generar Documento Walkthrough (`walkthrough.md`):** Actualizar o crear el resumen de la iteración con los cambios realizados y los resultados de las pruebas.
 
-## 2. Auditoría de Variables de Estado en JSX
+## 2. Auditoría de Variables de Estado y Orden de Declaración (TDZ) en JSX
 - Antes de guardar cualquier archivo `.jsx`, auditar que todas las variables y funciones utilizadas en el JSX (ej: `useState`, `useContext`, `props`, `handlers`) estén explícitamente declaradas dentro del scope del componente.
-- Prevenir absolutamente errores de tipo `ReferenceError: Can't find variable: XYZ`.
+- **Prevención de TDZ**: Asegurar que toda función referenciada dentro de una matriz de dependencias de `useCallback` o `useMemo` esté físicamente declarada ANTES de su uso. Prevenir absolutamente errores de tipo `ReferenceError: Cannot access 'X' before initialization`.
 
 ## 3. Resguardo de Control de Versiones (Git Checkpoints)
 - Tras implementar y verificar cada nueva funcionalidad aprobada por el usuario, realizar un `git commit` automático para mantener un historial de puntos de restauración estables.
