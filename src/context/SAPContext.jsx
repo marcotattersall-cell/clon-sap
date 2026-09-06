@@ -82,6 +82,15 @@ export const SAPProvider = ({ children }) => {
     setThemeMode(prev => (prev === 'dark' ? 'light' : 'dark'));
   }, []);
 
+  // Optimized Toast Helper with useCallback
+  const addToast = useCallback((message, type = 'info') => {
+    const id = Date.now() + Math.random();
+    setGlobalToasts(prev => [...prev.slice(-4), { id, message, type }]);
+    setTimeout(() => {
+      setGlobalToasts(prev => prev.filter(t => t.id !== id));
+    }, 4500);
+  }, []);
+
   // Generador de Simulación Masiva en Vivo (Transacciones Instantáneas ERP)
   const injectMassiveActionSimulation = useCallback(() => {
     // 1. Inyectar Órdenes de Trabajo PM
@@ -213,15 +222,6 @@ export const SAPProvider = ({ children }) => {
       unsubAudit();
     };
   }, [activeTenantId]);
-
-  // Optimized Toast Helper with useCallback
-  const addToast = useCallback((message, type = 'info') => {
-    const id = Date.now() + Math.random();
-    setGlobalToasts(prev => [...prev.slice(-4), { id, message, type }]);
-    setTimeout(() => {
-      setGlobalToasts(prev => prev.filter(t => t.id !== id));
-    }, 4500);
-  }, []);
 
   // MIGO Goods Movement Transaction engine (Types 101, 261, 311)
   const executeGoodsMovement = useCallback(async ({ movementType, materialId, qty, storageLocation, targetStorageLocation, refDocument, notes: _notes }) => {
