@@ -78,6 +78,7 @@ export const LoginScreen = () => {
     setIsSubmitting(false);
     if (res.success) {
       setCurrentRole(res.user.role || role);
+      setActiveTab('LAUNCHPAD');
       addToast(`Bienvenido a AXOMIRA INTELLIGENT CLOUD ERP: ${res.user.displayName}`, 'success');
     } else {
       setLocalError(res.error);
@@ -129,6 +130,7 @@ export const LoginScreen = () => {
       setIsSubmitting(false);
       if (res.success) {
         setCurrentRole(res.user.role || role);
+        setActiveTab('LAUNCHPAD');
         addToast(`Sesión iniciada como: ${res.user.displayName || res.user.email}`, 'success');
       } else {
         setLocalError(res.error);
@@ -161,6 +163,7 @@ export const LoginScreen = () => {
     setIsSubmitting(false);
     if (res.success) {
       setCurrentRole(res.user.role);
+      setActiveTab('LAUNCHPAD');
       addToast(`Acceso Demo Autenticado: ${res.user.displayName}`, 'success');
     } else {
       setLocalError(res.error);
@@ -319,11 +322,12 @@ export const LoginScreen = () => {
                         const res = await loginAsUniversalAdmin();
                         if (res.success) {
                           setCurrentRole('ADMINISTRATOR');
+                          setActiveTab('LAUNCHPAD');
                           addToast(`⚡ Sesión iniciada como Administrador Universal: ${res.user.email}`, 'success');
                         }
                       }
                     }}
-                    className="w-full mt-2 bg-gradient-to-r from-amber-600 via-amber-500 to-emerald-600 hover:from-amber-500 hover:to-emerald-500 text-white text-xs font-bold py-2.5 px-3 rounded-xl shadow-lg transition-all flex items-center justify-center space-x-2 border border-amber-400/40"
+                    className="w-full mt-2 bg-gradient-to-r from-amber-600 via-amber-500 to-emerald-600 hover:from-amber-500 hover:to-emerald-500 text-white text-xs font-bold py-2.5 px-3 rounded-xl shadow-lg transition-all flex items-center justify-center space-x-2 border border-amber-400/40 cursor-pointer"
                   >
                     <ShieldCheck className="w-4 h-4" />
                     <span>Entrar como Administrador Universal</span>

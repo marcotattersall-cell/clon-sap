@@ -238,7 +238,7 @@ const SAPAppContent = () => {
 
   // 2. Landing Page Portal Mode (Primera vista obligatoria por defecto)
   if (activeTab === 'LANDING') {
-    return <LandingPage onEnterERP={() => setActiveTab('LOGIN')} />;
+    return <LandingPage onEnterERP={() => setActiveTab(user ? 'LAUNCHPAD' : 'LOGIN')} />;
   }
 
   // 3. Authentication Gate & Login Screen Navigation
