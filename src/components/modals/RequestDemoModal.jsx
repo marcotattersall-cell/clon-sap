@@ -253,16 +253,16 @@ export function RequestDemoModal({ isOpen, onClose, onEnterERP }) {
                   name="industry"
                   value={formData.industry}
                   onChange={handleChange}
-                  className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-sky-500 cursor-pointer"
+                  className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-100 focus:outline-none focus:border-sky-500 cursor-pointer"
                 >
-                  <option value="Gran Minería & Extracción">Gran Minería & Extracción</option>
-                  <option value="Mediana & Pequeña Minería">Mediana & Pequeña Minería</option>
-                  <option value="Construcción & Obras Civiles">Construcción & Obras Civiles</option>
-                  <option value="Transporte & Logística de Flota">Transporte & Logística de Flota</option>
-                  <option value="Manufactura & Planta Industrial">Manufactura & Planta Industrial</option>
-                  <option value="Energía, Gas & Petróleo">Energía, Gas & Petróleo</option>
-                  <option value="Servicios de Mantenimiento / Tercerizado">Servicios de Mantenimiento / Tercerizado</option>
-                  <option value="Otro Sector Industrial">Otro Sector Industrial</option>
+                  <option value="Gran Minería & Extracción" className="bg-slate-900 text-slate-100">Gran Minería & Extracción</option>
+                  <option value="Mediana & Pequeña Minería" className="bg-slate-900 text-slate-100">Mediana & Pequeña Minería</option>
+                  <option value="Construcción & Obras Civiles" className="bg-slate-900 text-slate-100">Construcción & Obras Civiles</option>
+                  <option value="Transporte & Logística de Flota" className="bg-slate-900 text-slate-100">Transporte & Logística de Flota</option>
+                  <option value="Manufactura & Planta Industrial" className="bg-slate-900 text-slate-100">Manufactura & Planta Industrial</option>
+                  <option value="Energía, Gas & Petróleo" className="bg-slate-900 text-slate-100">Energía, Gas & Petróleo</option>
+                  <option value="Servicios de Mantenimiento / Tercerizado" className="bg-slate-900 text-slate-100">Servicios de Mantenimiento / Tercerizado</option>
+                  <option value="Otro Sector Industrial" className="bg-slate-900 text-slate-100">Otro Sector Industrial</option>
                 </select>
               </div>
 
@@ -275,38 +275,39 @@ export function RequestDemoModal({ isOpen, onClose, onEnterERP }) {
                   name="employeeCount"
                   value={formData.employeeCount}
                   onChange={handleChange}
-                  className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-sky-500 cursor-pointer"
+                  className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-100 focus:outline-none focus:border-sky-500 cursor-pointer"
                 >
-                  <option value="1 a 20 colaboradores">1 a 20 colaboradores</option>
-                  <option value="21 a 50 colaboradores">21 a 50 colaboradores</option>
-                  <option value="51 a 200 colaboradores">51 a 200 colaboradores</option>
-                  <option value="201 a 500 colaboradores">201 a 500 colaboradores</option>
-                  <option value="Más de 500 colaboradores (Gran Minería)">Más de 500 colaboradores (Gran Minería)</option>
+                  <option value="1 a 20 colaboradores" className="bg-slate-900 text-slate-100">1 a 20 colaboradores</option>
+                  <option value="21 a 50 colaboradores" className="bg-slate-900 text-slate-100">21 a 50 colaboradores</option>
+                  <option value="51 a 200 colaboradores" className="bg-slate-900 text-slate-100">51 a 200 colaboradores</option>
+                  <option value="201 a 500 colaboradores" className="bg-slate-900 text-slate-100">201 a 500 colaboradores</option>
+                  <option value="Más de 500 colaboradores (Gran Minería)" className="bg-slate-900 text-slate-100">Más de 500 colaboradores (Gran Minería)</option>
                 </select>
               </div>
 
-              {/* Módulo Principal de Interés */}
-              <div>
-                <label className="block text-xs font-bold text-slate-300 mb-1">
-                  Módulo Principal de Interés
+              {/* Módulo Principal de Interés (Full width span para evitar recortes) */}
+              <div className="sm:col-span-2">
+                <label className="block text-xs font-bold text-sky-400 mb-1 flex items-center justify-between">
+                  <span>Módulo Principal de Interés</span>
+                  <span className="text-[10px] text-slate-400 font-normal hidden sm:inline">Selecciona el módulo clave para tu empresa</span>
                 </label>
                 <select
                   name="primaryModule"
                   value={formData.primaryModule}
                   onChange={handleChange}
-                  className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-sky-400 font-semibold focus:outline-none focus:border-sky-500 cursor-pointer"
+                  className="w-full bg-slate-950 border border-sky-500/40 rounded-xl px-3 py-2.5 text-xs text-sky-300 font-semibold focus:outline-none focus:border-sky-400 cursor-pointer shadow-sm"
                 >
-                  <option value="Suite ERP Completa">Suite ERP Completa (PM + MM + Flota + HCM)</option>
-                  <option value="Mantenimiento PM (IW31/IW32)">Mantenimiento PM & TECO (IW31/IW32)</option>
-                  <option value="Gestión de Materiales MM (MIGO 261/101)">Gestión de Materiales MM & MIGO (261/101)</option>
-                  <option value="Control de Flota (IE03)">Control de Flotas & Maquinarias (IE03)</option>
-                  <option value="Recursos Humanos HCM">Recursos Humanos HCM & Faenas</option>
-                  <option value="Executive Analytics CO/FI">Executive Analytics CO/FI</option>
+                  <option value="Suite ERP Completa" className="bg-slate-900 text-slate-100 font-semibold">Suite ERP Completa (PM + MM + Flota + HCM)</option>
+                  <option value="Mantenimiento PM (IW31/IW32)" className="bg-slate-900 text-slate-100">Mantenimiento PM & TECO (IW31 / IW32)</option>
+                  <option value="Gestión de Materiales MM (MIGO 261/101)" className="bg-slate-900 text-slate-100">Gestión de Materiales MM & MIGO (261 / 101)</option>
+                  <option value="Control de Flotas & Maquinarias (IE03)" className="bg-slate-900 text-slate-100">Control de Flotas & Maquinarias (IE03)</option>
+                  <option value="Recursos Humanos HCM & Faenas" className="bg-slate-900 text-slate-100">Recursos Humanos HCM & Faenas</option>
+                  <option value="Executive Analytics CO/FI" className="bg-slate-900 text-slate-100">Executive Analytics CO/FI</option>
                 </select>
               </div>
 
               {/* Volumen Estimado de Activos */}
-              <div>
+              <div className="sm:col-span-2">
                 <label className="block text-xs font-bold text-slate-300 mb-1">
                   Volumen de Activos / Maquinarias
                 </label>
@@ -314,12 +315,12 @@ export function RequestDemoModal({ isOpen, onClose, onEnterERP }) {
                   name="assetCount"
                   value={formData.assetCount}
                   onChange={handleChange}
-                  className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-sky-500 cursor-pointer"
+                  className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-100 focus:outline-none focus:border-sky-500 cursor-pointer"
                 >
-                  <option value="1 a 10 Equipos/Maquinarias">1 a 10 Equipos / Maquinarias</option>
-                  <option value="10 a 50 Equipos/Maquinarias">10 a 50 Equipos / Maquinarias</option>
-                  <option value="51 a 200 Equipos/Maquinarias">51 a 200 Equipos / Maquinarias</option>
-                  <option value="Más de 200 Equipos (Gran Minería)">Más de 200 Equipos (Gran Minería)</option>
+                  <option value="1 a 10 Equipos/Maquinarias" className="bg-slate-900 text-slate-100">1 a 10 Equipos / Maquinarias</option>
+                  <option value="10 a 50 Equipos/Maquinarias" className="bg-slate-900 text-slate-100">10 a 50 Equipos / Maquinarias</option>
+                  <option value="51 a 200 Equipos/Maquinarias" className="bg-slate-900 text-slate-100">51 a 200 Equipos / Maquinarias</option>
+                  <option value="Más de 200 Equipos (Gran Minería)" className="bg-slate-900 text-slate-100">Más de 200 Equipos (Gran Minería)</option>
                 </select>
               </div>
 
