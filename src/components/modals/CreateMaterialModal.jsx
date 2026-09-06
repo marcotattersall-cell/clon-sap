@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useSAP } from '../../context/SAPContext';
-import { Package, X } from 'lucide-react';
+import { Package, X, Check } from 'lucide-react';
 
 export const CreateMaterialModal = ({ isOpen, onClose }) => {
   const { createMaterial, materials } = useSAP();
@@ -60,29 +60,27 @@ export const CreateMaterialModal = ({ isOpen, onClose }) => {
   return (
     <div className="fixed inset-0 z-50 bg-slate-100 dark:bg-slate-950 text-slate-900 dark:text-white overflow-y-auto flex flex-col animate-in fade-in duration-200">
       {/* Sticky Top Fiori Navigation Header */}
-      <div className="sticky top-0 z-30 bg-slate-900 text-white px-6 py-3.5 border-b border-slate-800 flex items-center justify-between shadow-2xl shrink-0">
+      <div className="sticky top-0 z-30 bg-white dark:bg-slate-900 text-slate-900 dark:text-white px-6 py-3.5 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between shadow-md shrink-0">
         <div className="flex items-center space-x-4">
           <button
             onClick={onClose}
             type="button"
-            className="p-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white transition-all flex items-center gap-2 text-xs font-bold border border-slate-700 cursor-pointer"
+            className="p-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 dark:bg-slate-800 dark:hover:bg-slate-700 dark:text-slate-300 transition-all flex items-center gap-2 text-xs font-bold border border-slate-300 dark:border-slate-700 cursor-pointer"
           >
             <X className="w-4 h-4" />
             <span>Cerrar</span>
           </button>
           <div>
-            <div className="flex items-center space-x-2 text-[11px] text-slate-400 font-mono">
+            <div className="flex items-center space-x-2 text-[11px] text-slate-500 dark:text-slate-400 font-mono">
               <span>Gestión de Materiales</span>
               <span>/</span>
               <span>Maestro de Almacén</span>
               <span>/</span>
-              <span className="text-emerald-400 font-bold">#inv-materiales</span>
+              <span className="text-emerald-600 dark:text-emerald-400 font-bold">#inv-materiales</span>
             </div>
-            <h2 className="text-base font-black text-white flex items-center gap-2 mt-0.5">
-              <Package className="w-4 h-4 text-emerald-400" />
+            <h2 className="text-base font-black text-slate-900 dark:text-white flex items-center gap-2 mt-0.5">
+              <Package className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
               <span>Alta de Nuevo Material (axomira:inventario:materiales)</span>
-
-
             </h2>
           </div>
         </div>
@@ -257,23 +255,21 @@ export const CreateMaterialModal = ({ isOpen, onClose }) => {
               </div>
             </div>
           </div>
-        </form>
-      </div>
-
-      {/* Sticky Bottom Summary Bar */}
-      <div className="sticky bottom-0 z-30 bg-slate-900 text-white px-6 py-3.5 border-t border-slate-800 flex items-center justify-between shrink-0 no-print">
+        
+          {/* Sticky Bottom Summary Bar */}
+      <div className="sticky bottom-0 z-30 bg-white dark:bg-slate-900 text-slate-900 dark:text-white px-6 py-3.5 border-t border-slate-200 dark:border-slate-800 flex items-center justify-between shrink-0 no-print shadow-lg">
         <div className="flex items-center space-x-6 text-xs">
           <div>
-            <span className="text-slate-400 block text-[10px]">SKU Material</span>
-            <span className="font-mono font-bold text-emerald-400 text-sm">{id}</span>
+            <span className="text-slate-500 dark:text-slate-400 block text-[10px]">SKU Material</span>
+            <span className="font-mono font-bold text-emerald-600 dark:text-emerald-400 text-sm">{id}</span>
           </div>
           <div>
-            <span className="text-slate-400 block text-[10px]">Valoración Inventario</span>
-            <span className="font-mono font-bold text-sky-400 text-sm">${(Number(stock) * Number(unitPrice)).toLocaleString()}</span>
+            <span className="text-slate-500 dark:text-slate-400 block text-[10px]">Valoración Inventario</span>
+            <span className="font-mono font-bold text-sky-600 dark:text-sky-400 text-sm">${(Number(stock) * Number(unitPrice)).toLocaleString()}</span>
           </div>
           <div>
-            <span className="text-slate-400 block text-[10px]">Casillero Bin</span>
-            <span className="font-mono font-bold text-slate-200">{storageBin} (Almacén {storageLocation})</span>
+            <span className="text-slate-500 dark:text-slate-400 block text-[10px]">Casillero Bin</span>
+            <span className="font-mono font-bold text-slate-800 dark:text-slate-200">{storageBin} (Almacén {storageLocation})</span>
           </div>
         </div>
 
@@ -281,20 +277,21 @@ export const CreateMaterialModal = ({ isOpen, onClose }) => {
           <button
             type="button"
             onClick={onClose}
-            className="px-4 py-2 rounded-xl text-xs font-bold text-slate-400 hover:text-white"
+            className="px-4 py-2 rounded-xl text-xs font-bold text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors cursor-pointer"
           >
             Cancelar
           </button>
           <button
             type="submit"
-            form="mm01-form"
-            className="px-5 py-2 rounded-xl text-xs font-bold bg-sky-700 hover:bg-sky-800 text-white shadow-lg transition-all flex items-center gap-2 cursor-pointer"
-
+            form="create-material-form"
+            className="px-5 py-2.5 rounded-xl text-xs font-bold bg-sap-blue hover:bg-sap-blue-hover text-white shadow-lg transition-all cursor-pointer flex items-center gap-2"
           >
-            <Package className="w-4 h-4" />
-            <span>Guardar Material (#inv-materiales)</span>
+            <Check className="w-4 h-4" />
+            <span>Crear Material en Maestro MM01</span>
           </button>
         </div>
+      </div>
+        </form>
       </div>
     </div>
   );

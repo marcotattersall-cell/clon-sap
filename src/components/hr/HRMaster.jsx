@@ -741,26 +741,26 @@ export const HRMaster = ({ onOpenCreateEmployee, onOpenCreateAbsence }) => {
       {activeSubTab === 'PY01_ML_AUDIT' && (
         <div className="space-y-5">
           {/* Header Banner */}
-          <div className="p-5 rounded-2xl bg-slate-900 border border-purple-800/50 text-white shadow-xl relative overflow-hidden">
+          <div className="p-5 rounded-2xl bg-purple-50 dark:bg-slate-900 border border-purple-200 dark:border-purple-800/50 text-slate-900 dark:text-white shadow-sm relative overflow-hidden">
             <div className="absolute right-0 top-0 w-96 h-96 bg-purple-600/10 rounded-full blur-3xl pointer-events-none" />
             <div className="flex flex-wrap items-center justify-between gap-4 relative z-10">
               <div className="space-y-1">
-                <div className="flex items-center space-x-2 text-purple-400 font-bold text-xs uppercase tracking-wider">
-                  <Sparkles className="w-4 h-4 text-amber-300 animate-spin" />
+                <div className="flex items-center space-x-2 text-purple-700 dark:text-purple-400 font-bold text-xs uppercase tracking-wider">
+                  <Sparkles className="w-4 h-4 text-amber-600 dark:text-amber-300 animate-spin" />
                   <span>Módulo HCM — Machine Learning Infe-Engine v2.4</span>
                 </div>
-                <h3 className="text-xl font-black text-slate-100 flex items-center gap-2">
+                <h3 className="text-xl font-black text-slate-900 dark:text-slate-100 flex items-center gap-2">
                   <span>Auditoría Autónoma de Anomalías en Liquidaciones de Sueldo (PY01)</span>
                 </h3>
-                <p className="text-xs text-slate-300 max-w-3xl">
+                <p className="text-xs text-slate-600 dark:text-slate-300 max-w-3xl">
                   Inferencia estadística multivariable en tiempo real (Z-Score & IQR). Identifica descalces en horas extras, distorsiones de haberes y desviaciones respecto a la media del departamento antes del pago bancario masivo.
                 </p>
               </div>
 
               <div className="flex items-center gap-3">
-                <div className="bg-purple-950/80 border border-purple-700/60 px-4 py-2 rounded-xl text-right font-mono">
-                  <div className="text-[10px] text-purple-300 font-bold">Confianza Inferencia ML</div>
-                  <div className="text-lg font-black text-amber-300">{mlAvgConfidence}%</div>
+                <div className="bg-purple-100 dark:bg-purple-950/80 border border-purple-300 dark:border-purple-700/60 px-4 py-2 rounded-xl text-right font-mono">
+                  <div className="text-[10px] text-purple-800 dark:text-purple-300 font-bold">Confianza Inferencia ML</div>
+                  <div className="text-lg font-black text-amber-600 dark:text-amber-300">{mlAvgConfidence}%</div>
                 </div>
               </div>
             </div>

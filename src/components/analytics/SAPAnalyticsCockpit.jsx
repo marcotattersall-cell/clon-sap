@@ -103,16 +103,16 @@ export const SAPAnalyticsCockpit = () => {
   return (
     <div className="space-y-6 animate-in fade-in duration-300">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-slate-900 text-white p-5 rounded-2xl border border-slate-800 shadow-xl">
+      <div className="fiori-glass p-5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm bg-white dark:bg-slate-900 text-slate-900 dark:text-white flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <div className="flex items-center space-x-2 text-xs font-semibold text-emerald-400 uppercase tracking-wider mb-1">
-            <Activity className="w-4 h-4" />
+          <div className="flex items-center space-x-2 text-xs font-semibold text-emerald-600 dark:text-emerald-400 uppercase tracking-wider mb-1">
+            <Activity className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
             <span>Executive Analytics Cloud Cockpit</span>
           </div>
-          <h2 className="text-xl font-bold tracking-tight">
+          <h2 className="text-xl font-bold tracking-tight text-slate-900 dark:text-white">
             Cockpit de Inteligencia de Negocio & Control Financiero
           </h2>
-          <p className="text-xs text-slate-400 mt-0.5">
+          <p className="text-xs text-slate-600 dark:text-slate-400 mt-0.5">
             Métricas analíticas consolidadas de desempeño operacional, desviación presupuestaria y salud de activos.
           </p>
         </div>

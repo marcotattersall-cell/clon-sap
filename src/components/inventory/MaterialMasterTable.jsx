@@ -63,18 +63,16 @@ export const MaterialMasterTable = ({ onOpenCreateMaterial, onOpenMIGOForMateria
   return (
     <div className="space-y-4 animate-in fade-in duration-300">
       {/* Header bar */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-slate-900 text-white p-5 rounded-2xl border border-slate-800 shadow-xl">
+      <div className="fiori-glass p-5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm bg-white dark:bg-slate-900 text-slate-900 dark:text-white flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <div className="flex items-center space-x-2 text-xs font-semibold text-sky-400 uppercase tracking-wider mb-1 font-mono">
-            <Package className="w-4 h-4" />
-            <span>axomira:inventario:materiales <span className="bg-sky-950 text-sky-300 px-2 py-0.5 rounded border border-sky-800/60 ml-1">#inv-materiales</span></span>
-
-
+          <div className="flex items-center space-x-2 text-xs font-semibold text-sky-600 dark:text-sky-400 uppercase tracking-wider mb-1 font-mono">
+            <Package className="w-4 h-4 text-sap-blue" />
+            <span>axomira:inventario:materiales <span className="bg-sky-100 dark:bg-sky-950 text-sky-800 dark:text-sky-300 px-2 py-0.5 rounded border border-sky-200 dark:border-sky-800/60 ml-1">#inv-materiales</span></span>
           </div>
-          <h2 className="text-xl font-bold tracking-tight">
+          <h2 className="text-xl font-bold tracking-tight text-slate-900 dark:text-white">
             Gestión de Stock & Catálogo de Repuestos
           </h2>
-          <p className="text-xs text-slate-400 mt-0.5">
+          <p className="text-xs text-slate-600 dark:text-slate-400 mt-0.5">
             Control de inventario en tiempo real, valoración de stock y reaprovisionamiento.
           </p>
         </div>
@@ -82,7 +80,7 @@ export const MaterialMasterTable = ({ onOpenCreateMaterial, onOpenMIGOForMateria
         <div className="flex items-center space-x-3">
           <button
             onClick={onOpenCreateMaterial}
-            className="bg-sap-blue hover:bg-sap-blue-hover text-white text-xs font-bold px-4 py-2.5 rounded-xl shadow flex items-center space-x-2 transition-all"
+            className="bg-sap-blue hover:bg-sap-blue-hover text-white text-xs font-bold px-4 py-2.5 rounded-xl shadow flex items-center space-x-2 transition-all cursor-pointer"
           >
             <Plus className="w-4 h-4" />
             <span>+ Nuevo Material</span>
@@ -125,17 +123,17 @@ export const MaterialMasterTable = ({ onOpenCreateMaterial, onOpenMIGOForMateria
       {(() => {
         if (filteredMaterials.length === 0) {
           return (
-            <div className="p-4 rounded-xl bg-slate-900 border border-purple-800/60 text-white shadow-lg space-y-2">
+            <div className="p-4 rounded-xl bg-purple-50 dark:bg-slate-900 border border-purple-200 dark:border-purple-800/60 text-slate-900 dark:text-white shadow-sm space-y-2">
               <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-2 text-xs font-bold text-purple-300">
-                  <Sparkles className="w-4 h-4 text-amber-300 animate-spin" />
+                <div className="flex items-center space-x-2 text-xs font-bold text-purple-700 dark:text-purple-300">
+                  <Sparkles className="w-4 h-4 text-amber-600 dark:text-amber-300 animate-spin" />
                   <span>Pronóstico Inteligente de Demanda MM (Demand Forecasting ML Engine)</span>
                 </div>
-                <span className="text-[10px] font-mono text-purple-300 bg-purple-950 px-2 py-0.5 rounded border border-purple-800">
+                <span className="text-[10px] font-mono text-purple-800 dark:text-purple-300 bg-purple-100 dark:bg-purple-950 px-2 py-0.5 rounded border border-purple-300 dark:border-purple-800">
                   Modelo In-Browser v2.1
                 </span>
               </div>
-              <div className="text-xs text-slate-400 font-medium pt-1">
+              <div className="text-xs text-slate-600 dark:text-slate-400 font-medium pt-1">
                 ℹ️ Sin datos de repuestos o inventario registrado en el catálogo para proyectar demanda.
               </div>
             </div>
@@ -145,23 +143,23 @@ export const MaterialMasterTable = ({ onOpenCreateMaterial, onOpenMIGOForMateria
         const forecasts = forecastCatalogDemand(filteredMaterials);
         const criticalForecasts = forecasts.filter(f => f.stockoutRisk === 'CRITICAL' || f.stockoutRisk === 'HIGH');
         return (
-          <div className="p-4 rounded-xl bg-slate-900 border border-purple-800/60 text-white shadow-lg space-y-2">
+          <div className="p-4 rounded-xl bg-purple-50 dark:bg-slate-900 border border-purple-200 dark:border-purple-800/60 text-slate-900 dark:text-white shadow-sm space-y-2">
             <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-2 text-xs font-bold text-purple-300">
-                <Sparkles className="w-4 h-4 text-amber-300 animate-spin" />
+              <div className="flex items-center space-x-2 text-xs font-bold text-purple-700 dark:text-purple-300">
+                <Sparkles className="w-4 h-4 text-amber-600 dark:text-amber-300 animate-spin" />
                 <span>Pronóstico Inteligente de Demanda MM (Demand Forecasting ML Engine)</span>
               </div>
-              <span className="text-[10px] font-mono text-purple-300 bg-purple-950 px-2 py-0.5 rounded border border-purple-800">
+              <span className="text-[10px] font-mono text-purple-800 dark:text-purple-300 bg-purple-100 dark:bg-purple-950 px-2 py-0.5 rounded border border-purple-300 dark:border-purple-800">
                 Modelo In-Browser v2.1
               </span>
             </div>
 
             <div className="flex flex-wrap items-center justify-between gap-3 pt-1 text-xs">
               <div className="space-y-0.5">
-                <div className="font-bold text-slate-200">
-                  Proyección a 30 días: <strong className="text-amber-300 font-mono">{forecasts.reduce((acc, f) => acc + f.projectedDemand30d, 0)} unidades</strong> consumidas estimadas.
+                <div className="font-bold text-slate-800 dark:text-slate-200">
+                  Proyección a 30 días: <strong className="text-amber-600 dark:text-amber-300 font-mono">{forecasts.reduce((acc, f) => acc + f.projectedDemand30d, 0)} unidades</strong> consumidas estimadas.
                 </div>
-                <div className="text-[11px] text-slate-400">
+                <div className="text-[11px] text-slate-600 dark:text-slate-400">
                   {criticalForecasts.length > 0
                     ? `⚠️ ${criticalForecasts.length} repuestos requieren ajuste de Punto de Reorden (Reorder Point)`
                     : '🟢 Todos los SKUs cuentan con Stock de Seguridad suficiente.'}
@@ -169,7 +167,7 @@ export const MaterialMasterTable = ({ onOpenCreateMaterial, onOpenMIGOForMateria
               </div>
 
               {criticalForecasts.length > 0 && (
-                <div className="bg-rose-950/80 border border-rose-700/60 px-3 py-1.5 rounded-lg text-rose-200 text-[11px] font-bold">
+                <div className="bg-rose-100 dark:bg-rose-950/80 border border-rose-300 dark:border-rose-700/60 px-3 py-1.5 rounded-lg text-rose-800 dark:text-rose-200 text-[11px] font-bold">
                   {criticalForecasts[0].purchaseRecommendation}
                 </div>
               )}

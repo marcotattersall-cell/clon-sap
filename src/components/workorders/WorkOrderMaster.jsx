@@ -327,13 +327,13 @@ export const WorkOrderMaster = ({ onOpenCreateWO, onOpenMIGOForWO }) => {
 
 
       {/* Toolbar & Filters */}
-      <div className="bg-slate-50 border border-slate-200 p-4 rounded-2xl flex flex-wrap items-center justify-between gap-3 text-xs">
+      <div className="bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-4 rounded-2xl flex flex-wrap items-center justify-between gap-3 text-xs">
         <div className="flex flex-wrap items-center gap-3 flex-1">
           {/* View Mode Switcher */}
-          <div className="bg-white border border-slate-200 p-1 rounded-xl flex items-center space-x-1 shadow-xs">
+          <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 p-1 rounded-xl flex items-center space-x-1 shadow-xs">
             <button
               onClick={() => setViewMode('KANBAN')}
-              className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center space-x-1.5 ${viewMode === 'KANBAN' ? 'bg-slate-900 text-white shadow-xs' : 'text-slate-600 hover:bg-slate-100'
+              className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center space-x-1.5 ${viewMode === 'KANBAN' ? 'bg-sap-blue text-white shadow-xs' : 'text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700'
                 }`}
             >
               <Kanban className="w-3.5 h-3.5" />
@@ -341,7 +341,7 @@ export const WorkOrderMaster = ({ onOpenCreateWO, onOpenMIGOForWO }) => {
             </button>
             <button
               onClick={() => setViewMode('TABLE')}
-              className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center space-x-1.5 ${viewMode === 'TABLE' ? 'bg-slate-900 text-white shadow-xs' : 'text-slate-600 hover:bg-slate-100'
+              className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center space-x-1.5 ${viewMode === 'TABLE' ? 'bg-sap-blue text-white shadow-xs' : 'text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700'
                 }`}
             >
               <TableIcon className="w-3.5 h-3.5" />
@@ -805,10 +805,10 @@ export const WorkOrderMaster = ({ onOpenCreateWO, onOpenMIGOForWO }) => {
             </div>
 
             {/* Modal Action Footer: Quick Transition Bar */}
-            <div className="bg-slate-100 p-4 border-t border-slate-200 flex flex-wrap items-center justify-between gap-3 text-xs">
+            <div className="bg-slate-100 dark:bg-slate-900 p-4 border-t border-slate-200 dark:border-slate-800 flex flex-wrap items-center justify-between gap-3 text-xs">
               <div className="flex items-center space-x-2">
-                <span className="font-bold text-slate-700">Estado Actual:</span>
-                <span className="font-mono font-bold bg-slate-900 text-white px-2.5 py-1 rounded-lg">
+                <span className="font-bold text-slate-700 dark:text-slate-300">Estado Actual:</span>
+                <span className="font-mono font-bold bg-slate-800 dark:bg-slate-700 text-white px-2.5 py-1 rounded-lg">
                   {activeWO.status}
                 </span>
               </div>

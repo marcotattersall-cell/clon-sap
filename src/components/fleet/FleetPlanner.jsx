@@ -237,16 +237,16 @@ export const FleetPlanner = ({ onOpenCreateWOForVehicle }) => {
   return (
     <div className="space-y-6 animate-in fade-in">
       {/* Header Banner */}
-      <div className="fiori-card p-6 bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900 text-white rounded-2xl shadow-xl border border-slate-700/80 flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div className="fiori-glass p-6 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white rounded-2xl shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div className="space-y-1">
           <div className="flex items-center space-x-2">
-            <Truck className="w-6 h-6 text-sky-400" />
-            <h2 className="text-xl font-black tracking-tight text-white">
+            <Truck className="w-6 h-6 text-sap-blue dark:text-sky-400" />
+            <h2 className="text-xl font-black tracking-tight text-slate-900 dark:text-white">
               Gestión de Flota & Control de Vencimientos
             </h2>
           </div>
-          <p className="text-xs text-slate-300 max-w-3xl leading-relaxed">
-            Gestión integral de la flota: Ciclos de Mantenimiento Preventivo (<strong className="text-amber-400">250 hrs / 10.000 km</strong>) y Semáforo de <strong className="text-sky-300">Acreditación en Faena, Permiso de Circulación, SOAP y Vencimientos Personalizados</strong>.
+          <p className="text-xs text-slate-600 dark:text-slate-300 max-w-3xl leading-relaxed">
+            Gestión integral de la flota: Ciclos de Mantenimiento Preventivo (<strong className="text-amber-600 dark:text-amber-400">250 hrs / 10.000 km</strong>) y Semáforo de <strong className="text-sky-700 dark:text-sky-300">Acreditación en Faena, Permiso de Circulación, SOAP y Vencimientos Personalizados</strong>.
           </p>
         </div>
 

@@ -234,24 +234,24 @@ export const GlobalTenantDashboard = () => {
   return (
     <div className="space-y-6 animate-in fade-in duration-200">
       {/* ----------------- BARRA KPI SUPERIOR CONSOLIDADA ----------------- */}
-      <div className="bg-slate-900 text-white p-5 rounded-2xl border border-slate-800 shadow-xl space-y-4">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-800">
+      <div className="fiori-glass p-5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm bg-white dark:bg-slate-900 text-slate-900 dark:text-white space-y-4">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-200 dark:border-slate-800">
           <div className="flex items-center space-x-3">
-            <div className="p-2.5 bg-blue-600/30 border border-blue-500/50 rounded-xl text-blue-400">
+            <div className="p-2.5 bg-blue-50 dark:bg-blue-600/30 border border-blue-200 dark:border-blue-500/50 rounded-xl text-sap-blue dark:text-blue-400">
               <Building2 className="w-6 h-6" />
             </div>
             <div>
-              <h2 className="text-lg font-bold text-white tracking-wide">
+              <h2 className="text-lg font-bold text-slate-900 dark:text-white tracking-wide">
                 SU01 - Dashboard Global de Clientes Corporativos (Multi-Tenant Cockpit)
               </h2>
-              <p className="text-xs text-slate-400 font-mono">
+              <p className="text-xs text-slate-500 dark:text-slate-400 font-mono">
                 Consola Central de Supervisión de Clientes, Usuarios, Transacciones, Seguridad y SLA
               </p>
             </div>
           </div>
 
           <div className="flex items-center space-x-2">
-            <span className="inline-flex items-center space-x-1.5 px-3 py-1 bg-emerald-950/80 text-emerald-400 border border-emerald-800 rounded-full text-xs font-bold font-mono">
+            <span className="inline-flex items-center space-x-1.5 px-3 py-1 bg-emerald-100 dark:bg-emerald-950/80 text-emerald-800 dark:text-emerald-400 border border-emerald-300 dark:border-emerald-800 rounded-full text-xs font-bold font-mono">
               <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
               <span>Salud BDD: 100% OK</span>
             </span>
@@ -260,64 +260,64 @@ export const GlobalTenantDashboard = () => {
 
         {/* Malla de KPIs Consolidados */}
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
-          <div className="bg-slate-800/80 p-3 rounded-xl border border-slate-700/60">
-            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block flex items-center gap-1">
-              <Building2 className="w-3 h-3 text-sky-400" /> Clientes Corporativos
+          <div className="bg-slate-50 dark:bg-slate-800/80 p-3 rounded-xl border border-slate-200 dark:border-slate-700/60">
+            <span className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider block flex items-center gap-1">
+              <Building2 className="w-3 h-3 text-sky-600 dark:text-sky-400" /> Clientes Corporativos
             </span>
-            <span className="text-xl font-bold font-mono text-white mt-1 block">
+            <span className="text-xl font-bold font-mono text-slate-900 dark:text-white mt-1 block">
               {globalSummary.clientsCount}
             </span>
-            <span className="text-[10px] text-emerald-400 font-mono">100% Activos</span>
+            <span className="text-[10px] text-emerald-600 dark:text-emerald-400 font-mono">100% Activos</span>
           </div>
 
-          <div className="bg-slate-800/80 p-3 rounded-xl border border-slate-700/60">
-            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block flex items-center gap-1">
-              <Users className="w-3 h-3 text-emerald-400" /> Usuarios Totales
+          <div className="bg-slate-50 dark:bg-slate-800/80 p-3 rounded-xl border border-slate-200 dark:border-slate-700/60">
+            <span className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider block flex items-center gap-1">
+              <Users className="w-3 h-3 text-emerald-600 dark:text-emerald-400" /> Usuarios Totales
             </span>
-            <span className="text-xl font-bold font-mono text-white mt-1 block">
+            <span className="text-xl font-bold font-mono text-slate-900 dark:text-white mt-1 block">
               {globalSummary.usersTotal}
             </span>
-            <span className="text-[10px] text-slate-300 font-mono">{globalSummary.usersActive} en sesión</span>
+            <span className="text-[10px] text-slate-600 dark:text-slate-300 font-mono">{globalSummary.usersActive} en sesión</span>
           </div>
 
-          <div className="bg-slate-800/80 p-3 rounded-xl border border-slate-700/60">
-            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block flex items-center gap-1">
-              <Activity className="w-3 h-3 text-purple-400" /> Acciones Totales
+          <div className="bg-slate-50 dark:bg-slate-800/80 p-3 rounded-xl border border-slate-200 dark:border-slate-700/60">
+            <span className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider block flex items-center gap-1">
+              <Activity className="w-3 h-3 text-purple-600 dark:text-purple-400" /> Acciones Totales
             </span>
-            <span className="text-xl font-bold font-mono text-purple-300 mt-1 block">
+            <span className="text-xl font-bold font-mono text-purple-700 dark:text-purple-300 mt-1 block">
               {(globalSummary.actionsTotal / 1000000).toFixed(2)}M
             </span>
-            <span className="text-[10px] text-slate-400 font-mono">Transacciones</span>
+            <span className="text-[10px] text-slate-500 dark:text-slate-400 font-mono">Transacciones</span>
           </div>
 
-          <div className="bg-slate-800/80 p-3 rounded-xl border border-slate-700/60">
-            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block flex items-center gap-1">
-              <AlertTriangle className="w-3 h-3 text-amber-400" /> Errores Capturados
+          <div className="bg-slate-50 dark:bg-slate-800/80 p-3 rounded-xl border border-slate-200 dark:border-slate-700/60">
+            <span className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider block flex items-center gap-1">
+              <AlertTriangle className="w-3 h-3 text-amber-600 dark:text-amber-400" /> Errores Capturados
             </span>
-            <span className="text-xl font-bold font-mono text-amber-300 mt-1 block">
+            <span className="text-xl font-bold font-mono text-amber-700 dark:text-amber-300 mt-1 block">
               {globalSummary.errorsTotal}
             </span>
-            <span className="text-[10px] text-emerald-400 font-mono">Bajo Control</span>
+            <span className="text-[10px] text-emerald-600 dark:text-emerald-400 font-mono">Bajo Control</span>
           </div>
 
-          <div className="bg-slate-800/80 p-3 rounded-xl border border-slate-700/60">
-            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block flex items-center gap-1">
-              <Ticket className="w-3 h-3 text-rose-400" /> Tickets Soporte
+          <div className="bg-slate-50 dark:bg-slate-800/80 p-3 rounded-xl border border-slate-200 dark:border-slate-700/60">
+            <span className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider block flex items-center gap-1">
+              <Ticket className="w-3 h-3 text-rose-600 dark:text-rose-400" /> Tickets Soporte
             </span>
-            <span className="text-xl font-bold font-mono text-rose-300 mt-1 block">
+            <span className="text-xl font-bold font-mono text-rose-700 dark:text-rose-300 mt-1 block">
               {globalSummary.openTickets}
             </span>
-            <span className="text-[10px] text-slate-400 font-mono">Abiertos / En Proceso</span>
+            <span className="text-[10px] text-slate-500 dark:text-slate-400 font-mono">Abiertos / En Proceso</span>
           </div>
 
-          <div className="bg-slate-800/80 p-3 rounded-xl border border-slate-700/60">
-            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block flex items-center gap-1">
-              <Bot className="w-3 h-3 text-sky-400" /> Consultas IA Copilot
+          <div className="bg-slate-50 dark:bg-slate-800/80 p-3 rounded-xl border border-slate-200 dark:border-slate-700/60">
+            <span className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider block flex items-center gap-1">
+              <Bot className="w-3 h-3 text-sky-600 dark:text-sky-400" /> Consultas IA Copilot
             </span>
-            <span className="text-xl font-bold font-mono text-sky-300 mt-1 block">
+            <span className="text-xl font-bold font-mono text-sky-700 dark:text-sky-300 mt-1 block">
               {globalSummary.copilotQueries.toLocaleString('es-CL')}
             </span>
-            <span className="text-[10px] text-slate-400 font-mono">Preguntas IA</span>
+            <span className="text-[10px] text-slate-500 dark:text-slate-400 font-mono">Preguntas IA</span>
           </div>
         </div>
       </div>

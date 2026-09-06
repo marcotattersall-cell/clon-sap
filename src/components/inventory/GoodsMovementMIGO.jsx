@@ -62,18 +62,16 @@ const GoodsMovementMIGOComponent = ({ initialMaterialId = '' }) => {
   return (
     <div className="space-y-6 animate-in fade-in duration-300">
       {/* Header Banner */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-slate-900 text-white p-5 rounded-2xl border border-slate-800 shadow-xl">
+      <div className="fiori-glass p-5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm bg-white dark:bg-slate-900 text-slate-900 dark:text-white flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <div className="flex items-center space-x-2 text-xs font-semibold text-sky-400 uppercase tracking-wider mb-1 font-mono">
-            <Package className="w-4 h-4" />
-            <span>axomira:inventario:movimientos <span className="bg-sky-950 text-sky-300 px-2 py-0.5 rounded border border-sky-800/60 ml-1">#inv-mov</span></span>
-
-
+          <div className="flex items-center space-x-2 text-xs font-semibold text-sky-600 dark:text-sky-400 uppercase tracking-wider mb-1 font-mono">
+            <Package className="w-4 h-4 text-sap-blue" />
+            <span>axomira:inventario:movimientos <span className="bg-sky-100 dark:bg-sky-950 text-sky-800 dark:text-sky-300 px-2 py-0.5 rounded border border-sky-200 dark:border-sky-800/60 ml-1">#inv-mov</span></span>
           </div>
-          <h2 className="text-xl font-bold tracking-tight">
+          <h2 className="text-xl font-bold tracking-tight text-slate-900 dark:text-white">
             Movimiento de Mercancías & Gestión de Stock
           </h2>
-          <p className="text-xs text-slate-400 mt-0.5">
+          <p className="text-xs text-slate-600 dark:text-slate-400 mt-0.5">
             Procesamiento de documentos de entradas, salidas (261) y traspasos con actualización en tiempo real.
           </p>
         </div>
