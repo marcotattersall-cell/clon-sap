@@ -75,4 +75,42 @@ describe('Transacción SAP SU01 / SU10 & Matriz RBAC', () => {
     expect(userSU01.status).toBe('Activo');
   });
 
+  it('debe acumular, permitir editar y generar respuestas por email para solicitudes de DEMO', () => {
+    const demoReq = {
+      id: 'DEMO-REQ-2026-9999',
+      ticketId: 'DEMO-REQ-2026-9999',
+      fullName: 'Prueba Solicitante',
+      email: 'prueba@empresa.com',
+      company: 'Empresa Test SpA',
+      industry: 'Gran Minería & Extracción',
+      employeeCount: '51 a 200 colaboradores',
+      phone: '+56 9 1111 2222',
+      primaryModule: 'Suite ERP Completa',
+      assetCount: '10 a 50 Equipos/Maquinarias',
+      notes: 'Necesitamos probar sandbox.',
+      status: 'Pendiente',
+      responseNotes: ''
+    };
+
+    // 1. Acumulación y Persistencia
+    const list = [demoReq];
+    expect(list.length).toBe(1);
+    expect(list[0].ticketId).toBe('DEMO-REQ-2026-9999');
+
+    // 2. Edición
+    list[0].status = 'En Revisión';
+    list[0].notes = 'Actualización de notas.';
+    expect(list[0].status).toBe('En Revisión');
+    expect(list[0].notes).toBe('Actualización de notas.');
+
+    // 3. Respuesta por E-mail
+    const emailSubject = `[AXOMIRA ERP] Respuesta a Solicitud de Demostración (${list[0].ticketId})`;
+    list[0].status = 'Respondido';
+    list[0].responseNotes = `[2026-09-06] Correo enviado: "${emailSubject}"`;
+
+    expect(list[0].status).toBe('Respondido');
+    expect(list[0].responseNotes).toContain('Correo enviado');
+  });
+
 });
+

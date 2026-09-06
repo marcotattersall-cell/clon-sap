@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useSAP } from '../../context/SAPContext';
 import { useAuth } from '../../context/AuthContext';
 import { RBAC_PERMISSIONS, SAP_ROLES } from '../../utils/rbacRules';
@@ -24,15 +24,156 @@ import {
   Trash2,
   Server,
   Download,
-  Eye
+  Eye,
+  Inbox,
+  Sparkles,
+  Send,
+  Clock,
+  Phone,
+  Briefcase,
+  Layers,
+  MessageSquare,
+  FileText,
+  Tag,
+  AlertCircle
 } from 'lucide-react';
+
+const INITIAL_DEMO_REQUESTS = [
+  {
+    id: 'DEMO-REQ-2026-4160',
+    ticketId: 'DEMO-REQ-2026-4160',
+    timestamp: '2026-09-06 14:30',
+    fullName: 'Juan Pablo Bennett',
+    email: 'jbennett@mineradelnorte.cl',
+    company: 'Minera del Norte SpA',
+    industry: 'Gran Minería & Extracción',
+    employeeCount: 'Más de 500 colaboradores (Gran Minería)',
+    phone: '+56 9 8765 4321',
+    primaryModule: 'Mantenimiento PM (IW31/IW32)',
+    assetCount: 'Más de 200 Equipos (Gran Minería)',
+    notes: 'Requerimos migración urgente de flota de camiones CAT 797F y palas hidráulicas P&H 4100XPC.',
+    status: 'Pendiente',
+    responseNotes: ''
+  },
+  {
+    id: 'DEMO-REQ-2026-3892',
+    ticketId: 'DEMO-REQ-2026-3892',
+    timestamp: '2026-09-05 09:15',
+    fullName: 'Camila Torres Valenzuela',
+    email: 'camila.torres@constructoralatitud.cl',
+    company: 'Constructora Latitud Sur',
+    industry: 'Construcción & Obras Civiles',
+    employeeCount: '201 a 500 colaboradores',
+    phone: '+56 9 9123 8877',
+    primaryModule: 'Gestión de Materiales MM (MIGO 261/101)',
+    assetCount: '51 a 200 Equipos/Maquinarias',
+    notes: 'Interesados en trazabilidad en tiempo real de bodega central y despacho de repuestos a faenas.',
+    status: 'En Revisión',
+    responseNotes: 'Reunión agendada con equipo técnico para el jueves 10 AM.'
+  },
+  {
+    id: 'DEMO-REQ-2026-2741',
+    ticketId: 'DEMO-REQ-2026-2741',
+    timestamp: '2026-09-04 16:45',
+    fullName: 'Rodrigo Morales Sepúlveda',
+    email: 'rmorales@transmarlog.com',
+    company: 'Transportes y Logística Marítima',
+    industry: 'Transporte & Logística de Flota',
+    employeeCount: '51 a 200 colaboradores',
+    phone: '+56 9 7766 5544',
+    primaryModule: 'Control de Flotas & Maquinarias (IE03)',
+    assetCount: '51 a 200 Equipos/Maquinarias',
+    notes: 'Evaluando integración telemetría GPS y mantenimiento preventivo por kilometraje.',
+    status: 'Respondido',
+    responseNotes: 'Se envió propuesta técnica personalizada y credenciales de acceso al Sandbox ERP.'
+  },
+  {
+    id: 'DEMO-REQ-2026-1509',
+    ticketId: 'DEMO-REQ-2026-1509',
+    timestamp: '2026-09-02 11:20',
+    fullName: 'Ignacio Salgado Bravo',
+    email: 'isalgado@energiapaci.cl',
+    company: 'Pacífico Energía & Gas',
+    industry: 'Energía, Gas & Petróleo',
+    employeeCount: '201 a 500 colaboradores',
+    phone: '+56 9 5544 3322',
+    primaryModule: 'Suite ERP Completa',
+    assetCount: '10 a 50 Equipos/Maquinarias',
+    notes: 'Cotización solicitada para suite completa ERP con módulo HCM de personal.',
+    status: 'Aprobado',
+    responseNotes: 'Demo técnica ejecutada con éxito. Contrato enviado a firma.'
+  }
+];
 
 export const UserManagementSU01 = () => {
   const { addToast } = useSAP();
   const { sendPasswordReset, switchTenant } = useAuth();
 
-  // Navigation Sub-tab ('DASHBOARD_GLOBAL' | 'VISTA_CLIENTES' | 'DIRECTORIO_USUARIOS' | 'MATRIZ_RBAC')
+  // Navigation Sub-tab ('DASHBOARD_GLOBAL' | 'SOLICITUDES_DEMO' | 'VISTA_CLIENTES' | 'DIRECTORIO_USUARIOS' | 'MATRIZ_RBAC')
   const [activeSubTab, setActiveSubTab] = useState('DASHBOARD_GLOBAL');
+
+  // Estado Local de Solicitudes de DEMO con Persistencia en localStorage
+  const [demoRequests, setDemoRequests] = useState(() => {
+    try {
+      const stored = localStorage.getItem('axomira_demo_requests');
+      if (stored) {
+        const parsed = JSON.parse(stored);
+        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+      }
+    } catch (e) {
+      console.error(e);
+    }
+    return INITIAL_DEMO_REQUESTS;
+  });
+
+  useEffect(() => {
+    try {
+      localStorage.setItem('axomira_demo_requests', JSON.stringify(demoRequests));
+    } catch (e) {
+      console.error(e);
+    }
+  }, [demoRequests]);
+
+  useEffect(() => {
+    const handleNewDemo = (e) => {
+      if (e.detail) {
+        setDemoRequests(prev => [e.detail, ...prev.filter(r => r.id !== e.detail.id)]);
+      }
+    };
+    window.addEventListener('axomira-demo-request-added', handleNewDemo);
+    return () => window.removeEventListener('axomira-demo-request-added', handleNewDemo);
+  }, []);
+
+  // Filtros de Solicitudes Demo
+  const [demoSearchQuery, setDemoSearchQuery] = useState('');
+  const [demoStatusFilter, setDemoStatusFilter] = useState('ALL');
+  const [demoIndustryFilter, setDemoIndustryFilter] = useState('ALL');
+
+  // Modal Estado Edición Solicitud Demo
+  const [isEditDemoModalOpen, setIsEditDemoModalOpen] = useState(false);
+  const [editingDemoReq, setEditingDemoReq] = useState(null);
+  const [editDemoForm, setEditDemoForm] = useState({
+    fullName: '',
+    email: '',
+    company: '',
+    phone: '',
+    industry: 'Gran Minería & Extracción',
+    employeeCount: '51 a 200 colaboradores',
+    primaryModule: 'Suite ERP Completa',
+    assetCount: '10 a 50 Equipos/Maquinarias',
+    notes: '',
+    status: 'Pendiente',
+    responseNotes: ''
+  });
+
+  // Modal Estado Respuesta Email
+  const [isEmailModalOpen, setIsEmailModalOpen] = useState(false);
+  const [respondingDemoReq, setRespondingDemoReq] = useState(null);
+  const [emailTo, setEmailTo] = useState('');
+  const [emailSubject, setEmailSubject] = useState('');
+  const [emailBody, setEmailBody] = useState('');
+  const [emailTemplate, setEmailTemplate] = useState('SANDBOX_ACCESS');
+  const [autoMarkRespondido, setAutoMarkRespondido] = useState(true);
 
   // Lista de Tenants Corporativos Conocidos
   const tenantOptions = [
@@ -268,6 +409,169 @@ export const UserManagementSU01 = () => {
   const blockedUsers = usersList.filter(u => u.status === 'Bloqueado').length;
   const adminUsers = usersList.filter(u => u.role === 'ADMINISTRATOR').length;
 
+  // Handlers para Solicitudes de DEMO
+  const handleOpenEditDemo = (req) => {
+    setEditingDemoReq(req);
+    setEditDemoForm({
+      fullName: req.fullName || '',
+      email: req.email || '',
+      company: req.company || '',
+      phone: req.phone || '',
+      industry: req.industry || 'Gran Minería & Extracción',
+      employeeCount: req.employeeCount || '51 a 200 colaboradores',
+      primaryModule: req.primaryModule || 'Suite ERP Completa',
+      assetCount: req.assetCount || '10 a 50 Equipos/Maquinarias',
+      notes: req.notes || '',
+      status: req.status || 'Pendiente',
+      responseNotes: req.responseNotes || ''
+    });
+    setIsEditDemoModalOpen(true);
+  };
+
+  const handleSaveEditDemo = (e) => {
+    e.preventDefault();
+    if (!editingDemoReq) return;
+
+    setDemoRequests(prev => prev.map(r => {
+      if (r.id === editingDemoReq.id) {
+        return {
+          ...r,
+          ...editDemoForm
+        };
+      }
+      return r;
+    }));
+
+    addToast(`✏️ Solicitud ${editingDemoReq.ticketId} actualizada correctamente.`, 'success');
+    setIsEditDemoModalOpen(false);
+  };
+
+  const buildEmailTemplate = (templateKey, req) => {
+    const name = req?.fullName || 'Estimado/a';
+    const company = req?.company || 'su empresa';
+    const ticket = req?.ticketId || '';
+    const module = req?.primaryModule || 'Suite ERP Completa';
+
+    if (templateKey === 'SANDBOX_ACCESS') {
+      return `Estimado/a ${name},
+
+Gracias por su interés en AXOMIRA Cloud ERP para ${company}.
+
+Hemos procesado su solicitud de demostración (Ticket: ${ticket}). Nos complace habilitarle el acceso directo a nuestro Sandbox ERP Interactivo de pruebas, donde podrá explorar el módulo de "${module}" y simular operaciones en vivo.
+
+🔗 Acceso al Sandbox ERP: https://axomira-erp.cloud/sandbox
+👤 Usuario de prueba: demo.evaluador@axomira.cl
+🔑 Clave temporal: Axomira2026!
+
+Quedamos a su completa disposición para coordinar una sesión guiada con uno de nuestros especialistas técnicos.
+
+Atentamente,
+Equipo de Soluciones Corporativas
+AXOMIRA Cloud ERP Enterprise`;
+    }
+
+    if (templateKey === 'MEETING_SCHEDULE') {
+      return `Estimado/a ${name},
+
+Junto con saludarle desde AXOMIRA Cloud ERP, hemos recibido su requerimiento corporativo para ${company} (Ticket ${ticket}).
+
+Nos gustaría agendar una reunión técnica demostrativa de 30 minutos a través de Microsoft Teams o Google Meet para revisar en detalle sus necesidades sobre "${module}".
+
+Por favor indíquenos qué día y horario acomoda mejor a su equipo entre las siguientes opciones:
+- Opción A: Mañana a las 10:00 AM
+- Opción B: Pasado mañana a las 15:30 PM
+
+Quedamos atentos a su confirmación.
+
+Atentamente,
+Consultoría Técnica ERP
+AXOMIRA Cloud ERP Enterprise`;
+    }
+
+    if (templateKey === 'PROPOSAL_QUOTE') {
+      return `Estimado/a ${name},
+
+Es un gusto saludarle. En relación a su solicitud de demostración ${ticket} para ${company}, hemos preparado una propuesta técnica preliminar adaptada a su dotación y volumen de activos.
+
+Adjunto a este correo encontrará la propuesta preliminar de implementación para el módulo "${module}".
+
+Si requiere ajustar el alcance o agregar más usuarios a la prueba corporativa, no dude en responder a este correo.
+
+Atentamente,
+Departamento Comercial Corporativo
+AXOMIRA Cloud ERP Enterprise`;
+    }
+
+    return '';
+  };
+
+  const handleOpenEmailModal = (req) => {
+    setRespondingDemoReq(req);
+    setEmailTo(req.email);
+    setEmailSubject(`[AXOMIRA ERP] Respuesta a Solicitud de Demostración (${req.ticketId})`);
+    setEmailBody(buildEmailTemplate('SANDBOX_ACCESS', req));
+    setEmailTemplate('SANDBOX_ACCESS');
+    setIsEmailModalOpen(true);
+  };
+
+  const handleTemplateChange = (newTemplateKey) => {
+    setEmailTemplate(newTemplateKey);
+    if (respondingDemoReq) {
+      setEmailBody(buildEmailTemplate(newTemplateKey, respondingDemoReq));
+    }
+  };
+
+  const handleSendEmailResponse = (e) => {
+    e.preventDefault();
+    if (!respondingDemoReq || !emailTo.trim()) {
+      addToast('❌ Especifica un destinatario válido.', 'error');
+      return;
+    }
+
+    // Open mailto link
+    const mailtoUrl = `mailto:${encodeURIComponent(emailTo)}?subject=${encodeURIComponent(emailSubject)}&body=${encodeURIComponent(emailBody)}`;
+    window.open(mailtoUrl, '_blank');
+
+    // Update state
+    setDemoRequests(prev => prev.map(r => {
+      if (r.id === respondingDemoReq.id) {
+        const nextStatus = autoMarkRespondido ? 'Respondido' : r.status;
+        const newNote = `[${new Date().toLocaleDateString()}] Correo enviado: "${emailSubject}"`;
+        const updatedNotes = r.responseNotes ? `${r.responseNotes}\n${newNote}` : newNote;
+        return {
+          ...r,
+          status: nextStatus,
+          responseNotes: updatedNotes
+        };
+      }
+      return r;
+    }));
+
+    addToast(`📧 Respuesta preparada y enviada por correo para ${respondingDemoReq.company}.`, 'success');
+    setIsEmailModalOpen(false);
+  };
+
+  const handleDeleteDemoReq = (ticketId, companyName) => {
+    if (window.confirm(`¿Está seguro de eliminar la solicitud ${ticketId} de ${companyName}?`)) {
+      setDemoRequests(prev => prev.filter(r => r.ticketId !== ticketId));
+      addToast(`🗑️ Solicitud ${ticketId} eliminada del sistema.`, 'info');
+    }
+  };
+
+  // Filtrado de Solicitudes Demo
+  const filteredDemoRequests = demoRequests.filter(req => {
+    const matchesSearch =
+      (req.ticketId || '').toLowerCase().includes(demoSearchQuery.toLowerCase()) ||
+      (req.fullName || '').toLowerCase().includes(demoSearchQuery.toLowerCase()) ||
+      (req.email || '').toLowerCase().includes(demoSearchQuery.toLowerCase()) ||
+      (req.company || '').toLowerCase().includes(demoSearchQuery.toLowerCase());
+    
+    const matchesStatus = demoStatusFilter === 'ALL' || req.status === demoStatusFilter;
+    const matchesIndustry = demoIndustryFilter === 'ALL' || req.industry === demoIndustryFilter;
+
+    return matchesSearch && matchesStatus && matchesIndustry;
+  });
+
   // Handlers para Vista de Clientes Corporativos
   const handleSwitchTenantView = (client) => {
     setSelectedTenantFilter(client.tenantId);
@@ -445,10 +749,10 @@ export const UserManagementSU01 = () => {
       </div>
 
       {/* Sub-tab Navigation Ribbon */}
-      <div className="flex border-b border-slate-200 dark:border-slate-800 space-x-2 text-xs font-bold">
+      <div className="flex border-b border-slate-200 dark:border-slate-800 space-x-2 text-xs font-bold overflow-x-auto">
         <button
           onClick={() => setActiveSubTab('DASHBOARD_GLOBAL')}
-          className={`pb-3 px-4 flex items-center space-x-2 border-b-2 transition-all ${
+          className={`pb-3 px-4 flex items-center space-x-2 border-b-2 transition-all whitespace-nowrap ${
             activeSubTab === 'DASHBOARD_GLOBAL'
               ? 'border-sap-blue text-sap-blue dark:text-blue-400'
               : 'border-transparent text-slate-500 hover:text-slate-800 dark:hover:text-slate-200'
@@ -460,8 +764,25 @@ export const UserManagementSU01 = () => {
         </button>
 
         <button
+          onClick={() => setActiveSubTab('SOLICITUDES_DEMO')}
+          className={`pb-3 px-4 flex items-center space-x-2 border-b-2 transition-all whitespace-nowrap ${
+            activeSubTab === 'SOLICITUDES_DEMO'
+              ? 'border-sky-500 text-sky-500 dark:text-sky-400'
+              : 'border-transparent text-slate-500 hover:text-slate-800 dark:hover:text-slate-200'
+          }`}
+        >
+          <Inbox className="w-4 h-4 text-sky-500" />
+          <span>Solicitudes de DEMO ({demoRequests.length})</span>
+          {demoRequests.filter(r => r.status === 'Pendiente').length > 0 && (
+            <span className="bg-amber-500 text-slate-950 font-black text-[10px] px-1.5 py-0.5 rounded-full font-mono animate-pulse">
+              {demoRequests.filter(r => r.status === 'Pendiente').length} Nuevas
+            </span>
+          )}
+        </button>
+
+        <button
           onClick={() => setActiveSubTab('VISTA_CLIENTES')}
-          className={`pb-3 px-4 flex items-center space-x-2 border-b-2 transition-all ${
+          className={`pb-3 px-4 flex items-center space-x-2 border-b-2 transition-all whitespace-nowrap ${
             activeSubTab === 'VISTA_CLIENTES'
               ? 'border-sap-blue text-sap-blue dark:text-blue-400'
               : 'border-transparent text-slate-500 hover:text-slate-800 dark:hover:text-slate-200'
@@ -474,7 +795,7 @@ export const UserManagementSU01 = () => {
 
         <button
           onClick={() => setActiveSubTab('DIRECTORIO_USUARIOS')}
-          className={`pb-3 px-4 flex items-center space-x-2 border-b-2 transition-all ${
+          className={`pb-3 px-4 flex items-center space-x-2 border-b-2 transition-all whitespace-nowrap ${
             activeSubTab === 'DIRECTORIO_USUARIOS'
               ? 'border-sap-blue text-sap-blue dark:text-blue-400'
               : 'border-transparent text-slate-500 hover:text-slate-800 dark:hover:text-slate-200'
@@ -486,7 +807,7 @@ export const UserManagementSU01 = () => {
 
         <button
           onClick={() => setActiveSubTab('MATRIZ_RBAC')}
-          className={`pb-3 px-4 flex items-center space-x-2 border-b-2 transition-all ${
+          className={`pb-3 px-4 flex items-center space-x-2 border-b-2 transition-all whitespace-nowrap ${
             activeSubTab === 'MATRIZ_RBAC'
               ? 'border-purple-600 text-purple-600 dark:text-purple-400'
               : 'border-transparent text-slate-500 hover:text-slate-800 dark:hover:text-slate-200'
@@ -501,6 +822,254 @@ export const UserManagementSU01 = () => {
       {/* SUB-TAB 0: DASHBOARD GLOBAL DE CLIENTES (11 MÉTIRCAS SUPERADMIN) */}
       {activeSubTab === 'DASHBOARD_GLOBAL' && (
         <GlobalTenantDashboard />
+      )}
+
+      {/* SUB-TAB 1: SOLICITUDES DE DEMO DESDE FORMULARIO LANDING PAGE */}
+      {activeSubTab === 'SOLICITUDES_DEMO' && (
+        <div className="space-y-6">
+          {/* Summary KPIs */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="fiori-glass p-4 rounded-xl border border-slate-200 dark:border-slate-800 space-y-1 shadow">
+              <div className="flex items-center justify-between text-slate-500 text-xs font-semibold">
+                <span>Total Solicitudes</span>
+                <Inbox className="w-4 h-4 text-sky-500" />
+              </div>
+              <div className="text-2xl font-black text-slate-900 dark:text-white font-mono">{demoRequests.length}</div>
+              <div className="text-[11px] text-slate-500">Recibidas desde el Formulario Web</div>
+            </div>
+
+            <div className="fiori-glass p-4 rounded-xl border border-slate-200 dark:border-slate-800 space-y-1 shadow">
+              <div className="flex items-center justify-between text-amber-600 dark:text-amber-400 text-xs font-semibold">
+                <span>Pendientes por Atender</span>
+                <Clock className="w-4 h-4 text-amber-500" />
+              </div>
+              <div className="text-2xl font-black text-amber-600 dark:text-amber-400 font-mono">
+                {demoRequests.filter(r => r.status === 'Pendiente').length}
+              </div>
+              <div className="text-[11px] text-slate-500">Requieren primer contacto</div>
+            </div>
+
+            <div className="fiori-glass p-4 rounded-xl border border-slate-200 dark:border-slate-800 space-y-1 shadow">
+              <div className="flex items-center justify-between text-emerald-600 dark:text-emerald-400 text-xs font-semibold">
+                <span>Respuestas Enviadas</span>
+                <Send className="w-4 h-4 text-emerald-500" />
+              </div>
+              <div className="text-2xl font-black text-emerald-600 dark:text-emerald-400 font-mono">
+                {demoRequests.filter(r => r.status === 'Respondido' || r.status === 'En Revisión').length}
+              </div>
+              <div className="text-[11px] text-slate-500">En gestión o comunicación</div>
+            </div>
+
+            <div className="fiori-glass p-4 rounded-xl border border-slate-200 dark:border-slate-800 space-y-1 shadow">
+              <div className="flex items-center justify-between text-purple-600 dark:text-purple-400 text-xs font-semibold">
+                <span>Demos Aprobadas / Cierre</span>
+                <Sparkles className="w-4 h-4 text-purple-500" />
+              </div>
+              <div className="text-2xl font-black text-purple-600 dark:text-purple-400 font-mono">
+                {demoRequests.filter(r => r.status === 'Aprobado').length}
+              </div>
+              <div className="text-[11px] text-slate-500">Acceso Sandbox / Reunión agendada</div>
+            </div>
+          </div>
+
+          {/* Filter & Search Bar */}
+          <div className="fiori-glass p-4 rounded-xl border border-slate-200 dark:border-slate-800 space-y-3 shadow-md">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-3 text-xs">
+              {/* Search Box */}
+              <div className="relative md:col-span-1">
+                <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+                <input
+                  type="text"
+                  value={demoSearchQuery}
+                  onChange={(e) => setDemoSearchQuery(e.target.value)}
+                  placeholder="Buscar por Ticket, Nombre, Empresa o Correo..."
+                  className="w-full bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-200 pl-9 pr-3 py-2 rounded-xl border border-slate-300 dark:border-slate-700 font-medium"
+                />
+              </div>
+
+              {/* Status Filter */}
+              <div className="md:col-span-1">
+                <select
+                  value={demoStatusFilter}
+                  onChange={(e) => setDemoStatusFilter(e.target.value)}
+                  className="w-full bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-200 p-2 rounded-xl border border-slate-300 dark:border-slate-700 font-bold"
+                >
+                  <option value="ALL">📌 Todos los Estados</option>
+                  <option value="Pendiente">🟡 Solo Pendientes</option>
+                  <option value="En Revisión">🔵 Solo En Revisión</option>
+                  <option value="Respondido">🟢 Solo Respondidos por E-mail</option>
+                  <option value="Aprobado">🟣 Solo Aprobados</option>
+                  <option value="Rechazado">🔴 Solo Rechazados</option>
+                </select>
+              </div>
+
+              {/* Industry Filter */}
+              <div className="md:col-span-1">
+                <select
+                  value={demoIndustryFilter}
+                  onChange={(e) => setDemoIndustryFilter(e.target.value)}
+                  className="w-full bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-200 p-2 rounded-xl border border-slate-300 dark:border-slate-700 font-bold"
+                >
+                  <option value="ALL">🏭 Todos los Rubros Industriales</option>
+                  <option value="Gran Minería & Extracción">Gran Minería & Extracción</option>
+                  <option value="Construcción & Obras Civiles">Construcción & Obras Civiles</option>
+                  <option value="Transporte & Logística de Flota">Transporte & Logística de Flota</option>
+                  <option value="Energía, Gas & Petróleo">Energía, Gas & Petróleo</option>
+                  <option value="Manufactura & Planta Industrial">Manufactura & Planta Industrial</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          {/* Table */}
+          <div className="fiori-glass p-6 rounded-2xl border border-slate-200 dark:border-slate-800 space-y-4 shadow-xl">
+            <div className="flex justify-between items-center border-b border-slate-200 dark:border-slate-800 pb-3">
+              <h3 className="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                <Inbox className="w-4 h-4 text-sky-500" />
+                <span>Bandeja de Solicitudes de DEMO ({filteredDemoRequests.length} registros)</span>
+              </h3>
+              <span className="text-[11px] text-slate-500 font-mono hidden sm:inline">
+                Información consolidada desde el Formulario Corporativo
+              </span>
+            </div>
+
+            <div className="overflow-x-auto">
+              <table className="sap-table">
+                <thead>
+                  <tr>
+                    <th>Ticket / Fecha</th>
+                    <th>Solicitante & Contacto</th>
+                    <th>Empresa & Rubro</th>
+                    <th>Dotación & Activos</th>
+                    <th>Módulo de Interés</th>
+                    <th>Comentarios Formulario</th>
+                    <th>Estado</th>
+                    <th className="text-right">Acciones Directas</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-200 dark:divide-slate-800 text-xs">
+                  {filteredDemoRequests.length === 0 ? (
+                    <tr>
+                      <td colSpan="8" className="text-center py-8 text-slate-400 font-medium">
+                        No se encontraron solicitudes de Demo con los filtros seleccionados.
+                      </td>
+                    </tr>
+                  ) : (
+                    filteredDemoRequests.map(req => (
+                      <tr key={req.id} className="hover:bg-sky-50/50 dark:hover:bg-slate-800/50 transition-colors">
+                        {/* Ticket / Fecha */}
+                        <td className="py-3">
+                          <div className="font-mono font-bold text-sky-600 dark:text-sky-400 flex items-center gap-1">
+                            <Tag className="w-3 h-3" />
+                            <span>{req.ticketId}</span>
+                          </div>
+                          <div className="text-[10px] text-slate-400 font-mono mt-0.5">{req.timestamp}</div>
+                        </td>
+
+                        {/* Solicitante */}
+                        <td>
+                          <div className="font-bold text-slate-900 dark:text-slate-100">{req.fullName}</div>
+                          <div className="text-[10px] text-slate-400 font-mono flex items-center gap-1">
+                            <Mail className="w-3 h-3 text-slate-500" />
+                            <span>{req.email}</span>
+                          </div>
+                          {req.phone && req.phone !== 'No especificado' && (
+                            <div className="text-[10px] text-slate-400 flex items-center gap-1">
+                              <Phone className="w-3 h-3 text-slate-500" />
+                              <span>{req.phone}</span>
+                            </div>
+                          )}
+                        </td>
+
+                        {/* Empresa & Rubro */}
+                        <td>
+                          <div className="font-bold text-slate-800 dark:text-slate-200 flex items-center gap-1">
+                            <Building2 className="w-3.5 h-3.5 text-slate-400" />
+                            <span>{req.company}</span>
+                          </div>
+                          <div className="text-[10px] text-slate-500">{req.industry}</div>
+                        </td>
+
+                        {/* Dotación & Activos */}
+                        <td>
+                          <div className="text-[11px] font-medium text-slate-700 dark:text-slate-300">{req.employeeCount}</div>
+                          <div className="text-[10px] text-slate-500 font-mono">{req.assetCount}</div>
+                        </td>
+
+                        {/* Módulo Interés */}
+                        <td>
+                          <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-sky-100 text-sky-900 dark:bg-sky-950 dark:text-sky-300 border border-sky-300 dark:border-sky-800 inline-block">
+                            {req.primaryModule}
+                          </span>
+                        </td>
+
+                        {/* Comentarios */}
+                        <td className="max-w-xs">
+                          <p className="text-[11px] text-slate-600 dark:text-slate-300 truncate" title={req.notes}>
+                            {req.notes || 'Sin requerimiento adicional'}
+                          </p>
+                          {req.responseNotes && (
+                            <div className="text-[10px] text-emerald-600 dark:text-emerald-400 font-medium truncate flex items-center gap-1 mt-0.5">
+                              <CheckCircle2 className="w-3 h-3 shrink-0" />
+                              <span>Historial: {req.responseNotes}</span>
+                            </div>
+                          )}
+                        </td>
+
+                        {/* Estado */}
+                        <td>
+                          <span className={`px-2.5 py-1 rounded-full text-[10px] font-black inline-flex items-center gap-1 ${
+                            req.status === 'Pendiente' ? 'bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300 border border-amber-300' :
+                            req.status === 'En Revisión' ? 'bg-blue-100 text-blue-800 dark:bg-blue-950 dark:text-blue-300 border border-blue-300' :
+                            req.status === 'Respondido' ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300 border border-emerald-300' :
+                            req.status === 'Aprobado' ? 'bg-purple-100 text-purple-800 dark:bg-purple-950 dark:text-purple-300 border border-purple-300' :
+                            'bg-rose-100 text-rose-800 dark:bg-rose-950 dark:text-rose-300 border border-rose-300'
+                          }`}>
+                            <span>{req.status}</span>
+                          </span>
+                        </td>
+
+                        {/* Acciones */}
+                        <td className="text-right">
+                          <div className="flex items-center justify-end space-x-1.5">
+                            {/* BOTON EDITAR */}
+                            <button
+                              onClick={() => handleOpenEditDemo(req)}
+                              className="p-1.5 bg-slate-100 hover:bg-sky-600 hover:text-white dark:bg-slate-800 dark:hover:bg-sky-600 text-slate-700 dark:text-slate-300 rounded-lg transition-colors cursor-pointer flex items-center gap-1 text-[11px] font-bold px-2.5"
+                              title="Editar toda la información de la solicitud de DEMO"
+                            >
+                              <Edit3 className="w-3.5 h-3.5" />
+                              <span>Editar</span>
+                            </button>
+
+                            {/* BOTON ENVIAR RESPUESTA POR E-MAIL */}
+                            <button
+                              onClick={() => handleOpenEmailModal(req)}
+                              className="p-1.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg transition-colors cursor-pointer flex items-center gap-1 text-[11px] font-black px-2.5 shadow-sm"
+                              title="Redactar y enviar respuesta por correo electrónico"
+                            >
+                              <Mail className="w-3.5 h-3.5" />
+                              <span>Responder por E-mail</span>
+                            </button>
+
+                            {/* ELIMINAR */}
+                            <button
+                              onClick={() => handleDeleteDemoReq(req.ticketId, req.company)}
+                              className="p-1.5 bg-rose-100 hover:bg-rose-600 hover:text-white text-rose-700 dark:bg-rose-950 dark:text-rose-300 rounded-lg transition-colors cursor-pointer"
+                              title="Eliminar solicitud"
+                            >
+                              <Trash2 className="w-3.5 h-3.5" />
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
       )}
 
       {/* SUB-TAB 1: VISTA POR CLIENTES CORPORATIVOS (TENANTS) */}
@@ -1160,6 +1729,330 @@ export const UserManagementSU01 = () => {
                       <option value="Bloqueado">🔴 Bloqueado / Restringido</option>
                     </select>
                   </div>
+                </div>
+              </div>
+
+            </form>
+          </div>
+        </div>
+      )}
+      {/* MODAL 1: EDITAR SOLICITUD DE DEMO (MODIFICAR DATOS + ESTADO) */}
+      {isEditDemoModalOpen && editingDemoReq && (
+        <div className="fixed inset-0 z-[100] bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto animate-in fade-in">
+          <div className="bg-slate-900 border border-sky-500/30 rounded-3xl shadow-2xl max-w-3xl w-full overflow-hidden text-slate-100 ring-1 ring-sky-500/20 my-8">
+            {/* Header */}
+            <div className="bg-gradient-to-r from-slate-950 via-slate-900 to-sky-950 p-6 border-b border-slate-800 flex items-center justify-between">
+              <div className="flex items-center space-x-3">
+                <div className="p-2.5 rounded-xl bg-sky-500/10 border border-sky-500/30 text-sky-400">
+                  <Edit3 className="w-5 h-5" />
+                </div>
+                <div>
+                  <span className="text-[10px] font-mono tracking-widest text-sky-400 font-bold uppercase">Ticket {editingDemoReq.ticketId}</span>
+                  <h3 className="text-lg font-black text-white">Editar Registro de Solicitud de Demo</h3>
+                </div>
+              </div>
+              <button
+                onClick={() => setIsEditDemoModalOpen(false)}
+                className="p-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white transition-colors"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Form */}
+            <form onSubmit={handleSaveEditDemo} className="p-6 space-y-5">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
+                {/* Nombre Completo */}
+                <div>
+                  <label className="block font-bold text-slate-300 mb-1">Nombre Completo del Solicitante</label>
+                  <input
+                    type="text"
+                    value={editDemoForm.fullName}
+                    onChange={(e) => setEditDemoForm({ ...editDemoForm, fullName: e.target.value })}
+                    required
+                    className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-white focus:outline-none focus:border-sky-500 font-medium"
+                  />
+                </div>
+
+                {/* Correo Corporativo */}
+                <div>
+                  <label className="block font-bold text-slate-300 mb-1">Correo Electrónico Corporativo</label>
+                  <input
+                    type="email"
+                    value={editDemoForm.email}
+                    onChange={(e) => setEditDemoForm({ ...editDemoForm, email: e.target.value })}
+                    required
+                    className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-white focus:outline-none focus:border-sky-500 font-mono"
+                  />
+                </div>
+
+                {/* Empresa */}
+                <div>
+                  <label className="block font-bold text-slate-300 mb-1">Empresa u Organización</label>
+                  <input
+                    type="text"
+                    value={editDemoForm.company}
+                    onChange={(e) => setEditDemoForm({ ...editDemoForm, company: e.target.value })}
+                    required
+                    className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-white focus:outline-none focus:border-sky-500 font-medium"
+                  />
+                </div>
+
+                {/* Teléfono */}
+                <div>
+                  <label className="block font-bold text-slate-300 mb-1">Teléfono / WhatsApp de Contacto</label>
+                  <input
+                    type="text"
+                    value={editDemoForm.phone}
+                    onChange={(e) => setEditDemoForm({ ...editDemoForm, phone: e.target.value })}
+                    className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-white focus:outline-none focus:border-sky-500 font-mono"
+                  />
+                </div>
+
+                {/* Rubro */}
+                <div>
+                  <label className="block font-bold text-slate-300 mb-1">Sector Industrial</label>
+                  <select
+                    value={editDemoForm.industry}
+                    onChange={(e) => setEditDemoForm({ ...editDemoForm, industry: e.target.value })}
+                    className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-slate-100 focus:outline-none focus:border-sky-500 cursor-pointer"
+                  >
+                    <option value="Gran Minería & Extracción" className="bg-slate-900 text-slate-100">Gran Minería & Extracción</option>
+                    <option value="Mediana & Pequeña Minería" className="bg-slate-900 text-slate-100">Mediana & Pequeña Minería</option>
+                    <option value="Construcción & Obras Civiles" className="bg-slate-900 text-slate-100">Construcción & Obras Civiles</option>
+                    <option value="Transporte & Logística de Flota" className="bg-slate-900 text-slate-100">Transporte & Logística de Flota</option>
+                    <option value="Manufactura & Planta Industrial" className="bg-slate-900 text-slate-100">Manufactura & Planta Industrial</option>
+                    <option value="Energía, Gas & Petróleo" className="bg-slate-900 text-slate-100">Energía, Gas & Petróleo</option>
+                  </select>
+                </div>
+
+                {/* Dotación */}
+                <div>
+                  <label className="block font-bold text-slate-300 mb-1">Dotación de Trabajadores</label>
+                  <select
+                    value={editDemoForm.employeeCount}
+                    onChange={(e) => setEditDemoForm({ ...editDemoForm, employeeCount: e.target.value })}
+                    className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-slate-100 focus:outline-none focus:border-sky-500 cursor-pointer"
+                  >
+                    <option value="1 a 20 colaboradores" className="bg-slate-900 text-slate-100">1 a 20 colaboradores</option>
+                    <option value="21 a 50 colaboradores" className="bg-slate-900 text-slate-100">21 a 50 colaboradores</option>
+                    <option value="51 a 200 colaboradores" className="bg-slate-900 text-slate-100">51 a 200 colaboradores</option>
+                    <option value="201 a 500 colaboradores" className="bg-slate-900 text-slate-100">201 a 500 colaboradores</option>
+                    <option value="Más de 500 colaboradores (Gran Minería)" className="bg-slate-900 text-slate-100">Más de 500 colaboradores (Gran Minería)</option>
+                  </select>
+                </div>
+
+                {/* Módulo Clave */}
+                <div>
+                  <label className="block font-bold text-sky-400 mb-1">Módulo Principal de Interés</label>
+                  <select
+                    value={editDemoForm.primaryModule}
+                    onChange={(e) => setEditDemoForm({ ...editDemoForm, primaryModule: e.target.value })}
+                    className="w-full bg-slate-950 border border-sky-500/40 rounded-xl px-3 py-2 text-sky-300 font-semibold focus:outline-none focus:border-sky-400 cursor-pointer"
+                  >
+                    <option value="Suite ERP Completa" className="bg-slate-900 text-slate-100">Suite ERP Completa (PM + MM + Flota + HCM)</option>
+                    <option value="Mantenimiento PM (IW31/IW32)" className="bg-slate-900 text-slate-100">Mantenimiento PM & TECO (IW31 / IW32)</option>
+                    <option value="Gestión de Materiales MM (MIGO 261/101)" className="bg-slate-900 text-slate-100">Gestión de Materiales MM & MIGO (261 / 101)</option>
+                    <option value="Control de Flotas & Maquinarias (IE03)" className="bg-slate-900 text-slate-100">Control de Flotas & Maquinarias (IE03)</option>
+                    <option value="Recursos Humanos HCM & Faenas" className="bg-slate-900 text-slate-100">Recursos Humanos HCM & Faenas</option>
+                  </select>
+                </div>
+
+                {/* Volumen Activos */}
+                <div>
+                  <label className="block font-bold text-slate-300 mb-1">Volumen de Activos</label>
+                  <select
+                    value={editDemoForm.assetCount}
+                    onChange={(e) => setEditDemoForm({ ...editDemoForm, assetCount: e.target.value })}
+                    className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-slate-100 focus:outline-none focus:border-sky-500 cursor-pointer"
+                  >
+                    <option value="1 a 10 Equipos/Maquinarias" className="bg-slate-900 text-slate-100">1 a 10 Equipos / Maquinarias</option>
+                    <option value="10 a 50 Equipos/Maquinarias" className="bg-slate-900 text-slate-100">10 a 50 Equipos / Maquinarias</option>
+                    <option value="51 a 200 Equipos/Maquinarias" className="bg-slate-900 text-slate-100">51 a 200 Equipos / Maquinarias</option>
+                    <option value="Más de 200 Equipos (Gran Minería)" className="bg-slate-900 text-slate-100">Más de 200 Equipos (Gran Minería)</option>
+                  </select>
+                </div>
+
+                {/* Estado */}
+                <div className="sm:col-span-2">
+                  <label className="block font-bold text-emerald-400 mb-1">Estado Operativo de la Solicitud</label>
+                  <select
+                    value={editDemoForm.status}
+                    onChange={(e) => setEditDemoForm({ ...editDemoForm, status: e.target.value })}
+                    className="w-full bg-slate-950 border border-emerald-500/40 rounded-xl px-3 py-2 text-emerald-300 font-bold focus:outline-none focus:border-emerald-400 cursor-pointer"
+                  >
+                    <option value="Pendiente" className="bg-slate-900 text-amber-400 font-bold">🟡 Pendiente (Solicitud Recibida sin Atender)</option>
+                    <option value="En Revisión" className="bg-slate-900 text-sky-400 font-bold">🔵 En Revisión (En Análisis Técnico / Agendando)</option>
+                    <option value="Respondido" className="bg-slate-900 text-emerald-400 font-bold">🟢 Respondido por E-mail (Correo Enviado al Cliente)</option>
+                    <option value="Aprobado" className="bg-slate-900 text-purple-400 font-bold">🟣 Aprobado (Demo Ejecutada / Sandbox Activo)</option>
+                    <option value="Rechazado" className="bg-slate-900 text-rose-400 font-bold">🔴 Rechazado (Desestimado / Fuera de Cobertura)</option>
+                  </select>
+                </div>
+              </div>
+
+              {/* Mensaje original del cliente */}
+              <div>
+                <label className="block text-xs font-bold text-slate-300 mb-1">Comentarios del Formulario (Cliente)</label>
+                <textarea
+                  rows="2"
+                  value={editDemoForm.notes}
+                  onChange={(e) => setEditDemoForm({ ...editDemoForm, notes: e.target.value })}
+                  className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-sky-500"
+                />
+              </div>
+
+              {/* Notas de Seguimiento Interno */}
+              <div>
+                <label className="block text-xs font-bold text-emerald-400 mb-1 flex items-center justify-between">
+                  <span>Notas de Seguimiento Interno & Historial de Gestión</span>
+                  <span className="text-[10px] text-slate-400 font-normal">Visible solo para administradores</span>
+                </label>
+                <textarea
+                  rows="3"
+                  placeholder="Ej. Se llamó a cliente por teléfono. Solicitan demo enfocada en trazabilidad MIGO..."
+                  value={editDemoForm.responseNotes}
+                  onChange={(e) => setEditDemoForm({ ...editDemoForm, responseNotes: e.target.value })}
+                  className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-emerald-300 font-mono focus:outline-none focus:border-emerald-500"
+                />
+              </div>
+
+              {/* Footer */}
+              <div className="pt-3 border-t border-slate-800 flex justify-end space-x-3">
+                <button
+                  type="button"
+                  onClick={() => setIsEditDemoModalOpen(false)}
+                  className="px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold text-xs transition-colors"
+                >
+                  Cancelar
+                </button>
+                <button
+                  type="submit"
+                  className="bg-sky-500 hover:bg-sky-400 text-slate-950 font-black text-xs px-6 py-2.5 rounded-xl shadow-lg shadow-sky-500/20 transition-all flex items-center space-x-2 cursor-pointer"
+                >
+                  <CheckCircle2 className="w-4 h-4" />
+                  <span>Guardar Cambios en Registro</span>
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL 2: ENVIAR RESPUESTA POR E-MAIL */}
+      {isEmailModalOpen && respondingDemoReq && (
+        <div className="fixed inset-0 z-[100] bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto animate-in fade-in">
+          <div className="bg-slate-900 border border-emerald-500/40 rounded-3xl shadow-2xl max-w-3xl w-full overflow-hidden text-slate-100 ring-1 ring-emerald-500/20 my-8">
+            {/* Header */}
+            <div className="bg-gradient-to-r from-slate-950 via-slate-900 to-emerald-950 p-6 border-b border-slate-800 flex items-center justify-between">
+              <div className="flex items-center space-x-3">
+                <div className="p-2.5 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-400">
+                  <Mail className="w-5 h-5" />
+                </div>
+                <div>
+                  <span className="text-[10px] font-mono tracking-widest text-emerald-400 font-bold uppercase">E-mail Corporativo • Ticket {respondingDemoReq.ticketId}</span>
+                  <h3 className="text-lg font-black text-white">Enviar Respuesta a {respondingDemoReq.fullName} ({respondingDemoReq.company})</h3>
+                </div>
+              </div>
+              <button
+                onClick={() => setIsEmailModalOpen(false)}
+                className="p-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white transition-colors"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Form */}
+            <form onSubmit={handleSendEmailResponse} className="p-6 space-y-4 text-xs">
+              
+              {/* To & Template row */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label className="block font-bold text-slate-300 mb-1">Destinatario (Correo Electrónico)</label>
+                  <input
+                    type="email"
+                    value={emailTo}
+                    onChange={(e) => setEmailTo(e.target.value)}
+                    required
+                    className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-white focus:outline-none focus:border-emerald-500 font-mono"
+                  />
+                </div>
+
+                <div>
+                  <label className="block font-bold text-emerald-400 mb-1">Cargar Plantilla Predeterminada</label>
+                  <select
+                    value={emailTemplate}
+                    onChange={(e) => handleTemplateChange(e.target.value)}
+                    className="w-full bg-slate-950 border border-emerald-500/40 rounded-xl px-3 py-2 text-emerald-300 font-bold focus:outline-none focus:border-emerald-400 cursor-pointer"
+                  >
+                    <option value="SANDBOX_ACCESS" className="bg-slate-900 text-slate-100">🔗 Acceso Inmediato a Sandbox ERP + Credenciales</option>
+                    <option value="MEETING_SCHEDULE" className="bg-slate-900 text-slate-100">📅 Coordinación de Reunión Demostrativa (Teams)</option>
+                    <option value="PROPOSAL_QUOTE" className="bg-slate-900 text-slate-100">📄 Propuesta Técnica & Cotización Comercial</option>
+                  </select>
+                </div>
+              </div>
+
+              {/* Subject */}
+              <div>
+                <label className="block font-bold text-slate-300 mb-1">Asunto del Correo</label>
+                <input
+                  type="text"
+                  value={emailSubject}
+                  onChange={(e) => setEmailSubject(e.target.value)}
+                  required
+                  className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-white focus:outline-none focus:border-emerald-500 font-medium"
+                />
+              </div>
+
+              {/* Body */}
+              <div>
+                <label className="block font-bold text-slate-300 mb-1 flex items-center justify-between">
+                  <span>Cuerpo del Mensaje de Correo</span>
+                  <span className="text-[10px] text-slate-400 font-normal">Puedes modificar o personalizar el texto según el requerimiento</span>
+                </label>
+                <textarea
+                  rows="10"
+                  value={emailBody}
+                  onChange={(e) => setEmailBody(e.target.value)}
+                  required
+                  className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-3 text-slate-200 font-mono text-xs focus:outline-none focus:border-emerald-500 leading-relaxed"
+                />
+              </div>
+
+              {/* Checkbox Auto-mark respondido */}
+              <div className="flex items-center space-x-2 pt-1">
+                <input
+                  type="checkbox"
+                  id="autoMarkRespondido"
+                  checked={autoMarkRespondido}
+                  onChange={(e) => setAutoMarkRespondido(e.target.checked)}
+                  className="w-4 h-4 rounded text-emerald-500 bg-slate-950 border-slate-800 focus:ring-emerald-500 cursor-pointer"
+                />
+                <label htmlFor="autoMarkRespondido" className="text-xs text-slate-300 font-medium cursor-pointer">
+                  Actualizar estado de la solicitud automáticamente a <strong className="text-emerald-400">"Respondido"</strong>
+                </label>
+              </div>
+
+              {/* Footer */}
+              <div className="pt-4 border-t border-slate-800 flex flex-col sm:flex-row justify-between items-center gap-3">
+                <div className="text-[11px] text-slate-400 font-mono">
+                  💡 Al confirmar se abrirá tu aplicación de correo y se registrará en el historial de la solicitud.
+                </div>
+
+                <div className="flex items-center space-x-3 w-full sm:w-auto justify-end">
+                  <button
+                    type="button"
+                    onClick={() => setIsEmailModalOpen(false)}
+                    className="px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold text-xs transition-colors"
+                  >
+                    Cancelar
+                  </button>
+                  <button
+                    type="submit"
+                    className="bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black text-xs px-6 py-2.5 rounded-xl shadow-lg shadow-emerald-500/20 transition-all flex items-center space-x-2 cursor-pointer"
+                  >
+                    <Send className="w-4 h-4" />
+                    <span>Enviar Respuesta por E-mail</span>
+                  </button>
                 </div>
               </div>
 

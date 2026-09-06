@@ -59,6 +59,33 @@ export function RequestDemoModal({ isOpen, onClose, onEnterERP }) {
     // Simular registro en base de datos de solicitudes de Demo
     setTimeout(() => {
       const ticketId = `DEMO-REQ-2026-${Math.floor(1000 + Math.random() * 9000)}`;
+      
+      const newRequest = {
+        id: ticketId,
+        ticketId,
+        timestamp: new Date().toISOString().replace('T', ' ').substring(0, 16),
+        fullName: formData.fullName.trim(),
+        email: formData.email.trim(),
+        company: formData.company.trim(),
+        industry: formData.industry,
+        employeeCount: formData.employeeCount,
+        phone: formData.phone.trim() || 'No especificado',
+        primaryModule: formData.primaryModule,
+        assetCount: formData.assetCount,
+        notes: formData.notes.trim() || 'Sin comentarios adicionales',
+        status: 'Pendiente',
+        responseNotes: ''
+      };
+
+      try {
+        const stored = JSON.parse(localStorage.getItem('axomira_demo_requests') || '[]');
+        const updated = [newRequest, ...stored];
+        localStorage.setItem('axomira_demo_requests', JSON.stringify(updated));
+        window.dispatchEvent(new CustomEvent('axomira-demo-request-added', { detail: newRequest }));
+      } catch (err) {
+        console.error('Error saving demo request to localStorage:', err);
+      }
+
       setSubmittedTicket(ticketId);
       setIsSubmitting(false);
     }, 700);
