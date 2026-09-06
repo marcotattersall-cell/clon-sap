@@ -714,6 +714,8 @@ export const FioriHeader = ({ onOpenCreateWO, onOpenCreateMaterial, onOpenCreate
                 </div>
               </div>
             )}
+          </div>
+
           {/* 🎨 Theme Toggle Button (Fiori Dark Stealth vs Morning Horizon) */}
           <div className="relative">
             <button
@@ -804,7 +806,6 @@ export const FioriHeader = ({ onOpenCreateWO, onOpenCreateMaterial, onOpenCreate
               </div>
             )}
           </div>
-
         </div>
       </div>
 
@@ -989,6 +990,8 @@ export const FioriHeader = ({ onOpenCreateWO, onOpenCreateMaterial, onOpenCreate
             </div>
           </div>
         </div>
+      )}
+
       {/* ⚡ MODAL DE APROBACIONES & ESTRATEGIA DE LIBERACIÓN SAP (ME28) */}
       <ApprovalInboxModal
         isOpen={isApprovalModalOpen}
