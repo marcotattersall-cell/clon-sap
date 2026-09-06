@@ -433,24 +433,6 @@ export const FioriHeader = ({ onOpenCreateWO, onOpenCreateMaterial, onOpenCreate
               </button>
             </div>
           )}
-
-          <button
-            onClick={injectMassiveActionSimulation}
-            title="Inyectar 25 transacciones masivas de prueba en vivo"
-            className="bg-amber-500 hover:bg-amber-600 text-white font-bold px-2 py-0.5 rounded text-[11px] flex items-center gap-1 transition-all cursor-pointer shadow-sm animate-pulse"
-          >
-            <Zap className="w-3 h-3 text-white" />
-            <span>+25 Transacciones</span>
-          </button>
-
-          <button
-            onClick={resetData}
-            title="Limpiar todos los datos de la aplicación"
-            className="hover:text-amber-600 flex items-center gap-1 transition-colors text-xs text-slate-500 font-medium"
-          >
-            <RefreshCw className="w-3 h-3 text-slate-400" />
-            <span className="hidden sm:inline">Limpiar Datos</span>
-          </button>
         </div>
       </div>
 
