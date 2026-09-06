@@ -10,11 +10,13 @@ import {
   HardHat, 
   Users, 
   Activity, 
-  Home
+  Home,
+  Globe
 } from 'lucide-react';
 import { useSAP } from '../../context/SAPContext';
 
 export const TAB_BREADCRUMB_MAP = {
+  LANDING: { module: 'Axomira Portal', view: 'Landing Page Corporativa', tcode: 'PORTAL', icon: Globe },
   LAUNCHPAD: { module: 'Cockpit ERP', view: 'Home Launchpad', tcode: 'SMSM', icon: Activity },
   WORK_ORDERS: { module: 'Mantenimiento PM', view: 'Órdenes de Trabajo', tcode: 'IW31 / IW32', icon: Wrench },
   ASSETS: { module: 'Mantenimiento PM', view: 'Jerarquía de Activos', tcode: 'IE01 / IE03', icon: Layers },
