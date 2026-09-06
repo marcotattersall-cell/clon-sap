@@ -57,9 +57,9 @@ export function LandingPage({ onEnterERP }) {
             </button>
             <button
               onClick={onEnterERP}
-              className="bg-sky-500 hover:bg-sky-400 text-slate-950 text-xs font-black px-4 py-2 rounded-xl shadow-lg shadow-sky-500/20 transition-all flex items-center space-x-1.5 cursor-pointer"
+              className="bg-sky-500 hover:bg-sky-400 text-slate-950 text-xs font-black px-4 py-2 rounded-xl shadow-lg shadow-sky-500/20 transition-all flex items-center space-x-1.5 cursor-pointer uppercase tracking-wider"
             >
-              <span>Probar Axomira ERP</span>
+              <span>SOLICITAR DEMO</span>
               <ArrowRight className="w-4 h-4" />
             </button>
           </div>
@@ -105,9 +105,9 @@ export function LandingPage({ onEnterERP }) {
           <div className="flex flex-col sm:flex-row justify-center gap-4 mb-12">
             <button
               onClick={onEnterERP}
-              className="bg-sky-500 hover:bg-sky-400 text-slate-950 font-black text-sm px-6 py-3.5 rounded-2xl shadow-xl shadow-sky-500/25 transition-all flex items-center justify-center space-x-2 cursor-pointer"
+              className="bg-sky-500 hover:bg-sky-400 text-slate-950 font-black text-sm px-6 py-3.5 rounded-2xl shadow-xl shadow-sky-500/25 transition-all flex items-center justify-center space-x-2 cursor-pointer uppercase tracking-wider"
             >
-              <span>Explorar Cockpit ERP (Demo Instantáneo)</span>
+              <span>SOLICITAR DEMO (ACCESO INSTANTÁNEO)</span>
               <ArrowRight className="w-4 h-4" />
             </button>
             <button
