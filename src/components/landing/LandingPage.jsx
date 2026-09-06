@@ -45,7 +45,7 @@ export function LandingPage({ onEnterERP }) {
           </div>
 
           <div className="hidden md:flex items-center space-x-8 text-xs font-semibold text-slate-300">
-            <a href="#modules" className="hover:text-sky-400 transition-colors">Módulos SAP</a>
+            <a href="#modules" className="hover:text-sky-400 transition-colors">Módulos ERP</a>
             <a href="#pipeline" className="hover:text-sky-400 transition-colors">Flujo Transaccional</a>
             <a href="#ai" className="hover:text-sky-400 transition-colors">Inteligencia IA</a>
             <a href="#pricing" className="hover:text-sky-400 transition-colors">Planes SLA</a>
@@ -203,7 +203,7 @@ export function LandingPage({ onEnterERP }) {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <span className="px-3 py-1 rounded-full bg-sky-500/10 text-sky-400 border border-sky-500/20 text-xs font-mono font-bold">
-              Flujo Transaccional SAP
+              Flujo Transaccional ERP
             </span>
             <h2 className="text-2xl sm:text-4xl font-bold text-white mt-4">
               Ciclo Completo de Mantenimiento e Inventario
@@ -272,7 +272,7 @@ export function LandingPage({ onEnterERP }) {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <span className="px-3 py-1 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 text-xs font-mono font-bold">
-              Módulos Integrados SAP
+              Módulos Integrados ERP
             </span>
             <h2 className="text-2xl sm:text-4xl font-bold text-white mt-4">
               Una Suite Empresarial Completa

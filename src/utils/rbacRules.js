@@ -8,7 +8,7 @@
 export const SAP_ROLES = {
   ADMINISTRATOR: {
     id: 'ADMINISTRATOR',
-    title: 'Administrador Universal (SAP_ALL)',
+    title: 'Administrador Universal (SUPERUSER)',
     description: 'Acceso total sin restricciones a todos los módulos, tenants, auditoría y consola SU01.',
     color: 'bg-purple-100 text-purple-800 dark:bg-purple-950 dark:text-purple-300'
   },

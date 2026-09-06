@@ -615,7 +615,7 @@ export const FioriHeader = ({ onOpenCreateWO, onOpenCreateMaterial, onOpenCreate
             <button
               onClick={() => setIsApprovalModalOpen(true)}
               className="p-2 rounded-lg bg-blue-50 hover:bg-blue-100 text-blue-700 relative transition-colors border border-blue-200"
-              title="Centro de Liberaciones y Aprobaciones SAP (ME28)"
+              title="Centro de Liberaciones y Aprobaciones ERP (ME28)"
             >
               <ShieldCheck className="w-4 h-4 text-blue-600" />
               {getPendingApprovals(user?.tenantId || 'tenant_demo').length > 0 && (
@@ -766,7 +766,7 @@ export const FioriHeader = ({ onOpenCreateWO, onOpenCreateMaterial, onOpenCreate
                   <p className="text-[11px] text-slate-500 font-mono truncate">{user.email}</p>
                   <div className="flex items-center gap-1.5 mt-1">
                     <span className="px-2 py-0.5 text-[9px] font-bold bg-purple-100 text-purple-800 rounded font-mono">
-                      {user.isUniversalAdmin ? 'ADMINISTRATOR (SAP_ALL)' : (user.role || 'Usuario Corporativo')}
+                      {user.isUniversalAdmin ? 'ADMINISTRATOR (SUPERUSER)' : (user.role || 'Usuario Corporativo')}
                     </span>
                   </div>
                 </div>

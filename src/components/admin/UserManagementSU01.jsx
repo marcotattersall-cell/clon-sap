@@ -131,7 +131,7 @@ export const UserManagementSU01 = () => {
       name: 'Marco Vidal Tattersall',
       email: 'marco.tattersall@gmail.com',
       role: 'ADMINISTRATOR',
-      roleName: 'Administrador Universal (SAP_ALL)',
+      roleName: 'Administrador Universal (SUPERUSER)',
       tenantId: 'tenant_demo',
       tenantName: 'Demo Axomira Enterprise',
       plant: '0001 (Planta Central Santiago)',
@@ -216,7 +216,7 @@ export const UserManagementSU01 = () => {
   // Handler para Conmutar Permisos en la Matriz RBAC
   const handleToggleMatrixPermission = (permKey, roleId) => {
     if (roleId === 'ADMINISTRATOR') {
-      addToast('🔒 El perfil Administrador Universal (SAP_ALL) posee autorizaciones totales inmodificables.', 'warning');
+      addToast('🔒 El perfil Administrador Universal (SUPERUSER) posee autorizaciones totales inmodificables.', 'warning');
       return;
     }
 
@@ -363,7 +363,7 @@ export const UserManagementSU01 = () => {
     const tenantName = matchedTenantObj ? matchedTenantObj.name.replace(/^🏢\s*/, '') : formData.tenantId;
 
     const roleNameMap = {
-      ADMINISTRATOR: 'Administrador Universal (SAP_ALL)',
+      ADMINISTRATOR: 'Administrador Universal (SUPERUSER)',
       MAINTENANCE_MGR: 'Jefe de Mantenimiento (PM)',
       WAREHOUSE_KEEPER: 'Encargado de Almacén (MM)',
       FIELD_MECHANIC: 'Técnico Especialista Terreno'
@@ -694,11 +694,11 @@ export const UserManagementSU01 = () => {
 
             <div className="fiori-glass p-4 rounded-xl border border-slate-200 dark:border-slate-800 space-y-1 shadow">
               <div className="flex items-center justify-between text-indigo-600 text-xs font-semibold">
-                <span>Administradores SAP</span>
+                <span>Administradores ERP</span>
                 <ShieldCheck className="w-4 h-4 text-indigo-500" />
               </div>
               <div className="text-2xl font-black text-indigo-600 font-mono">{adminUsers}</div>
-              <div className="text-[11px] text-slate-500">Perfil SAP_ALL y Super Admin</div>
+              <div className="text-[11px] text-slate-500">Perfil SUPERUSER y Super Admin</div>
             </div>
           </div>
 
@@ -737,8 +737,8 @@ export const UserManagementSU01 = () => {
                   onChange={(e) => setSelectedRoleFilter(e.target.value)}
                   className="w-full bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-200 p-2 rounded-xl border border-slate-300 dark:border-slate-700 font-bold"
                 >
-                  <option value="ALL">👥 Todos los Roles SAP</option>
-                  <option value="ADMINISTRATOR">Administrador Universal (SAP_ALL)</option>
+                  <option value="ALL">👥 Todos los Roles ERP</option>
+                  <option value="ADMINISTRATOR">Administrador Universal (SUPERUSER)</option>
                   <option value="MAINTENANCE_MGR">Jefe de Mantenimiento (PM)</option>
                   <option value="WAREHOUSE_KEEPER">Encargado de Almacén (MM)</option>
                   <option value="FIELD_MECHANIC">Técnico Especialista Terreno</option>
@@ -776,7 +776,7 @@ export const UserManagementSU01 = () => {
                     <th>Usuario / Nombre</th>
                     <th>Correo Electrónico</th>
                     <th>Empresa (Tenant)</th>
-                    <th>Rol SAP</th>
+                    <th>Rol ERP</th>
                     <th>Centro / Planta</th>
                     <th>Estado</th>
                     <th className="text-right">Acciones Mantenimiento</th>
@@ -887,7 +887,7 @@ export const UserManagementSU01 = () => {
                 <span>Matriz de Control de Acceso por Función ERP (RBAC Matrix)</span>
               </h3>
               <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
-                Haz clic en cualquier casilla para habilitar o denegar inmediatamente el acceso de una función transaccional a cada Rol SAP.
+                Haz clic en cualquier casilla para habilitar o denegar inmediatamente el acceso de una función transaccional a cada Rol ERP.
               </p>
             </div>
 
@@ -905,7 +905,7 @@ export const UserManagementSU01 = () => {
                   <th className="p-3 w-1/3">Función Transaccional ERP</th>
                   <th className="p-3 w-1/6 text-center text-purple-700 dark:text-purple-300">
                     <div>ADMINISTRATOR</div>
-                    <div className="text-[10px] font-normal text-slate-500">Super Admin (SAP_ALL)</div>
+                    <div className="text-[10px] font-normal text-slate-500">Super Admin (SUPERUSER)</div>
                   </th>
                   <th className="p-3 w-1/6 text-center text-blue-700 dark:text-blue-300">
                     <div>MAINTENANCE_MGR</div>
@@ -1127,22 +1127,22 @@ export const UserManagementSU01 = () => {
                 </div>
               </div>
 
-              {/* Seccion 3: Rol SAP & Estado de Cuenta */}
+              {/* Seccion 3: Rol ERP & Estado de Cuenta */}
               <div className="fiori-glass p-6 rounded-2xl border border-slate-200 dark:border-slate-800 space-y-4 shadow-xl">
                 <h3 className="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2 border-b border-slate-200 dark:border-slate-800 pb-3">
                   <ShieldCheck className="w-4 h-4 text-emerald-500" />
-                  <span>3. Perfil de Autorización SAP & Estado de Acceso</span>
+                  <span>3. Perfil de Autorización ERP & Estado de Acceso</span>
                 </h3>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
                   <div>
-                    <label className="block text-slate-600 dark:text-slate-400 font-bold mb-1">Rol SAP Asignado</label>
+                    <label className="block text-slate-600 dark:text-slate-400 font-bold mb-1">Rol ERP Asignado</label>
                     <select
                       value={formData.role}
                       onChange={(e) => setFormData({ ...formData, role: e.target.value })}
                       className="w-full bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-200 font-bold p-2.5 rounded-xl border border-slate-300 dark:border-slate-700"
                     >
-                      <option value="ADMINISTRATOR">ADMINISTRATOR — Administrador Universal (SAP_ALL)</option>
+                      <option value="ADMINISTRATOR">ADMINISTRATOR — Administrador Universal (SUPERUSER)</option>
                       <option value="MAINTENANCE_MGR">MAINTENANCE_MGR — Jefe de Mantenimiento (PM)</option>
                       <option value="WAREHOUSE_KEEPER">WAREHOUSE_KEEPER — Encargado de Almacén (MM)</option>
                       <option value="FIELD_MECHANIC">FIELD_MECHANIC — Técnico Especialista Terreno</option>

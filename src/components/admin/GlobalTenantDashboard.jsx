@@ -487,7 +487,7 @@ export const GlobalTenantDashboard = () => {
                 <div className="bg-slate-50 dark:bg-slate-900/60 p-3 rounded-xl border border-slate-200 dark:border-slate-700 space-y-2 text-xs">
                   <div className="flex items-center justify-between text-[11px] font-bold">
                     <span className="text-slate-700 dark:text-slate-300 flex items-center gap-1">
-                      <PieChart className="w-3.5 h-3.5 text-purple-600 dark:text-purple-400" /> Adopción de Módulos SAP:
+                      <PieChart className="w-3.5 h-3.5 text-purple-600 dark:text-purple-400" /> Adopción de Módulos ERP:
                     </span>
                     <span className="text-slate-500 font-mono text-[10px]">
                       Intentos Fallidos Login: {client.failedLoginAttempts}

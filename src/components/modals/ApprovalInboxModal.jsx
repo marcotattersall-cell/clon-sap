@@ -411,7 +411,7 @@ export default function ApprovalInboxModal({ isOpen, onClose, user, tenantId = '
 
         {/* Footer */}
         <div className="px-6 py-3 border-t border-slate-800 bg-slate-950 flex items-center justify-between text-xs text-slate-400">
-          <span>Axomira Cloud ERP • Control de Liberaciones SAP ME28</span>
+          <span>Axomira Cloud ERP • Control de Liberaciones ERP ME28</span>
           <button
             onClick={onClose}
             className="px-4 py-1.5 bg-slate-800 hover:bg-slate-700 text-white rounded-lg transition-colors font-medium"

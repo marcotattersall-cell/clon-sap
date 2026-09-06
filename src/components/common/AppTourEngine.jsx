@@ -80,7 +80,7 @@ export const TOUR_STEPS = [
     title: 'Analytics Cloud & Cierre Promocional',
     subtitle: 'AXOMIRA INTELLIGENT CLOUD ERP • Enterprise ERP for Mining & Heavy Industry',
     tab: 'ANALYTICS',
-    narration: 'AXOMIRA Cloud Platform: El poder de un ERP Enterprise con la agilidad de la nube. Pruébalo hoy en clon-sap-2026.web.app',
+    narration: 'AXOMIRA Cloud Platform: El poder de un ERP Enterprise con la agilidad de la nube. Pruébalo hoy en nuestra plataforma web.',
     icon: BarChart3,
     badge: 'Paso 7 de 7 • Resumen & Demo'
   }
