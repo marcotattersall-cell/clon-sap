@@ -172,19 +172,19 @@ export function RequestDemoModal({ isOpen, onClose, onEnterERP }) {
             </div>
 
             {/* Action buttons */}
-            <div className="pt-2 flex flex-col sm:flex-row gap-3 justify-center">
+            <div className="pt-2 flex flex-col sm:flex-row gap-3 justify-center items-center">
               <button
                 onClick={() => { handleResetAndClose(); onEnterERP(); }}
                 className="bg-sky-500 hover:bg-sky-400 text-slate-950 font-black text-xs px-6 py-3 rounded-xl shadow-lg shadow-sky-500/20 transition-all flex items-center justify-center space-x-2 cursor-pointer"
               >
-                <span>Probar Sandbox ERP Interactivo Ahora</span>
+                <span>Probar Sandbox ERP Ahora</span>
                 <ArrowRight className="w-4 h-4" />
               </button>
               <button
                 onClick={handleResetAndClose}
-                className="bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold text-xs px-5 py-3 rounded-xl transition-all"
+                className="bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold text-xs px-6 py-3 rounded-xl transition-all flex items-center justify-center cursor-pointer"
               >
-                Cerrar Confirmación
+                Cerrar
               </button>
             </div>
           </div>
