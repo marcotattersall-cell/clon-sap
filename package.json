@@ -6,6 +6,11 @@
   "scripts": {
     "dev": "vite",
     "audit:imports": "node scripts/audit_imports.cjs",
+    "audit:security": "node scripts/audit_tenant_security.cjs",
+    "audit:trail": "node scripts/audit_sap_trail.cjs",
+    "audit:workflow": "node scripts/audit_workflow_e2e.cjs",
+    "audit:forecasting": "node scripts/audit_demand_forecasting.cjs",
+    "audit:schema": "node scripts/audit_supabase_schema.cjs",
     "backup": "node scripts/backup_tenant_data.cjs",
     "backup:daily": "node scripts/backup_tenant_data.cjs --tier=HIGH",
     "backup:weekly": "node scripts/backup_tenant_data.cjs --tier=MEDIUM",
