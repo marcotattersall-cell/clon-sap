@@ -73,7 +73,7 @@ export const UpdateComplianceModal = ({ isOpen, onClose, employee }) => {
 
   return (
     <div className="fixed inset-0 z-50 bg-slate-950/70 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in">
-      <div className="bg-white border border-slate-200 rounded-2xl shadow-2xl max-w-lg w-full overflow-hidden text-slate-900">
+      <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-2xl max-w-lg w-full overflow-hidden text-slate-900 dark:text-slate-100">
         {/* Modal Header */}
         <div className="bg-gradient-to-r from-amber-600 to-amber-800 p-5 text-white flex items-center justify-between">
           <div className="flex items-center space-x-3">

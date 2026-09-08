@@ -473,15 +473,15 @@ export const GeneralExpirationsDashboard = () => {
       </div>
 
       {/* Main Timeline Table */}
-      <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-xs">
-        <div className="p-4 bg-slate-50 border-b border-slate-200 flex items-center justify-between text-slate-900">
+      <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 overflow-hidden shadow-xs">
+        <div className="p-4 bg-slate-50 dark:bg-slate-800/80 border-b border-slate-200 dark:border-slate-700 flex items-center justify-between text-slate-900 dark:text-slate-100">
           <div className="flex items-center space-x-2">
-            <Calendar className="w-4 h-4 text-sky-600" />
-            <h3 className="font-extrabold text-xs uppercase tracking-wider text-slate-800">
+            <Calendar className="w-4 h-4 text-sky-600 dark:text-sky-400" />
+            <h3 className="font-extrabold text-xs uppercase tracking-wider text-slate-800 dark:text-slate-200">
               Monitor Cronológico de Vencimientos ({filteredList.length} Registros)
             </h3>
           </div>
-          <span className="text-[11px] text-slate-500 font-mono">
+          <span className="text-[11px] text-slate-500 dark:text-slate-400 font-mono">
             Ordenado por proximidad de vencimiento
           </span>
         </div>
@@ -609,8 +609,8 @@ export const GeneralExpirationsDashboard = () => {
 
       {/* Modal de Validación de Eliminación de Vencimiento */}
       {deleteModalItem && (
-        <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-white rounded-2xl max-w-md w-full border border-slate-200 shadow-2xl overflow-hidden animate-in fade-in zoom-in duration-150">
+        <div className="fixed inset-0 z-50 bg-slate-950/70 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="bg-white dark:bg-slate-900 rounded-2xl max-w-md w-full border border-slate-200 dark:border-slate-800 shadow-2xl overflow-hidden animate-in fade-in zoom-in duration-150 text-slate-900 dark:text-slate-100">
             <div className="p-4 bg-rose-600 text-white flex items-center justify-between">
               <div className="flex items-center space-x-2">
                 <AlertTriangle className="w-5 h-5" />

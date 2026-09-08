@@ -252,7 +252,7 @@ const SAPAppContent = () => {
   };
 
   return (
-    <div className="min-h-screen bg-white text-slate-900 flex flex-col font-sans selection:bg-sap-blue selection:text-white">
+    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 flex flex-col font-sans selection:bg-sap-blue selection:text-white transition-colors duration-150">
       {/* 🚀 Animación sutil y rápida de entrada tras el inicio de sesión */}
       {showEntranceSplash && (
         <NebexEntranceSplash onComplete={() => setShowEntranceSplash(false)} />
@@ -330,7 +330,7 @@ const SAPAppContent = () => {
       </main>
 
       {/* Footer Ribbon */}
-      <footer className="bg-slate-50 border-t border-slate-200 py-3.5 px-6 mb-14 lg:mb-0 text-center text-xs text-slate-600 flex flex-col sm:flex-row items-center justify-between gap-2 no-print">
+      <footer className="bg-slate-50 dark:bg-slate-900 border-t border-slate-200 dark:border-slate-800 py-3.5 px-6 mb-14 lg:mb-0 text-center text-xs text-slate-600 dark:text-slate-400 flex flex-col sm:flex-row items-center justify-between gap-2 no-print transition-colors">
         <div className="flex items-center space-x-2">
           <AxomiraLogo variant="horizontal" className="h-5" />
           <span>• Módulos Transaccionales: PM, MM, HCM, Flota y Analítica Integrados</span>

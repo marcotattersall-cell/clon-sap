@@ -30,19 +30,19 @@ export const CreatePlantModal = ({ isOpen, onClose }) => {
   };
 
   return (
-    <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in">
-      <div className="bg-white border border-slate-200 rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden">
+    <div className="fixed inset-0 z-50 bg-slate-950/70 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in">
+      <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden text-slate-900 dark:text-slate-100">
         {/* Modal Header */}
-        <div className="bg-slate-50 px-6 py-4 border-b border-slate-200 flex items-center justify-between">
+        <div className="bg-slate-50 dark:bg-slate-800/80 px-6 py-4 border-b border-slate-200 dark:border-slate-700 flex items-center justify-between">
           <div className="flex items-center space-x-3">
             <div className="w-9 h-9 rounded-xl bg-sap-blue/10 text-sap-blue flex items-center justify-center font-bold">
               <Building2 className="w-5 h-5" />
             </div>
             <div>
-              <h3 className="text-base font-extrabold text-slate-900 tracking-tight">
+              <h3 className="text-base font-extrabold text-slate-900 dark:text-white tracking-tight">
                 Crear Nuevo Centro de Operaciones
               </h3>
-              <p className="text-xs text-slate-500">
+              <p className="text-xs text-slate-500 dark:text-slate-400">
                 Alta de nuevo Centro de Operaciones en Estructura Organizativa
               </p>
             </div>

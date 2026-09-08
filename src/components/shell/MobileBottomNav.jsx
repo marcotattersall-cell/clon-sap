@@ -17,7 +17,7 @@ export const MobileBottomNav = () => {
   ];
 
   return (
-    <div className="fixed bottom-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-md border-t border-slate-200 px-1 py-1 flex items-center justify-around lg:hidden shadow-[0_-4px_16px_rgba(0,0,0,0.06)] no-print">
+    <div className="fixed bottom-0 left-0 right-0 z-40 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md border-t border-slate-200 dark:border-slate-800 px-1 py-1 flex items-center justify-around lg:hidden shadow-[0_-4px_16px_rgba(0,0,0,0.06)] no-print text-slate-900 dark:text-slate-100">
       {navItems.map(item => {
         const Icon = item.icon;
         const isActive = activeTab === item.id;
@@ -27,11 +27,11 @@ export const MobileBottomNav = () => {
             onClick={() => setActiveTab(item.id)}
             className={`flex-1 py-1.5 px-1 min-h-[48px] flex flex-col items-center justify-center rounded-xl transition-all ${
               isActive
-                ? 'text-sap-blue font-bold bg-sky-50'
-                : 'text-slate-500 hover:text-slate-800 hover:bg-slate-50'
+                ? 'text-sap-blue dark:text-sky-400 font-bold bg-sky-50 dark:bg-sky-950/50'
+                : 'text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800/50'
             }`}
           >
-            <Icon className={`w-5 h-5 mb-0.5 ${isActive ? 'scale-110 text-sap-blue' : ''}`} />
+            <Icon className={`w-5 h-5 mb-0.5 ${isActive ? 'scale-110 text-sap-blue dark:text-sky-400' : ''}`} />
             <span className="text-[10px] tracking-tight leading-none">{item.label}</span>
           </button>
         );

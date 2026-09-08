@@ -101,11 +101,11 @@ export const FioriLaunchpad = ({ onOpenCreateWO, onOpenCreateMIGO }) => {
       {/* Executive Horizon KPI Tiles */}
       <div className="space-y-3">
         <div className="flex items-center justify-between">
-          <h2 className="text-base font-bold text-slate-900 flex items-center gap-2">
-            <Layers className="w-5 h-5 text-sap-blue" />
+          <h2 className="text-base font-bold text-slate-900 dark:text-white flex items-center gap-2">
+            <Layers className="w-5 h-5 text-sap-blue dark:text-sky-400" />
             <span>Mosaicos Principales (Executive Horizon Tiles)</span>
           </h2>
-          <span className="text-xs text-slate-500 font-medium flex items-center gap-1">
+          <span className="text-xs text-slate-500 dark:text-slate-400 font-medium flex items-center gap-1">
             <Sparkles className="w-3.5 h-3.5 text-amber-500" />
             Actualización Automática Vía WebSocket Mock
           </span>
@@ -268,20 +268,20 @@ export const FioriLaunchpad = ({ onOpenCreateWO, onOpenCreateMIGO }) => {
       </div>
 
       {/* Interactive SAP Analytics Dashboard Chart Section */}
-      <div className="fiori-glass p-5 rounded-xl border border-slate-200 space-y-4">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-3 border-b border-slate-100">
+      <div className="fiori-glass p-5 rounded-xl border border-slate-200 dark:border-slate-800 space-y-4">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-3 border-b border-slate-100 dark:border-slate-800">
           <div>
-            <h3 className="text-sm font-extrabold text-slate-900 flex items-center gap-2">
-              <BarChart3 className="w-4 h-4 text-sap-blue" />
+            <h3 className="text-sm font-extrabold text-slate-900 dark:text-white flex items-center gap-2">
+              <BarChart3 className="w-4 h-4 text-sap-blue dark:text-sky-400" />
               <span>Analytics Cloud Cockpit • Presupuesto vs Gasto Real Mantenimiento & Inventario</span>
             </h3>
-            <p className="text-xs text-slate-500">
+            <p className="text-xs text-slate-500 dark:text-slate-400">
               Seguimiento comparativo de Costes PM/FI-CO y valoración de almacén acumulada 2026
             </p>
           </div>
           <button
             onClick={() => setActiveTab('ANALYTICS')}
-            className="text-xs font-bold text-sap-blue hover:underline flex items-center gap-1 shrink-0"
+            className="text-xs font-bold text-sap-blue dark:text-sky-400 hover:underline flex items-center gap-1 shrink-0"
           >
             <span>Abrir Analytics Cockpit</span>
             <ArrowRight className="w-3.5 h-3.5" />
@@ -309,20 +309,20 @@ export const FioriLaunchpad = ({ onOpenCreateWO, onOpenCreateMIGO }) => {
       {/* Operational Dashboard: Quick Status & Live Lists */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Work Orders In Execution Feed */}
-        <div className="lg:col-span-2 fiori-glass p-5 rounded-xl border border-slate-200 space-y-4">
-          <div className="flex items-center justify-between pb-3 border-b border-slate-100">
+        <div className="lg:col-span-2 fiori-glass p-5 rounded-xl border border-slate-200 dark:border-slate-800 space-y-4">
+          <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-800">
             <div>
-              <h3 className="text-sm font-bold text-slate-900 flex items-center gap-2">
+              <h3 className="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
                 <Clock className="w-4 h-4 text-amber-500" />
                 <span>Órdenes de Trabajo en Ejecución Inmediata</span>
               </h3>
-              <p className="text-xs text-slate-500">
+              <p className="text-xs text-slate-500 dark:text-slate-400">
                 Últimas órdenes en estado Liberada (REL) o En Proceso
               </p>
             </div>
             <button
               onClick={() => setActiveTab('WORK_ORDERS')}
-              className="text-xs font-bold text-sap-blue hover:underline"
+              className="text-xs font-bold text-sap-blue dark:text-sky-400 hover:underline"
             >
               Ver Todas ({workOrders.length})
             </button>
@@ -335,18 +335,18 @@ export const FioriLaunchpad = ({ onOpenCreateWO, onOpenCreateMIGO }) => {
                 <div
                   key={wo.id}
                   onClick={() => setActiveTab('WORK_ORDERS')}
-                  className="p-4 rounded-xl bg-slate-50 border border-slate-200 hover:border-sap-blue cursor-pointer transition-all shadow-2xs"
+                  className="p-4 rounded-xl bg-slate-50 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800 hover:border-sap-blue dark:hover:border-sky-400 cursor-pointer transition-all shadow-2xs"
                 >
                   <div className="flex items-start justify-between gap-2 mb-2">
                     <div>
                       <div className="flex items-center space-x-2">
-                        <span className="font-mono text-xs font-bold text-sap-blue">{wo.id}</span>
-                        <span className="text-xs text-slate-300">•</span>
-                        <span className="text-xs font-semibold text-slate-700">
+                        <span className="font-mono text-xs font-bold text-sap-blue dark:text-sky-400">{wo.id}</span>
+                        <span className="text-xs text-slate-300 dark:text-slate-700">•</span>
+                        <span className="text-xs font-semibold text-slate-700 dark:text-slate-300">
                           {asset?.name || wo.equipmentId}
                         </span>
                       </div>
-                      <h4 className="text-xs font-bold text-slate-900 mt-0.5">
+                      <h4 className="text-xs font-bold text-slate-900 dark:text-white mt-0.5">
                         {wo.title}
                       </h4>
                     </div>
@@ -356,12 +356,12 @@ export const FioriLaunchpad = ({ onOpenCreateWO, onOpenCreateMIGO }) => {
                   </div>
 
                   {/* Operations checklist mini bar */}
-                  <div className="mt-3 flex items-center justify-between text-[11px] text-slate-600">
+                  <div className="mt-3 flex items-center justify-between text-[11px] text-slate-600 dark:text-slate-400">
                     <div className="flex items-center space-x-4">
-                      <span>Técnico: <strong className="text-slate-800">{wo.assignedTech}</strong></span>
-                      <span>Plan: <strong className="text-slate-800">{wo.plannedHours}h</strong></span>
+                      <span>Técnico: <strong className="text-slate-800 dark:text-slate-200">{wo.assignedTech}</strong></span>
+                      <span>Plan: <strong className="text-slate-800 dark:text-slate-200">{wo.plannedHours}h</strong></span>
                     </div>
-                    <span className="font-semibold text-amber-700">
+                    <span className="font-semibold text-amber-700 dark:text-amber-400">
                       Coste: ${wo.actualCost} / ${wo.plannedCost}
                     </span>
                   </div>
@@ -372,15 +372,15 @@ export const FioriLaunchpad = ({ onOpenCreateWO, onOpenCreateMIGO }) => {
         </div>
 
         {/* Notifications & Recent MIGO Movements */}
-        <div className="fiori-glass p-5 rounded-xl border border-slate-200 space-y-4">
-          <div className="flex items-center justify-between pb-3 border-b border-slate-100">
-            <h3 className="text-sm font-bold text-slate-900 flex items-center gap-2">
-              <ClipboardList className="w-4 h-4 text-sap-blue" />
+        <div className="fiori-glass p-5 rounded-xl border border-slate-200 dark:border-slate-800 space-y-4">
+          <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-800">
+            <h3 className="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
+              <ClipboardList className="w-4 h-4 text-sap-blue dark:text-sky-400" />
               <span>Últimos Movimientos MIGO</span>
             </h3>
             <button
               onClick={() => setActiveTab('MIGO')}
-              className="text-xs font-bold text-sap-blue hover:underline"
+              className="text-xs font-bold text-sap-blue dark:text-sky-400 hover:underline"
             >
               Ver MIGO
             </button>
@@ -390,20 +390,20 @@ export const FioriLaunchpad = ({ onOpenCreateWO, onOpenCreateMIGO }) => {
             {migoDocuments.slice(0, 4).map(doc => (
               <div
                 key={doc.documentId}
-                className="p-3 rounded-xl bg-slate-50 border border-slate-200 text-xs space-y-1"
+                className="p-3 rounded-xl bg-slate-50 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800 text-xs space-y-1 text-slate-900 dark:text-slate-100"
               >
                 <div className="flex items-center justify-between font-mono">
-                  <span className="font-bold text-slate-900">{doc.documentId}</span>
-                  <span className="text-[10px] text-sky-800 font-bold px-1.5 py-0.5 rounded bg-sky-100 border border-sky-200">
+                  <span className="font-bold text-slate-900 dark:text-white">{doc.documentId}</span>
+                  <span className="text-[10px] text-sky-800 dark:text-sky-300 font-bold px-1.5 py-0.5 rounded bg-sky-100 dark:bg-sky-950/60 border border-sky-200 dark:border-sky-800">
                     Tipo {doc.movementType}
                   </span>
                 </div>
-                <div className="text-slate-800 font-semibold truncate">
+                <div className="text-slate-800 dark:text-slate-200 font-semibold truncate">
                   {doc.materialName}
                 </div>
-                <div className="flex items-center justify-between text-[11px] text-slate-500">
+                <div className="flex items-center justify-between text-[11px] text-slate-500 dark:text-slate-400">
                   <span>Cant: <strong>{doc.qty} {doc.unit}</strong></span>
-                  <span>Ref: <strong className="text-slate-600">{doc.refDocument}</strong></span>
+                  <span>Ref: <strong className="text-slate-600 dark:text-slate-300">{doc.refDocument}</strong></span>
                 </div>
               </div>
             ))}

@@ -211,14 +211,14 @@ export const HRMaster = ({ onOpenCreateEmployee, onOpenCreateAbsence }) => {
   return (
     <div className="space-y-6 animate-in fade-in duration-300">
       {/* Top Banner Header */}
-      <div className="bg-white p-5 sm:p-6 rounded-xl border border-slate-200 border-l-4 border-l-sky-600 shadow-sm text-slate-900 flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div className="bg-white dark:bg-slate-900/90 p-5 sm:p-6 rounded-xl border border-slate-200 dark:border-slate-800 border-l-4 border-l-sky-600 shadow-sm text-slate-900 dark:text-white flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <div className="flex items-center space-x-2 text-xs font-bold uppercase tracking-wider text-sky-700 mb-1">
-            <Users className="w-4 h-4 text-sky-600" />
+          <div className="flex items-center space-x-2 text-xs font-bold uppercase tracking-wider text-sky-700 dark:text-sky-400 mb-1">
+            <Users className="w-4 h-4 text-sky-600 dark:text-sky-400" />
             <span>Módulo Axomira HCM • Gestión de Capital Humano</span>
 
           </div>
-          <h1 className="text-xl sm:text-2xl font-black tracking-tight text-slate-900">
+          <h1 className="text-xl sm:text-2xl font-black tracking-tight text-slate-900 dark:text-white">
             Recursos Humanos & Control de Acreditación de Faenas
           </h1>
           <p className="text-xs sm:text-sm text-slate-600 mt-1 max-w-3xl">
@@ -416,11 +416,11 @@ export const HRMaster = ({ onOpenCreateEmployee, onOpenCreateAbsence }) => {
               </div>
 
               <div className="flex items-center space-x-1.5">
-                <span className="text-slate-500 font-bold">Departamento:</span>
+                <span className="text-slate-500 dark:text-slate-400 font-bold">Departamento:</span>
                 <select
                   value={selectedDept}
                   onChange={(e) => setSelectedDept(e.target.value)}
-                  className="bg-white border border-slate-300 rounded-lg px-2.5 py-1 text-xs font-medium text-slate-800"
+                  className="bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg px-2.5 py-1 text-xs font-medium text-slate-800 dark:text-slate-200"
                 >
                   <option value="ALL">Todos los Departamentos</option>
                   <option value="Mantenimiento de Planta">Mantenimiento de Planta</option>
@@ -431,11 +431,11 @@ export const HRMaster = ({ onOpenCreateEmployee, onOpenCreateAbsence }) => {
               </div>
 
               <div className="flex items-center space-x-1.5">
-                <span className="text-slate-500 font-bold">Centro Operativo:</span>
+                <span className="text-slate-500 dark:text-slate-400 font-bold">Centro Operativo:</span>
                 <select
                   value={selectedPlant}
                   onChange={(e) => setSelectedPlant(e.target.value)}
-                  className="bg-white border border-slate-300 rounded-lg px-2.5 py-1 text-xs font-medium text-slate-800"
+                  className="bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg px-2.5 py-1 text-xs font-medium text-slate-800 dark:text-slate-200"
                 >
                   <option value="ALL">Todos los Centros</option>
                   {plants.map(p => (
@@ -445,11 +445,11 @@ export const HRMaster = ({ onOpenCreateEmployee, onOpenCreateAbsence }) => {
               </div>
 
               <div className="flex items-center space-x-1.5">
-                <span className="text-slate-500 font-bold">Tipo Contrato:</span>
+                <span className="text-slate-500 dark:text-slate-400 font-bold">Tipo Contrato:</span>
                 <select
                   value={selectedContractType}
                   onChange={(e) => setSelectedContractType(e.target.value)}
-                  className="bg-white border border-slate-300 rounded-lg px-2.5 py-1 text-xs font-medium text-slate-800"
+                  className="bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg px-2.5 py-1 text-xs font-medium text-slate-800 dark:text-slate-200"
                 >
                   <option value="ALL">Todos los Contratos</option>
                   <option value="Indefinido">Indefinido</option>
@@ -496,7 +496,7 @@ export const HRMaster = ({ onOpenCreateEmployee, onOpenCreateAbsence }) => {
           )}
 
           {/* Employee Master Table (Virtualizada) */}
-          <div className="bg-white rounded-xl border border-slate-200 overflow-hidden shadow-xs">
+          <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 overflow-hidden shadow-xs">
             <div ref={parentRef} className="overflow-auto max-h-[600px] custom-scrollbar">
               <table className="w-full text-left text-xs divide-y divide-slate-200">
                 <thead className="sticky top-0 z-10 bg-slate-100 text-slate-700 font-bold uppercase tracking-wider shadow-xs">

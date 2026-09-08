@@ -536,12 +536,12 @@ export const FioriHeader = ({ onOpenCreateWO, onOpenCreateMaterial, onOpenCreate
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               placeholder="Buscar en el Sistema (N° OT, SKU Material, Empleado, RUT, Pedido PO...)"
-              className="w-full bg-slate-100 text-slate-900 placeholder-slate-400 text-xs rounded-lg pl-9 pr-8 py-2 border border-slate-200 focus:outline-none focus:ring-2 focus:ring-sap-blue focus:border-transparent transition-all"
+              className="w-full bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-slate-100 placeholder-slate-400 text-xs rounded-lg pl-9 pr-8 py-2 border border-slate-200 dark:border-slate-700 focus:outline-none focus:ring-2 focus:ring-sap-blue focus:border-transparent transition-all"
             />
             {searchTerm && (
               <button
                 onClick={() => setSearchTerm('')}
-                className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-700 text-xs"
+                className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 text-xs"
               >
                 ✕
               </button>
@@ -565,45 +565,45 @@ export const FioriHeader = ({ onOpenCreateWO, onOpenCreateMaterial, onOpenCreate
 
             {showQuickActions && (
               <div
-                className="absolute right-0 mt-2 w-56 bg-white border border-slate-200 rounded-xl shadow-xl py-2 z-50 animate-in fade-in slide-in-from-top-2"
+                className="absolute right-0 mt-2 w-56 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-xl py-2 z-50 animate-in fade-in slide-in-from-top-2 text-slate-900 dark:text-slate-100"
                 onMouseLeave={() => setShowQuickActions(false)}
               >
-                <div className="px-3 py-1.5 text-[10px] font-bold text-slate-500 uppercase tracking-wider">
+                <div className="px-3 py-1.5 text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
                   Crear Registro Rápido
                 </div>
                 <button
                   onClick={() => { setShowQuickActions(false); if (onOpenReportModal) onOpenReportModal(); }}
-                  className="w-full px-3 py-2 text-xs text-left text-slate-800 hover:bg-slate-50 flex items-center space-x-2 transition-colors font-semibold border-b border-slate-100 text-sky-700 bg-sky-50/50"
+                  className="w-full px-3 py-2 text-xs text-left text-slate-800 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800 flex items-center space-x-2 transition-colors font-semibold border-b border-slate-100 dark:border-slate-800 text-sky-700 dark:text-sky-400 bg-sky-50/50 dark:bg-sky-950/40"
                 >
-                  <FileText className="w-4 h-4 text-sky-600" />
+                  <FileText className="w-4 h-4 text-sky-600 dark:text-sky-400" />
                   <span>Generar Reporte BI (PDF / Excel)</span>
                 </button>
                 <button
                   onClick={() => { setShowQuickActions(false); onOpenCreateEmployee(); }}
-                  className="w-full px-3 py-2 text-xs text-left text-slate-800 hover:bg-slate-50 flex items-center space-x-2 transition-colors font-medium"
+                  className="w-full px-3 py-2 text-xs text-left text-slate-800 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800 flex items-center space-x-2 transition-colors font-medium"
                 >
-                  <Users className="w-4 h-4 text-sky-600" />
+                  <Users className="w-4 h-4 text-sky-600 dark:text-sky-400" />
                   <span>Alta Colaborador (#rrhh-personal)</span>
                 </button>
                 <button
                   onClick={() => { setShowQuickActions(false); onOpenCreateWO(); }}
-                  className="w-full px-3 py-2 text-xs text-left text-slate-800 hover:bg-slate-50 flex items-center space-x-2 transition-colors font-medium"
+                  className="w-full px-3 py-2 text-xs text-left text-slate-800 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800 flex items-center space-x-2 transition-colors font-medium"
                 >
-                  <Wrench className="w-4 h-4 text-amber-600" />
+                  <Wrench className="w-4 h-4 text-amber-600 dark:text-amber-400" />
                   <span>Nueva Orden de Trabajo (#mnt-ordenes)</span>
                 </button>
                 <button
                   onClick={() => { setShowQuickActions(false); onOpenCreateMIGO(); }}
-                  className="w-full px-3 py-2 text-xs text-left text-slate-800 hover:bg-slate-50 flex items-center space-x-2 transition-colors font-medium"
+                  className="w-full px-3 py-2 text-xs text-left text-slate-800 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800 flex items-center space-x-2 transition-colors font-medium"
                 >
-                  <Package className="w-4 h-4 text-sky-600" />
+                  <Package className="w-4 h-4 text-sky-600 dark:text-sky-400" />
                   <span>Registrar Movimiento (#inv-mov)</span>
                 </button>
                 <button
                   onClick={() => { setShowQuickActions(false); onOpenCreateMaterial(); }}
-                  className="w-full px-3 py-2 text-xs text-left text-slate-800 hover:bg-slate-50 flex items-center space-x-2 transition-colors font-medium"
+                  className="w-full px-3 py-2 text-xs text-left text-slate-800 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800 flex items-center space-x-2 transition-colors font-medium"
                 >
-                  <PlusCircle className="w-4 h-4 text-emerald-600" />
+                  <PlusCircle className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
                   <span>Crear Material (#inv-materiales)</span>
                 </button>
               </div>
@@ -614,12 +614,12 @@ export const FioriHeader = ({ onOpenCreateWO, onOpenCreateMaterial, onOpenCreate
           <div className="relative">
             <button
               onClick={() => setIsApprovalModalOpen(true)}
-              className="p-2 rounded-lg bg-blue-50 hover:bg-blue-100 text-blue-700 relative transition-colors border border-blue-200"
+              className="p-2 rounded-lg bg-blue-50 dark:bg-slate-800 hover:bg-blue-100 dark:hover:bg-slate-700 text-blue-700 dark:text-sky-400 relative transition-colors border border-blue-200 dark:border-slate-700"
               title="Centro de Liberaciones y Aprobaciones ERP (ME28)"
             >
-              <ShieldCheck className="w-4 h-4 text-blue-600" />
+              <ShieldCheck className="w-4 h-4 text-blue-600 dark:text-sky-400" />
               {getPendingApprovals(user?.tenantId || 'tenant_demo').length > 0 && (
-                <span className="absolute -top-1 -right-1 bg-amber-500 text-slate-950 text-[10px] font-black w-4 h-4 rounded-full flex items-center justify-center ring-2 ring-white animate-pulse">
+                <span className="absolute -top-1 -right-1 bg-amber-500 text-slate-950 text-[10px] font-black w-4 h-4 rounded-full flex items-center justify-center ring-2 ring-white dark:ring-slate-900 animate-pulse">
                   {getPendingApprovals(user?.tenantId || 'tenant_demo').length}
                 </span>
               )}
@@ -630,11 +630,11 @@ export const FioriHeader = ({ onOpenCreateWO, onOpenCreateMaterial, onOpenCreate
           <div className="relative">
             <button
               onClick={() => setShowNotifications(!showNotifications)}
-              className="p-2 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 relative transition-colors border border-slate-200"
+              className="p-2 rounded-lg bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 relative transition-colors border border-slate-200 dark:border-slate-700"
             >
               <Bell className="w-4 h-4" />
               {totalAlertsCount > 0 && (
-                <span className="absolute -top-1 -right-1 bg-rose-600 text-white text-[10px] font-black w-4 h-4 rounded-full flex items-center justify-center ring-2 ring-white animate-bounce">
+                <span className="absolute -top-1 -right-1 bg-rose-600 text-white text-[10px] font-black w-4 h-4 rounded-full flex items-center justify-center ring-2 ring-white dark:ring-slate-900 animate-bounce">
                   {totalAlertsCount}
                 </span>
               )}
@@ -642,12 +642,12 @@ export const FioriHeader = ({ onOpenCreateWO, onOpenCreateMaterial, onOpenCreate
 
             {showNotifications && (
               <div
-                className="absolute right-0 mt-2 w-80 bg-white border border-slate-200 rounded-xl shadow-xl py-2 z-50 animate-in fade-in slide-in-from-top-2"
+                className="absolute right-0 mt-2 w-80 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-xl py-2 z-50 animate-in fade-in slide-in-from-top-2 text-slate-900 dark:text-slate-100"
                 onMouseLeave={() => setShowNotifications(false)}
               >
-                <div className="px-4 py-2 border-b border-slate-100 flex items-center justify-between">
-                  <span className="text-xs font-bold text-slate-800 flex items-center gap-1.5">
-                    <ShieldAlert className="w-4 h-4 text-amber-600" />
+                <div className="px-4 py-2 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between">
+                  <span className="text-xs font-bold text-slate-800 dark:text-slate-200 flex items-center gap-1.5">
+                    <ShieldAlert className="w-4 h-4 text-amber-600 dark:text-amber-400" />
                     Alertas del Sistema ({totalAlertsCount})
                   </span>
                   <span className="text-[10px] text-slate-500">En Vivo</span>
@@ -736,12 +736,12 @@ export const FioriHeader = ({ onOpenCreateWO, onOpenCreateMaterial, onOpenCreate
             {user ? (
               <button
                 onClick={() => setShowUserMenu(!showUserMenu)}
-                className="flex items-center space-x-2 p-1.5 rounded-lg hover:bg-slate-100 transition-colors border border-slate-200"
+                className="flex items-center space-x-2 p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors border border-slate-200 dark:border-slate-700"
               >
                 <div className="w-7 h-7 rounded-full bg-sap-blue text-white flex items-center justify-center font-bold text-xs">
                   {user.displayName ? user.displayName.charAt(0).toUpperCase() : user.email.charAt(0).toUpperCase()}
                 </div>
-                <span className="text-xs font-bold text-slate-800 hidden xl:inline max-w-[120px] truncate">
+                <span className="text-xs font-bold text-slate-800 dark:text-slate-200 hidden xl:inline max-w-[120px] truncate">
                   {user.displayName || user.email.split('@')[0]}
                 </span>
                 <ChevronDown className="w-3 h-3 text-slate-400" />
@@ -749,7 +749,7 @@ export const FioriHeader = ({ onOpenCreateWO, onOpenCreateMaterial, onOpenCreate
             ) : (
               <button
                 onClick={onOpenAuthModal}
-                className="px-3 py-1.5 bg-slate-900 hover:bg-slate-800 text-white rounded-lg text-xs font-bold flex items-center space-x-1.5 shadow-sm transition-all"
+                className="px-3 py-1.5 bg-slate-900 dark:bg-sky-600 hover:bg-slate-800 dark:hover:bg-sky-500 text-white rounded-lg text-xs font-bold flex items-center space-x-1.5 shadow-sm transition-all"
               >
                 <LogIn className="w-4 h-4" />
                 <span>Ingresar / Registrar</span>
@@ -758,24 +758,24 @@ export const FioriHeader = ({ onOpenCreateWO, onOpenCreateMaterial, onOpenCreate
 
             {showUserMenu && user && (
               <div
-                className="absolute right-0 mt-2 w-64 bg-white border border-slate-200 rounded-xl shadow-xl py-2 z-50 animate-in fade-in"
+                className="absolute right-0 mt-2 w-64 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-xl py-2 z-50 animate-in fade-in text-slate-900 dark:text-slate-100"
                 onMouseLeave={() => setShowUserMenu(false)}
               >
-                <div className="px-4 py-2 border-b border-slate-100">
-                  <p className="text-xs font-bold text-slate-900">{user.displayName || 'Usuario ERP'}</p>
-                  <p className="text-[11px] text-slate-500 font-mono truncate">{user.email}</p>
+                <div className="px-4 py-2 border-b border-slate-100 dark:border-slate-800">
+                  <p className="text-xs font-bold text-slate-900 dark:text-white">{user.displayName || 'Usuario ERP'}</p>
+                  <p className="text-[11px] text-slate-500 dark:text-slate-400 font-mono truncate">{user.email}</p>
                   <div className="flex items-center gap-1.5 mt-1">
-                    <span className="px-2 py-0.5 text-[9px] font-bold bg-purple-100 text-purple-800 rounded font-mono">
+                    <span className="px-2 py-0.5 text-[9px] font-bold bg-purple-100 text-purple-800 dark:bg-purple-950 dark:text-purple-300 rounded font-mono">
                       {user.isUniversalAdmin ? 'ADMINISTRATOR (SUPERUSER)' : (user.role || 'Usuario Corporativo')}
                     </span>
                   </div>
                 </div>
 
                 {/* Conmutador de Tenant Contextual (Multi-Tenancy) */}
-                <div className="px-4 py-2 border-b border-slate-100 bg-slate-50/70">
-                  <div className="flex items-center justify-between text-[10px] font-bold text-slate-500 mb-1">
+                <div className="px-4 py-2 border-b border-slate-100 dark:border-slate-800 bg-slate-50/70 dark:bg-slate-800/50">
+                  <div className="flex items-center justify-between text-[10px] font-bold text-slate-500 dark:text-slate-400 mb-1">
                     <span>🏢 Tenant Activo:</span>
-                    <span className="font-mono text-sap-blue font-bold">{user.tenantId || 'tenant_demo'}</span>
+                    <span className="font-mono text-sap-blue dark:text-sky-400 font-bold">{user.tenantId || 'tenant_demo'}</span>
                   </div>
                   <select
                     value={user.tenantId || 'tenant_demo'}
@@ -784,7 +784,7 @@ export const FioriHeader = ({ onOpenCreateWO, onOpenCreateMaterial, onOpenCreate
                         switchTenant(e.target.value);
                       }
                     }}
-                    className="w-full bg-white border border-slate-200 rounded px-2 py-1 text-xs text-slate-800 font-semibold focus:outline-none focus:border-sap-blue cursor-pointer"
+                    className="w-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded px-2 py-1 text-xs text-slate-800 dark:text-slate-200 font-semibold focus:outline-none focus:border-sap-blue cursor-pointer"
                   >
                     <option value="tenant_demo">Demo Enterprise (DEMO)</option>
                     <option value="tenant_codelco">CODELCO Chile (El Teniente / Chuqui)</option>
@@ -797,7 +797,7 @@ export const FioriHeader = ({ onOpenCreateWO, onOpenCreateMaterial, onOpenCreate
                 <div className="py-1">
                   <button
                     onClick={() => { setShowUserMenu(false); logout(); }}
-                    className="w-full text-left px-4 py-2 text-xs text-rose-600 hover:bg-rose-50 flex items-center space-x-2 font-bold transition-colors"
+                    className="w-full text-left px-4 py-2 text-xs text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/40 flex items-center space-x-2 font-bold transition-colors"
                   >
                     <LogOut className="w-4 h-4" />
                     <span>Cerrar Sesión</span>

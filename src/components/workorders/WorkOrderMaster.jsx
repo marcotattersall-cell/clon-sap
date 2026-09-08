@@ -187,15 +187,15 @@ export const WorkOrderMaster = ({ onOpenCreateWO, onOpenMIGOForWO }) => {
   return (
     <div className="space-y-6 animate-in fade-in duration-300">
       {/* Header Banner */}
-      <div className="bg-white p-5 sm:p-6 rounded-2xl border border-slate-200 border-l-4 border-l-sap-blue shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div className="bg-white dark:bg-slate-900/90 p-5 sm:p-6 rounded-2xl border border-slate-200 dark:border-slate-800 border-l-4 border-l-sap-blue shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <div className="flex items-center space-x-2 text-xs font-bold uppercase tracking-wider text-sky-600 mb-1 font-mono">
+          <div className="flex items-center space-x-2 text-xs font-bold uppercase tracking-wider text-sky-600 dark:text-sky-400 mb-1 font-mono">
             <Wrench className="w-4 h-4 text-sap-blue" />
             <span>axomira:mantenimiento:ordenes <span className="bg-sky-100 text-sky-800 dark:bg-sky-950 dark:text-sky-300 px-2 py-0.5 rounded border border-sky-300 dark:border-sky-800 ml-1">#mnt-ordenes</span></span>
 
 
           </div>
-          <h1 className="text-xl sm:text-2xl font-black tracking-tight text-slate-900">
+          <h1 className="text-xl sm:text-2xl font-black tracking-tight text-slate-900 dark:text-white">
             Control & Ejecución de Órdenes de Trabajo
           </h1>
           <p className="text-xs sm:text-sm text-slate-600 mt-1 max-w-3xl">
@@ -351,11 +351,11 @@ export const WorkOrderMaster = ({ onOpenCreateWO, onOpenMIGOForWO }) => {
 
           {/* Filters */}
           <div className="flex items-center space-x-2">
-            <span className="text-slate-500 font-bold">Estado:</span>
+            <span className="text-slate-500 dark:text-slate-400 font-bold">Estado:</span>
             <select
               value={selectedStatusFilter}
               onChange={(e) => setSelectedStatusFilter(e.target.value)}
-              className="bg-white border border-slate-200 rounded-xl px-3 py-1.5 text-xs font-bold text-slate-800 focus:ring-2 focus:ring-sap-blue"
+              className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-1.5 text-xs font-bold text-slate-800 dark:text-slate-200 focus:ring-2 focus:ring-sap-blue"
             >
               <option value="ALL">Todos los Estados</option>
               <option value="CRTE">CRTE - Creada</option>
@@ -366,11 +366,11 @@ export const WorkOrderMaster = ({ onOpenCreateWO, onOpenMIGOForWO }) => {
           </div>
 
           <div className="flex items-center space-x-2">
-            <span className="text-slate-500 font-bold">Prioridad:</span>
+            <span className="text-slate-500 dark:text-slate-400 font-bold">Prioridad:</span>
             <select
               value={selectedPriorityFilter}
               onChange={(e) => setSelectedPriorityFilter(e.target.value)}
-              className="bg-white border border-slate-200 rounded-xl px-3 py-1.5 text-xs font-bold text-slate-800 focus:ring-2 focus:ring-sap-blue"
+              className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-1.5 text-xs font-bold text-slate-800 dark:text-slate-200 focus:ring-2 focus:ring-sap-blue"
             >
               <option value="ALL">Todas las Prioridades</option>
               <option value="Muy Alta">Muy Alta</option>
@@ -422,7 +422,7 @@ export const WorkOrderMaster = ({ onOpenCreateWO, onOpenMIGOForWO }) => {
                         return (
                           <div
                             key={wo.id}
-                            className="bg-white p-4 rounded-xl border border-slate-200 hover:border-sap-blue/60 shadow-xs hover:shadow-md transition-all space-y-3 group"
+                            className="bg-white dark:bg-slate-900/80 p-4 rounded-xl border border-slate-200 dark:border-slate-800 hover:border-sap-blue/60 shadow-xs hover:shadow-md transition-all space-y-3 group"
                           >
                             {/* Card Top Strip */}
                             <div className="flex items-center justify-between text-xs">
@@ -501,7 +501,7 @@ export const WorkOrderMaster = ({ onOpenCreateWO, onOpenMIGOForWO }) => {
 
       {/* ----------------- VIEW MODE 2: LISTA TABULAR VIRTUALIZADA ----------------- */}
       {viewMode === 'TABLE' && (
-        <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-xs">
+        <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 overflow-hidden shadow-xs">
           <div ref={parentRef} className="overflow-auto max-h-[600px] custom-scrollbar">
             <table className="w-full text-left text-xs divide-y divide-slate-200">
               <thead className="sticky top-0 z-10 bg-slate-100 text-slate-700 font-bold uppercase tracking-wider shadow-xs">
@@ -606,7 +606,7 @@ export const WorkOrderMaster = ({ onOpenCreateWO, onOpenMIGOForWO }) => {
       {/* ----------------- MODAL DETALLE DE ORDEN IW32 / IW33 ----------------- */}
       {activeWO && (
         <div className="fixed inset-0 z-50 bg-slate-950/70 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in overflow-y-auto">
-          <div className="bg-white border border-slate-200 rounded-2xl shadow-2xl max-w-3xl w-full overflow-hidden text-slate-900 my-8">
+          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-2xl max-w-3xl w-full overflow-hidden text-slate-900 dark:text-slate-100 my-8">
             {/* Modal Header */}
             <div className="bg-gradient-to-r from-slate-900 to-slate-800 p-5 text-white flex items-center justify-between">
               <div className="flex items-center space-x-3">
@@ -846,7 +846,7 @@ export const WorkOrderMaster = ({ onOpenCreateWO, onOpenMIGOForWO }) => {
 
                 <button
                   onClick={() => setActiveWOModal(null)}
-                  className="bg-white border border-slate-300 text-slate-700 font-bold px-4 py-2 rounded-xl hover:bg-slate-200 transition-colors"
+                  className="bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-200 font-bold px-4 py-2 rounded-xl hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors"
                 >
                   Cerrar
                 </button>
