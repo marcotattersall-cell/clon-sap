@@ -51,21 +51,30 @@ export const generateAndSendOTP = async (email, displayName = 'Usuario ERP') => 
     console.warn('[OTP Service] Guardando respaldo local de OTP:', err);
   }
 
-  // 4. Despachar correo electrónico real a la bandeja de entrada vía Firebase OOB API
+  // 4. Registrar documento de correo transaccional en la colección 'mail' (Firebase Trigger Email Extension)
   try {
-    const apiKey = import.meta.env.VITE_FIREBASE_API_KEY || "AIzaSyC6wbgOuAkgATciHHT8iYCbElk8dmzOD98";
-    if (apiKey && typeof fetch !== 'undefined') {
-      await fetch(`https://identitytoolkit.googleapis.com/v1/accounts:sendOobCode?key=${apiKey}`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          requestType: 'VERIFY_EMAIL',
-          email: cleanEmail
-        })
-      }).catch(e => console.warn('[OTP Service] Transmisión de correo OOB:', e));
-    }
-  } catch (err) {
-    console.warn('[OTP Service] Error al enviar correo de verificación:', err);
+    const mailDocId = `OTP_MAIL_${cleanEmail.replace(/[^a-z0-9]/g, '_')}_${Date.now()}`;
+    await upsertDocument('mail', mailDocId, {
+      to: [cleanEmail],
+      message: {
+        subject: `[AXOMIRA ERP] Tu código de verificación de 6 dígitos: ${code}`,
+        text: `Hola ${displayName}, tu código de verificación para AXOMIRA ERP es: ${code} (Válido por 10 minutos).`,
+        html: `
+          <div style="font-family: Arial, sans-serif; max-width: 500px; margin: 0 auto; padding: 24px; background-color: #0f172a; color: #f8fafc; border-radius: 16px; border: 1px solid #1e293b;">
+            <h2 style="color: #38bdf8; margin-top: 0; font-weight: 800;">AXOMIRA Intelligent Cloud ERP</h2>
+            <p style="color: #94a3b8; font-size: 14px;">Hola <strong>${displayName}</strong>,</p>
+            <p style="color: #cbd5e1; font-size: 14px;">Tu código de verificación corporativo de 6 dígitos es:</p>
+            <div style="background-color: #1e293b; border: 2px dashed #38bdf8; color: #38bdf8; font-size: 32px; font-weight: 900; text-align: center; padding: 18px; border-radius: 12px; letter-spacing: 6px; margin: 24px 0; font-family: monospace;">
+              ${code}
+            </div>
+            <p style="font-size: 12px; color: #64748b;">Este código es válido por 10 minutos. Si no solicitaste este código, puedes ignorar este mensaje de forma segura.</p>
+          </div>
+        `
+      },
+      createdAt: new Date().toISOString()
+    });
+  } catch (mErr) {
+    console.warn('[OTP Service] Error al registrar documento mail:', mErr);
   }
 
   console.log(`[AXOMIRA OTP Security] ✉️ Código enviado a ${cleanEmail}: ${code} (Válido por ${OTP_EXPIRATION_MINUTES}m)`);
