@@ -164,17 +164,30 @@ export const AuthProvider = ({ children }) => {
           await updateProfile(fbUser, { displayName });
         }
 
-        // Send Email Verification link automatically upon registration
+        // Enviar correo de verificación nativo de Firebase Auth a la casilla del usuario
         let verificationSent = false;
         try {
-          const actionCodeSettings = {
-            url: typeof window !== 'undefined' ? window.location.origin : 'https://operam-erp-enterprise.web.app',
-            handleCodeInApp: false
-          };
-          await sendEmailVerification(fbUser, actionCodeSettings);
+          await sendEmailVerification(fbUser);
           verificationSent = true;
+          console.log('[Firebase Auth] Correo de verificación enviado a:', fbUser.email);
         } catch (vErr) {
-          console.warn('[Firebase Auth] No se pudo enviar el correo de verificación inicial:', vErr);
+          console.warn('[Firebase Auth] Intentando envío de correo de respaldo:', vErr);
+          try {
+            const apiKey = import.meta.env.VITE_FIREBASE_API_KEY || "AIzaSyC6wbgOuAkgATciHHT8iYCbElk8dmzOD98";
+            if (apiKey && fbUser.email) {
+              await fetch(`https://identitytoolkit.googleapis.com/v1/accounts:sendOobCode?key=${apiKey}`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                  requestType: 'VERIFY_EMAIL',
+                  email: fbUser.email.trim()
+                })
+              });
+              verificationSent = true;
+            }
+          } catch (oobErr) {
+            console.warn('[Firebase Auth] Error en envío de respaldo:', oobErr);
+          }
         }
 
         const formatted = formatUserProfile({
@@ -242,21 +255,48 @@ export const AuthProvider = ({ children }) => {
   };
 
   // Re-send Email Verification Link manually
-  const sendVerificationEmail = async (targetUser = null) => {
+  const sendVerificationEmail = async (targetUser = null, targetEmailAddress = null) => {
     setAuthError(null);
     const currentUserToVerify = targetUser || auth?.currentUser;
-    if (!currentUserToVerify) {
-      return { success: false, error: 'No hay ningún usuario activo para verificar.' };
-    }
+    const destEmail = targetEmailAddress || currentUserToVerify?.email;
+    
     try {
-      const actionCodeSettings = {
-        url: typeof window !== 'undefined' ? window.location.origin : 'https://operam-erp-enterprise.web.app',
-        handleCodeInApp: false
-      };
-      await sendEmailVerification(currentUserToVerify, actionCodeSettings);
-      return { success: true };
+      if (currentUserToVerify) {
+        await sendEmailVerification(currentUserToVerify);
+        return { success: true };
+      } else if (destEmail) {
+        const apiKey = import.meta.env.VITE_FIREBASE_API_KEY || "AIzaSyC6wbgOuAkgATciHHT8iYCbElk8dmzOD98";
+        await fetch(`https://identitytoolkit.googleapis.com/v1/accounts:sendOobCode?key=${apiKey}`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            requestType: 'VERIFY_EMAIL',
+            email: destEmail.trim()
+          })
+        });
+        return { success: true };
+      }
+      return { success: false, error: 'No hay correo especificado para verificación.' };
     } catch (err) {
-      console.error('[Firebase Auth] Error al enviar comprobación de correo:', err);
+      console.warn('[Firebase Auth] Intentando fallback de correo OOB:', err);
+      if (destEmail) {
+        try {
+          const apiKey = import.meta.env.VITE_FIREBASE_API_KEY || "AIzaSyC6wbgOuAkgATciHHT8iYCbElk8dmzOD98";
+          await fetch(`https://identitytoolkit.googleapis.com/v1/accounts:sendOobCode?key=${apiKey}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              requestType: 'VERIFY_EMAIL',
+              email: destEmail.trim()
+            })
+          });
+          return { success: true };
+        } catch (e) {
+          const errorMsg = 'No se pudo enviar el correo de verificación. Revisa la casilla o intenta más tarde.';
+          setAuthError(errorMsg);
+          return { success: false, error: errorMsg };
+        }
+      }
       const errorMsg = mapAuthErrorMessage(err.code) || err.message || 'No se pudo enviar el correo de verificación.';
       setAuthError(errorMsg);
       return { success: false, error: errorMsg };

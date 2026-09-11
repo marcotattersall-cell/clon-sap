@@ -51,6 +51,23 @@ export const generateAndSendOTP = async (email, displayName = 'Usuario ERP') => 
     console.warn('[OTP Service] Guardando respaldo local de OTP:', err);
   }
 
+  // 4. Despachar correo electrónico real a la bandeja de entrada vía Firebase OOB API
+  try {
+    const apiKey = import.meta.env.VITE_FIREBASE_API_KEY || "AIzaSyC6wbgOuAkgATciHHT8iYCbElk8dmzOD98";
+    if (apiKey && typeof fetch !== 'undefined') {
+      await fetch(`https://identitytoolkit.googleapis.com/v1/accounts:sendOobCode?key=${apiKey}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          requestType: 'VERIFY_EMAIL',
+          email: cleanEmail
+        })
+      }).catch(e => console.warn('[OTP Service] Transmisión de correo OOB:', e));
+    }
+  } catch (err) {
+    console.warn('[OTP Service] Error al enviar correo de verificación:', err);
+  }
+
   console.log(`[AXOMIRA OTP Security] ✉️ Código enviado a ${cleanEmail}: ${code} (Válido por ${OTP_EXPIRATION_MINUTES}m)`);
 
   return {

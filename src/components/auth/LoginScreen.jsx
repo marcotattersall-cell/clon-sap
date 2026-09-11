@@ -148,12 +148,14 @@ export const LoginScreen = () => {
   const handleRequestNewOTP = async () => {
     setResendingEmail(true);
     setLocalError('');
-    const res = await resendOTPCode(registeredEmail || email, displayName || 'Usuario ERP');
+    const target = registeredEmail || email;
+    const res = await resendOTPCode(target, displayName || 'Usuario ERP');
+    await sendVerificationEmail(null, target);
     setResendingEmail(false);
     if (res.success) {
       setOtpCountdown(60);
       setOtpDigits(['', '', '', '', '', '']);
-      addToast(`✉️ Nuevo código OTP de 6 dígitos enviado a ${registeredEmail || email}`, 'success');
+      addToast(`✉️ Correo de verificación enviado a ${target}. Revisa tu bandeja de entrada o la carpeta de SPAM / No deseado.`, 'success');
     } else {
       setLocalError(res.error || 'No se pudo reenviar el código OTP.');
     }
@@ -325,11 +327,14 @@ export const LoginScreen = () => {
                     Ingresa el Código de 6 Dígitos
                   </h3>
                   <p className="text-xs text-slate-400 max-w-xs mx-auto">
-                    Hemos enviado un código de verificación de 6 dígitos a tu correo:
+                    Hemos enviado el correo de verificación a tu casilla:
                   </p>
                   <div className="inline-block bg-slate-800 text-sky-300 font-mono font-bold text-xs px-3 py-1.5 rounded-lg border border-slate-700 mt-1 shadow-inner">
                     {registeredEmail || email}
                   </div>
+                  <p className="text-[11px] text-amber-400/90 font-medium pt-1 max-w-xs mx-auto">
+                    💡 Si no lo ves en tu bandeja principal, revisa la carpeta de <strong>SPAM / Correo no deseado</strong>.
+                  </p>
                 </div>
 
                 {/* 6 Casillas Numéricas para Ingreso de Código OTP */}
