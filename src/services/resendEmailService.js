@@ -18,7 +18,7 @@ export const sendOTPCodeEmail = async ({ toEmail, displayName = 'Usuario ERP', c
   }
 
   const cleanEmail = toEmail.toLowerCase().trim();
-  const apiKey = import.meta.env.VITE_RESEND_API_KEY || '';
+  const apiKey = import.meta.env.VITE_RESEND_API_KEY || RESEND_API_KEY;
 
   if (!apiKey) {
     console.warn('[Resend Service] ⚠️ VITE_RESEND_API_KEY no configurada en .env.local. Registrando documento de respaldo en Firestore...');
