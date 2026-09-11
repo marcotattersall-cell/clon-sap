@@ -122,6 +122,27 @@ export const sendOTPCodeEmail = async ({ toEmail, displayName = 'Usuario ERP', c
     if (res.ok) {
       console.log(`[Resend Service] ✉️ Correo OTP enviado exitosamente a ${cleanEmail}. Resend ID: ${data.id}`);
       return { success: true, resendId: data.id };
+    } else if (res.status === 403 && data?.message?.includes('marco.tattersall@gmail.com')) {
+      console.warn('[Resend Service Guard] ⚠️ Resend Modo Prueba (Sandbox) detectado. Redirigiendo despacho a marco.tattersall@gmail.com...');
+      const fallbackPayload = {
+        ...payload,
+        to: ['marco.tattersall@gmail.com'],
+        subject: `🔑 [RESEND MODALIDAD PRUEBA → Destino: ${cleanEmail}] Código OTP: ${code}`
+      };
+      const fallbackRes = await fetch('https://api.resend.com/emails', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${apiKey}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(fallbackPayload)
+      });
+      const fallbackData = await fallbackRes.json();
+      if (fallbackRes.ok) {
+        console.log(`[Resend Service Guard] 🚀 Correo OTP de prueba enviado a marco.tattersall@gmail.com (ID: ${fallbackData.id})`);
+        return { success: true, resendId: fallbackData.id, isSandboxFallback: true, originalRecipient: cleanEmail };
+      }
+      return { success: false, error: fallbackData.message || 'Error en respaldo Sandbox', data: fallbackData };
     } else {
       console.warn('[Resend Service] ⚠️ Resend devolvió error:', data);
       return { success: false, error: data.message || 'Error en envío Resend', data };
