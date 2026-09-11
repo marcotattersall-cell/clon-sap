@@ -58,4 +58,11 @@ describe('Servicio de Verificación de Seguridad OTP (6 Dígitos)', () => {
     expect(blockedRes.success).toBe(false);
     expect(blockedRes.error).toContain('límite máximo de 5 intentos');
   });
+
+  it('debe manejar adecuadamente la transmisión de correos OTP vía Resend API', async () => {
+    const { sendOTPCodeEmail } = await import('../services/resendEmailService');
+    const res = await sendOTPCodeEmail({ toEmail: testEmail, displayName: 'Test User', code: '123456' });
+    expect(res).toBeDefined();
+    expect(typeof res.success).toBe('boolean');
+  });
 });

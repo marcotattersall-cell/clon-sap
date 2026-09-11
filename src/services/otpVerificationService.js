@@ -1,4 +1,5 @@
 import { upsertDocument, subscribeCollection } from './dbService';
+import { sendOTPCodeEmail } from './resendEmailService';
 
 /**
  * Servicio de Generación y Validación de Códigos de Verificación OTP (6 dígitos)
@@ -51,7 +52,19 @@ export const generateAndSendOTP = async (email, displayName = 'Usuario ERP') => 
     console.warn('[OTP Service] Guardando respaldo local de OTP:', err);
   }
 
-  // 4. Registrar documento de correo transaccional en la colección 'mail' (Firebase Trigger Email Extension)
+  // 4. Despachar correo transaccional vía RESEND API (despacho directo a bandeja de entrada)
+  try {
+    const resendResult = await sendOTPCodeEmail({ toEmail: cleanEmail, displayName, code });
+    if (resendResult.success) {
+      console.log(`[OTP Service] 🚀 Correo con código ${code} despachado exitosamente vía Resend a ${cleanEmail}`);
+    } else {
+      console.warn(`[OTP Service] Resend aviso:`, resendResult.message || resendResult.error);
+    }
+  } catch (rErr) {
+    console.warn('[OTP Service] Error al transmitir vía Resend:', rErr);
+  }
+
+  // 5. Registrar documento de correo transaccional en la colección 'mail' (Firebase Trigger Email Extension)
   try {
     const mailDocId = `OTP_MAIL_${cleanEmail.replace(/[^a-z0-9]/g, '_')}_${Date.now()}`;
     await upsertDocument('mail', mailDocId, {
