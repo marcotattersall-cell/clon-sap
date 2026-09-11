@@ -13,6 +13,7 @@ import {
   isRealFirebaseConfigured
 } from '../firebase/config';
 import { upsertDocument } from '../services/dbService';
+import { generateAndSendOTP, verifyOTPCode } from '../services/otpVerificationService';
 
 const AuthContext = createContext(null);
 
@@ -184,8 +185,18 @@ export const AuthProvider = ({ children }) => {
         formatted.tenantId = tenantId;
         formatted.provider = 'firebase-password';
 
+        // Generar código OTP de 6 dígitos
+        const otpRes = await generateAndSendOTP(email.trim(), displayName || 'Usuario ERP');
+
         saveActiveSession(formatted);
-        return { success: true, user: formatted, emailVerificationSent: verificationSent };
+        return {
+          success: true,
+          requiresOTP: true,
+          email: email.trim(),
+          otpCode: otpRes.code,
+          user: formatted,
+          emailVerificationSent: verificationSent
+        };
       } else {
         const errorMsg = 'Firebase Auth no está activo.';
         setAuthError(errorMsg);
@@ -193,6 +204,38 @@ export const AuthProvider = ({ children }) => {
       }
     } catch (err) {
       const errorMsg = mapAuthErrorMessage(err.code);
+      setAuthError(errorMsg);
+      return { success: false, error: errorMsg };
+    }
+  };
+
+  // Validar código OTP de 6 dígitos ingresado por el usuario
+  const confirmOTPCode = async (targetEmail, inputCode) => {
+    setAuthError(null);
+    const res = await verifyOTPCode(targetEmail, inputCode);
+    if (res.success) {
+      if (user) {
+        const updated = { ...user, emailVerified: true };
+        setUser(updated);
+        if (updated.uid) {
+          upsertDocument('users', updated.uid, updated);
+        }
+      }
+      return { success: true };
+    } else {
+      setAuthError(res.error);
+      return { success: false, error: res.error };
+    }
+  };
+
+  // Reenviar nuevo código OTP de 6 dígitos al correo
+  const resendOTPCode = async (targetEmail, name = 'Usuario ERP') => {
+    setAuthError(null);
+    try {
+      const otpRes = await generateAndSendOTP(targetEmail, name);
+      return { success: true, code: otpRes.code };
+    } catch (err) {
+      const errorMsg = err.message || 'No se pudo generar un nuevo código OTP.';
       setAuthError(errorMsg);
       return { success: false, error: errorMsg };
     }
@@ -399,6 +442,8 @@ export const AuthProvider = ({ children }) => {
         setAuthError,
         loginWithEmail,
         registerWithEmail,
+        confirmOTPCode,
+        resendOTPCode,
         loginWithGoogle,
         loginAsUniversalAdmin,
         loginDemoUser,

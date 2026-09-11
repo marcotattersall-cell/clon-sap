@@ -27,6 +27,8 @@ export const LoginScreen = () => {
   const {
     loginWithEmail,
     registerWithEmail,
+    confirmOTPCode,
+    resendOTPCode,
     loginWithGoogle,
     loginAsUniversalAdmin,
     loginDemoUser,
@@ -48,16 +50,30 @@ export const LoginScreen = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [localError, setLocalError] = useState('');
 
-  // Email verification state
+  // Email verification & OTP state
   const [showVerificationNotice, setShowVerificationNotice] = useState(false);
   const [registeredEmail, setRegisteredEmail] = useState('');
+  const [activeOTPCode, setActiveOTPCode] = useState('');
+  const [otpDigits, setOtpDigits] = useState(['', '', '', '', '', '']);
+  const [otpCountdown, setOtpCountdown] = useState(60);
   const [resendingEmail, setResendingEmail] = useState(false);
   const [checkingVerification, setCheckingVerification] = useState(false);
+  const [verifyingOTP, setVerifyingOTP] = useState(false);
 
   React.useEffect(() => {
     setLocalError('');
     if (setAuthError) setAuthError(null);
   }, [mode, setAuthError]);
+
+  React.useEffect(() => {
+    let timer;
+    if (showVerificationNotice && otpCountdown > 0) {
+      timer = setInterval(() => {
+        setOtpCountdown(prev => prev - 1);
+      }, 1000);
+    }
+    return () => clearInterval(timer);
+  }, [showVerificationNotice, otpCountdown]);
 
   const handleEmailChange = (e) => {
     setEmail(e.target.value);
@@ -69,6 +85,80 @@ export const LoginScreen = () => {
     setPassword(e.target.value);
     if (localError) setLocalError('');
     if (authError && setAuthError) setAuthError(null);
+  };
+
+  const handleOtpDigitChange = (index, value) => {
+    if (!/^\d*$/.test(value)) return;
+    const cleanDigit = value.slice(-1);
+    const newDigits = [...otpDigits];
+    newDigits[index] = cleanDigit;
+    setOtpDigits(newDigits);
+    if (localError) setLocalError('');
+
+    if (cleanDigit && index < 5) {
+      const nextInput = document.getElementById(`otp-input-${index + 1}`);
+      if (nextInput) nextInput.focus();
+    }
+  };
+
+  const handleOtpKeyDown = (index, e) => {
+    if (e.key === 'Backspace' && !otpDigits[index] && index > 0) {
+      const prevInput = document.getElementById(`otp-input-${index - 1}`);
+      if (prevInput) prevInput.focus();
+    }
+  };
+
+  const handleOtpPaste = (e) => {
+    e.preventDefault();
+    const pasted = e.clipboardData.getData('text').trim().replace(/\D/g, '').slice(0, 6);
+    if (pasted.length > 0) {
+      const newDigits = ['', '', '', '', '', ''];
+      for (let i = 0; i < pasted.length; i++) {
+        newDigits[i] = pasted[i];
+      }
+      setOtpDigits(newDigits);
+      if (localError) setLocalError('');
+      const targetIndex = Math.min(pasted.length, 5);
+      const targetInput = document.getElementById(`otp-input-${targetIndex}`);
+      if (targetInput) targetInput.focus();
+    }
+  };
+
+  const handleConfirmOTP = async (e) => {
+    if (e) e.preventDefault();
+    const code = otpDigits.join('');
+    if (code.length !== 6) {
+      setLocalError('Por favor ingresa los 6 dígitos del código de verificación.');
+      return;
+    }
+
+    setVerifyingOTP(true);
+    setLocalError('');
+    const res = await confirmOTPCode(registeredEmail || email, code);
+    setVerifyingOTP(false);
+
+    if (res.success) {
+      addToast('🎉 ¡Código OTP verificado exitosamente! Bienvenido a AXOMIRA ERP.', 'success');
+      setShowVerificationNotice(false);
+      setActiveTab('LAUNCHPAD');
+    } else {
+      setLocalError(res.error || 'El código ingresado es incorrecto.');
+    }
+  };
+
+  const handleRequestNewOTP = async () => {
+    setResendingEmail(true);
+    setLocalError('');
+    const res = await resendOTPCode(registeredEmail || email, displayName || 'Usuario ERP');
+    setResendingEmail(false);
+    if (res.success) {
+      setActiveOTPCode(res.code);
+      setOtpCountdown(60);
+      setOtpDigits(['', '', '', '', '', '']);
+      addToast(`✉️ Nuevo código OTP de 6 dígitos enviado a ${registeredEmail || email}`, 'success');
+    } else {
+      setLocalError(res.error || 'No se pudo reenviar el código OTP.');
+    }
   };
 
   const handleGoogleLogin = async () => {
@@ -148,8 +238,11 @@ export const LoginScreen = () => {
       if (res.success) {
         setCurrentRole(res.user.role);
         setRegisteredEmail(email);
+        setActiveOTPCode(res.otpCode || '');
         setShowVerificationNotice(true);
-        addToast(`¡Cuenta registrada con éxito! Se envió un correo de verificación a ${email}`, 'success');
+        setOtpDigits(['', '', '', '', '', '']);
+        setOtpCountdown(60);
+        addToast(`¡Cuenta registrada! Revisa el código OTP de 6 dígitos enviado a ${email}`, 'success');
       } else {
         setLocalError(res.error);
       }
@@ -204,95 +297,129 @@ export const LoginScreen = () => {
         </div>
       </header>
 
-      {/* Center Auth Card */}
-      <main className="flex-1 flex items-center justify-center p-4 sm:p-6 relative z-10">
-        <div className="enterprise-card w-full max-w-md rounded-2xl overflow-hidden shadow-2xl border border-slate-300 dark:border-slate-800 bg-white dark:bg-slate-900">
-          
-          {/* Card Top Title Banner */}
-          <div className="bg-slate-900 text-white p-6 border-b border-slate-800 text-center relative flex flex-col items-center">
-            <div className="w-48 max-w-full py-1 mb-1">
-              <AxomiraLogo variant="full" dark className="w-full h-auto max-h-24" />
+      {/* Central Login & OTP Card */}
+      <main className="flex-1 flex items-center justify-center p-4 sm:p-6 relative z-10 my-6">
+        <div className="w-full max-w-md bg-slate-900/95 border border-slate-800/90 rounded-2xl shadow-2xl overflow-hidden backdrop-blur-md">
+          {/* Header Bar inside card */}
+          <div className="bg-slate-950/80 px-6 py-4 border-b border-slate-800 flex items-center justify-between">
+            <div className="flex items-center space-x-2">
+              <ShieldCheck className="w-5 h-5 text-emerald-400" />
+              <span className="font-extrabold text-xs tracking-wider text-slate-200 uppercase">
+                {showVerificationNotice ? 'Verificación OTP Requerida' : 'Autenticación Única (SSO / SAML)'}
+              </span>
             </div>
-            <h2 className="text-lg font-black tracking-tight text-slate-100">
-              Autenticación AXOMIRA ERP
-            </h2>
-            <p className="text-xs text-slate-400 mt-1 max-w-xs mx-auto">
-              Inicia sesión con tu cuenta corporativa de Google o credenciales de acceso para entrar al sistema.
-            </p>
+            <span className="text-[10px] font-mono text-emerald-400 font-bold bg-emerald-950/80 border border-emerald-800/60 px-2 py-0.5 rounded">
+              v4.0 Live
+            </span>
           </div>
 
           <div className="p-6 space-y-5">
             {showVerificationNotice ? (
-              <div className="space-y-5 text-center animate-in fade-in zoom-in-95 py-2">
-                <div className="w-16 h-16 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center mx-auto text-emerald-400 shadow-xl shadow-emerald-950/20">
-                  <Mail className="w-8 h-8 animate-bounce" />
+              <form onSubmit={handleConfirmOTP} className="space-y-5 text-center animate-in fade-in zoom-in-95 py-2">
+                <div className="w-16 h-16 rounded-2xl bg-sky-500/10 border border-sky-500/30 flex items-center justify-center mx-auto text-sky-400 shadow-xl shadow-sky-950/30">
+                  <Lock className="w-8 h-8 animate-pulse text-sky-400" />
                 </div>
 
                 <div className="space-y-1">
-                  <span className="text-[10px] font-mono tracking-widest text-emerald-400 font-bold uppercase">
-                    Verificación de Seguridad Requerida
+                  <span className="text-[10px] font-mono tracking-widest text-sky-400 font-bold uppercase">
+                    Seguridad Corporativa de 2 Factores (2FA / OTP)
                   </span>
                   <h3 className="text-lg font-black tracking-tight text-slate-100">
-                    ¡Comprueba tu Correo Electrónico!
+                    Ingresa el Código de 6 Dígitos
                   </h3>
                   <p className="text-xs text-slate-400 max-w-xs mx-auto">
-                    Hemos enviado un enlace de confirmación a tu correo corporativo:
+                    Hemos enviado un código de verificación de 6 dígitos a tu correo:
                   </p>
                   <div className="inline-block bg-slate-800 text-sky-300 font-mono font-bold text-xs px-3 py-1.5 rounded-lg border border-slate-700 mt-1 shadow-inner">
                     {registeredEmail || email}
                   </div>
                 </div>
 
-                <div className="p-4 bg-slate-950/80 border border-slate-800 rounded-xl text-left text-xs space-y-2">
-                  <div className="flex items-center space-x-2 text-emerald-400 font-bold">
-                    <CheckCircle2 className="w-4 h-4 shrink-0" />
-                    <span>Pasos para activar tu cuenta:</span>
+                {/* Badge de demostración rápida para facilitar pruebas */}
+                {activeOTPCode && (
+                  <div className="p-3 bg-sky-950/60 border border-sky-800/80 rounded-xl text-xs space-y-1 text-sky-200 animate-in fade-in">
+                    <div className="flex items-center justify-center space-x-1.5 font-bold text-emerald-400">
+                      <Mail className="w-4 h-4" />
+                      <span>✉️ Simulación de Correo Transaccional ERP</span>
+                    </div>
+                    <p className="text-[11px] text-slate-300">
+                      Tu código OTP de 6 dígitos es: <strong className="text-sky-300 font-mono text-sm tracking-widest px-2 py-0.5 bg-slate-900 rounded border border-sky-500/40 select-all">{activeOTPCode}</strong>
+                    </p>
                   </div>
-                  <ol className="list-decimal list-inside text-[11px] text-slate-300 space-y-1.5 leading-relaxed pl-1">
-                    <li>Revisa la bandeja de entrada o spam de <strong>{registeredEmail || email}</strong>.</li>
-                    <li>Abre el correo enviado por <strong>Firebase / AXOMIRA ERP</strong>.</li>
-                    <li>Haz clic en el enlace de verificación.</li>
-                  </ol>
+                )}
+
+                {/* 6 Casillas Numéricas para Ingreso de Código OTP */}
+                <div className="space-y-2">
+                  <label className="block text-[11px] font-bold text-slate-400 uppercase tracking-wider">
+                    Copia o escribe el código (puedes pegar Ctrl+V / Cmd+V)
+                  </label>
+                  <div className="flex justify-center items-center space-x-2 sm:space-x-3" onPaste={handleOtpPaste}>
+                    {otpDigits.map((digit, idx) => (
+                      <input
+                        key={idx}
+                        id={`otp-input-${idx}`}
+                        type="text"
+                        inputMode="numeric"
+                        maxLength={1}
+                        value={digit}
+                        onChange={(e) => handleOtpDigitChange(idx, e.target.value)}
+                        onKeyDown={(e) => handleOtpKeyDown(idx, e)}
+                        className="w-10 h-12 sm:w-11 sm:h-12 text-center text-xl font-black font-mono bg-slate-950 border border-slate-700 text-sky-400 focus:border-sky-400 focus:ring-2 focus:ring-sky-500/30 rounded-xl outline-none transition-all shadow-inner"
+                      />
+                    ))}
+                  </div>
                 </div>
+
+                {localError && (
+                  <div className="p-3 rounded-xl bg-rose-950/80 border border-rose-700/80 text-rose-200 text-xs flex items-center justify-center space-x-2 animate-in fade-in">
+                    <AlertCircle className="w-4 h-4 shrink-0 text-rose-400" />
+                    <span>{localError}</span>
+                  </div>
+                )}
 
                 <div className="space-y-2.5 pt-1">
                   <button
-                    type="button"
-                    disabled={checkingVerification}
-                    onClick={handleCheckVerification}
-                    className="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs py-3 px-4 rounded-xl shadow-lg shadow-emerald-950/50 transition-all flex items-center justify-center space-x-2 border border-emerald-400/30"
+                    type="submit"
+                    disabled={verifyingOTP}
+                    className="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs py-3.5 px-4 rounded-xl shadow-lg shadow-emerald-950/50 transition-all flex items-center justify-center space-x-2 border border-emerald-400/30 cursor-pointer disabled:opacity-50"
                   >
-                    {checkingVerification ? (
+                    {verifyingOTP ? (
                       <RefreshCw className="w-4 h-4 animate-spin" />
                     ) : (
-                      <CheckCircle2 className="w-4 h-4" />
+                      <CheckCircle2 className="w-5 h-5" />
                     )}
-                    <span>Comprobar Estado de Verificación</span>
+                    <span className="text-sm font-extrabold">Verificar y Acceder al ERP</span>
                   </button>
 
                   <button
                     type="button"
-                    disabled={resendingEmail}
-                    onClick={handleResendEmail}
-                    className="w-full bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold text-xs py-2.5 px-4 rounded-xl transition-all flex items-center justify-center space-x-2 border border-slate-700"
+                    disabled={resendingEmail || otpCountdown > 0}
+                    onClick={handleRequestNewOTP}
+                    className="w-full bg-slate-800 hover:bg-slate-700 disabled:opacity-50 text-slate-200 font-bold text-xs py-2.5 px-4 rounded-xl transition-all flex items-center justify-center space-x-2 border border-slate-700 cursor-pointer"
                   >
                     {resendingEmail ? (
                       <RefreshCw className="w-4 h-4 animate-spin" />
                     ) : (
                       <Send className="w-3.5 h-3.5" />
                     )}
-                    <span>{resendingEmail ? 'Enviando...' : 'Reenviar Correo de Verificación'}</span>
+                    <span>
+                      {resendingEmail
+                        ? 'Generando código...'
+                        : otpCountdown > 0
+                        ? `Reenviar nuevo código (${otpCountdown}s)`
+                        : 'Reenviar nuevo código de 6 dígitos'}
+                    </span>
                   </button>
 
                   <button
                     type="button"
-                    onClick={() => { setShowVerificationNotice(false); setMode('login'); }}
-                    className="w-full text-slate-400 hover:text-slate-200 text-xs py-1 transition-colors font-medium"
+                    onClick={() => { setShowVerificationNotice(false); setMode('login'); setLocalError(''); }}
+                    className="w-full text-slate-400 hover:text-slate-200 text-xs py-1 transition-colors font-medium cursor-pointer"
                   >
                     ← Volver al Menú de Ingreso
                   </button>
                 </div>
-              </div>
+              </form>
             ) : (
               <>
                 <div>
