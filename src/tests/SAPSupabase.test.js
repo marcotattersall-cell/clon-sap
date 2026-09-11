@@ -63,31 +63,23 @@ describe('Integración de Base de Datos Supabase (Multi-Tenancy & Mapeo)', () =>
     expect(formatted.name).toBe('Filtro Aceite Hidráulico');
   });
 
-  it('debe retornar los fixtures predeterminados como fallback cuando Supabase falla o entrega resultados vacíos', () => {
+  it('debe retornar arreglos vacíos de respaldo cuando la base de datos está limpia o recién provista', () => {
     const materialsFallback = getFallbackFixtures('materials');
     expect(materialsFallback).toBeDefined();
-    expect(materialsFallback.length).toBeGreaterThan(0);
-    expect(materialsFallback[0].id).toBe('MAT-1001');
+    expect(materialsFallback).toEqual([]);
 
     const workOrdersFallback = getFallbackFixtures('workOrders');
     expect(workOrdersFallback).toBeDefined();
-    expect(workOrdersFallback.length).toBeGreaterThan(0);
-    expect(workOrdersFallback[0].id).toBe('WO-400101');
+    expect(workOrdersFallback).toEqual([]);
 
     let receivedItems = null;
     const mockOnUpdate = (items) => { receivedItems = items; };
     const safeOnUpdate = (items) => {
-      if (Array.isArray(items) && items.length === 0 && materialsFallback.length > 0) {
-        mockOnUpdate(materialsFallback);
-      } else {
-        mockOnUpdate(items);
-      }
+      mockOnUpdate(Array.isArray(items) ? items : []);
     };
 
-    // Al recibir un arreglo vacío por falla de Supabase, debe entregar los fixtures de respaldo
     safeOnUpdate([]);
-    expect(receivedItems).toEqual(materialsFallback);
-    expect(receivedItems.length).toBeGreaterThan(0);
+    expect(receivedItems).toEqual([]);
   });
 
 

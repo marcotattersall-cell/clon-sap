@@ -34,18 +34,18 @@ export const SAPProvider = ({ children }) => {
   const { user } = useAuth();
   const activeTenantId = user?.tenantId || DEFAULT_TENANT_ID;
 
-  const [plants, setPlants] = useState(() => (isSupabaseConfigured ? [] : DEFAULT_PLANTS));
-  const [activePlant, setActivePlant] = useState(() => (isSupabaseConfigured ? null : DEFAULT_PLANTS[0]));
+  const [plants, setPlants] = useState([]);
+  const [activePlant, setActivePlant] = useState(null);
 
-  const [materials, setMaterials] = useState(() => (isSupabaseConfigured ? [] : DEFAULT_MATERIALS));
-  const [assets, setAssets] = useState(() => (isSupabaseConfigured ? [] : DEFAULT_ASSETS));
-  const [notifications, setNotifications] = useState(() => (isSupabaseConfigured ? [] : DEFAULT_NOTIFICATIONS));
-  const [workOrders, setWorkOrders] = useState(() => (isSupabaseConfigured ? [] : DEFAULT_WORK_ORDERS));
-  const [purchaseOrders, setPurchaseOrders] = useState(() => (isSupabaseConfigured ? [] : DEFAULT_PURCHASE_ORDERS));
-  const [migoDocuments, setMigoDocuments] = useState(() => (isSupabaseConfigured ? [] : DEFAULT_MIGO_DOCUMENTS));
-  const [employees, setEmployees] = useState(() => (isSupabaseConfigured ? [] : DEFAULT_EMPLOYEES));
-  const [absences, setAbsences] = useState(() => (isSupabaseConfigured ? [] : DEFAULT_ABSENCES));
-  const [payrollRuns, setPayrollRuns] = useState(() => (isSupabaseConfigured ? [] : DEFAULT_PAYROLL_RUNS));
+  const [materials, setMaterials] = useState([]);
+  const [assets, setAssets] = useState([]);
+  const [notifications, setNotifications] = useState([]);
+  const [workOrders, setWorkOrders] = useState([]);
+  const [purchaseOrders, setPurchaseOrders] = useState([]);
+  const [migoDocuments, setMigoDocuments] = useState([]);
+  const [employees, setEmployees] = useState([]);
+  const [absences, setAbsences] = useState([]);
+  const [payrollRuns, setPayrollRuns] = useState([]);
   const [auditLogs, setAuditLogs] = useState([]);
 
   const [currentRole, setCurrentRole] = useState('MAINTENANCE_MGR');
