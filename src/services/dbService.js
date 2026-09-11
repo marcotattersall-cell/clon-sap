@@ -100,8 +100,12 @@ export const subscribeCollection = (collectionName, onUpdate, onError, constrain
   const fallback = getFallbackFixtures(collectionName);
 
   const safeOnUpdate = (items) => {
-    if (Array.isArray(items) && items.length === 0 && fallback.length > 0) {
-      console.warn(`[dbService Protection] Supabase devolvió 0 elementos o tuvo una falla en '${collectionName}'. Activando datos de respaldo (fixtures).`);
+    // Si Supabase está configurado con credenciales reales de Producción,
+    // se respetan los datos reales de la base de datos (incluso si está limpia/vacía).
+    if (isSupabaseConfigured) {
+      onUpdate(Array.isArray(items) ? items : []);
+    } else if (Array.isArray(items) && items.length === 0 && fallback.length > 0) {
+      console.warn(`[dbService Protection] Supabase no configurado o sin conexión para '${collectionName}'. Activando datos de respaldo (fixtures demo).`);
       onUpdate(fallback);
     } else {
       onUpdate(items);
@@ -110,8 +114,10 @@ export const subscribeCollection = (collectionName, onUpdate, onError, constrain
 
   const safeOnError = (err) => {
     console.warn(`[dbService Protection] Error en suscripción Supabase para '${collectionName}':`, err);
-    if (fallback.length > 0) {
+    if (!isSupabaseConfigured && fallback.length > 0) {
       onUpdate(fallback);
+    } else if (isSupabaseConfigured) {
+      onUpdate([]);
     }
     if (onError) onError(err);
   };
@@ -136,6 +142,10 @@ export const deleteDocument = async (collectionName, docId, tenantId = DEFAULT_T
 };
 
 export const seedCollectionIfEmpty = async (collectionName, defaultItems = [], tenantId = DEFAULT_TENANT_ID) => {
+  // En producción con Supabase real no se inyectan automáticamente los datos de prueba (mock data)
+  if (isSupabaseConfigured) {
+    return;
+  }
   const itemsToSeed = (Array.isArray(defaultItems) && defaultItems.length > 0)
     ? defaultItems
     : getFallbackFixtures(collectionName);

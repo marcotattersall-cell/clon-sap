@@ -22,6 +22,7 @@ import {
   DEFAULT_PAYROLL_RUNS
 } from '../fixtures/sapInitialFixtures';
 import { validateChileanRUT } from '../utils/rutUtils';
+import { isSupabaseConfigured } from '../supabase/config';
 
 export const UIContext = createContext(null);
 export const MMContext = createContext(null);
@@ -29,24 +30,22 @@ export const PMContext = createContext(null);
 export const HCMContext = createContext(null);
 export const SAPContext = createContext(null);
 
-
-
 export const SAPProvider = ({ children }) => {
   const { user } = useAuth();
   const activeTenantId = user?.tenantId || DEFAULT_TENANT_ID;
 
-  const [plants, setPlants] = useState(DEFAULT_PLANTS);
-  const [activePlant, setActivePlant] = useState(DEFAULT_PLANTS[0]);
+  const [plants, setPlants] = useState(() => (isSupabaseConfigured ? [] : DEFAULT_PLANTS));
+  const [activePlant, setActivePlant] = useState(() => (isSupabaseConfigured ? null : DEFAULT_PLANTS[0]));
 
-  const [materials, setMaterials] = useState(DEFAULT_MATERIALS);
-  const [assets, setAssets] = useState(DEFAULT_ASSETS);
-  const [notifications, setNotifications] = useState(DEFAULT_NOTIFICATIONS);
-  const [workOrders, setWorkOrders] = useState(DEFAULT_WORK_ORDERS);
-  const [purchaseOrders, setPurchaseOrders] = useState(DEFAULT_PURCHASE_ORDERS);
-  const [migoDocuments, setMigoDocuments] = useState(DEFAULT_MIGO_DOCUMENTS);
-  const [employees, setEmployees] = useState(DEFAULT_EMPLOYEES);
-  const [absences, setAbsences] = useState(DEFAULT_ABSENCES);
-  const [payrollRuns, setPayrollRuns] = useState(DEFAULT_PAYROLL_RUNS);
+  const [materials, setMaterials] = useState(() => (isSupabaseConfigured ? [] : DEFAULT_MATERIALS));
+  const [assets, setAssets] = useState(() => (isSupabaseConfigured ? [] : DEFAULT_ASSETS));
+  const [notifications, setNotifications] = useState(() => (isSupabaseConfigured ? [] : DEFAULT_NOTIFICATIONS));
+  const [workOrders, setWorkOrders] = useState(() => (isSupabaseConfigured ? [] : DEFAULT_WORK_ORDERS));
+  const [purchaseOrders, setPurchaseOrders] = useState(() => (isSupabaseConfigured ? [] : DEFAULT_PURCHASE_ORDERS));
+  const [migoDocuments, setMigoDocuments] = useState(() => (isSupabaseConfigured ? [] : DEFAULT_MIGO_DOCUMENTS));
+  const [employees, setEmployees] = useState(() => (isSupabaseConfigured ? [] : DEFAULT_EMPLOYEES));
+  const [absences, setAbsences] = useState(() => (isSupabaseConfigured ? [] : DEFAULT_ABSENCES));
+  const [payrollRuns, setPayrollRuns] = useState(() => (isSupabaseConfigured ? [] : DEFAULT_PAYROLL_RUNS));
   const [auditLogs, setAuditLogs] = useState([]);
 
   const [currentRole, setCurrentRole] = useState('MAINTENANCE_MGR');
