@@ -186,7 +186,7 @@ export const LoginScreen = () => {
             <div className="text-[11px] text-slate-400 font-mono flex items-center gap-2">
               <span>Portal de Acceso Seguro</span>
               <span>•</span>
-              <span className="text-emerald-400 font-semibold">Proyecto: axomira-cloud-2026</span>
+              <span className="text-emerald-400 font-semibold">Proyecto: clon-sap-2026</span>
             </div>
           </div>
         </div>
