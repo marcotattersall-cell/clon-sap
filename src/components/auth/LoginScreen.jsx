@@ -53,7 +53,6 @@ export const LoginScreen = () => {
   // Email verification & OTP state
   const [showVerificationNotice, setShowVerificationNotice] = useState(false);
   const [registeredEmail, setRegisteredEmail] = useState('');
-  const [activeOTPCode, setActiveOTPCode] = useState('');
   const [otpDigits, setOtpDigits] = useState(['', '', '', '', '', '']);
   const [otpCountdown, setOtpCountdown] = useState(60);
   const [resendingEmail, setResendingEmail] = useState(false);
@@ -152,7 +151,6 @@ export const LoginScreen = () => {
     const res = await resendOTPCode(registeredEmail || email, displayName || 'Usuario ERP');
     setResendingEmail(false);
     if (res.success) {
-      setActiveOTPCode(res.code);
       setOtpCountdown(60);
       setOtpDigits(['', '', '', '', '', '']);
       addToast(`✉️ Nuevo código OTP de 6 dígitos enviado a ${registeredEmail || email}`, 'success');
@@ -238,7 +236,6 @@ export const LoginScreen = () => {
       if (res.success) {
         setCurrentRole(res.user.role);
         setRegisteredEmail(email);
-        setActiveOTPCode(res.otpCode || '');
         setShowVerificationNotice(true);
         setOtpDigits(['', '', '', '', '', '']);
         setOtpCountdown(60);
@@ -334,19 +331,6 @@ export const LoginScreen = () => {
                     {registeredEmail || email}
                   </div>
                 </div>
-
-                {/* Badge de demostración rápida para facilitar pruebas */}
-                {activeOTPCode && (
-                  <div className="p-3 bg-sky-950/60 border border-sky-800/80 rounded-xl text-xs space-y-1 text-sky-200 animate-in fade-in">
-                    <div className="flex items-center justify-center space-x-1.5 font-bold text-emerald-400">
-                      <Mail className="w-4 h-4" />
-                      <span>✉️ Simulación de Correo Transaccional ERP</span>
-                    </div>
-                    <p className="text-[11px] text-slate-300">
-                      Tu código OTP de 6 dígitos es: <strong className="text-sky-300 font-mono text-sm tracking-widest px-2 py-0.5 bg-slate-900 rounded border border-sky-500/40 select-all">{activeOTPCode}</strong>
-                    </p>
-                  </div>
-                )}
 
                 {/* 6 Casillas Numéricas para Ingreso de Código OTP */}
                 <div className="space-y-2">

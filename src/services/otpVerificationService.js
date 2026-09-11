@@ -56,7 +56,6 @@ export const generateAndSendOTP = async (email, displayName = 'Usuario ERP') => 
   return {
     success: true,
     email: cleanEmail,
-    code, // Código devuelto para visualización conveniente en la app
     expiresAt
   };
 };
@@ -134,4 +133,9 @@ export const verifyOTPCode = async (email, inputCode) => {
   } catch (e) {}
 
   return { success: true };
+};
+
+export const getActiveOTPForTesting = (email) => {
+  const cleanEmail = email.toLowerCase().trim();
+  return memoryOTPStore.get(cleanEmail)?.code || null;
 };
