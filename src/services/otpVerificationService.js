@@ -1,5 +1,6 @@
 import { upsertDocument, subscribeCollection } from './dbService';
 import { sendOTPCodeEmail } from './resendEmailService';
+import { supabase, isSupabaseConfigured } from '../supabase/config';
 
 /**
  * Servicio de Generación y Validación de Códigos de Verificación OTP (6 dígitos)
@@ -40,7 +41,9 @@ export const generateAndSendOTP = async (email, displayName = 'Usuario ERP') => 
 
   // 2. Persistir en localStorage
   try {
-    localStorage.setItem(`sap_otp_${cleanEmail}`, JSON.stringify(otpData));
+    if (typeof localStorage !== 'undefined') {
+      localStorage.setItem(`sap_otp_${cleanEmail}`, JSON.stringify(otpData));
+    }
   } catch (e) {
     console.warn('[OTP Service] Error al guardar en localStorage:', e);
   }
@@ -52,7 +55,19 @@ export const generateAndSendOTP = async (email, displayName = 'Usuario ERP') => 
     console.warn('[OTP Service] Guardando respaldo local de OTP:', err);
   }
 
-  // 4. Despachar correo transaccional vía RESEND API (despacho directo a bandeja de entrada)
+  // 4. Despachar correo de código OTP directo vía Supabase Auth
+  try {
+    if (isSupabaseConfigured && supabase?.auth) {
+      await supabase.auth.signInWithOtp({ email: cleanEmail }).catch(sErr => {
+        console.warn('[OTP Service] Supabase Auth OTP aviso:', sErr?.message || sErr);
+      });
+      console.log(`[OTP Service] ✉️ Correo OTP de 6 dígitos despachado vía Supabase Auth a ${cleanEmail}`);
+    }
+  } catch (sErr) {
+    console.warn('[OTP Service] Error en despacho Supabase Auth OTP:', sErr);
+  }
+
+  // 5. Despachar correo transaccional vía RESEND API
   try {
     const resendResult = await sendOTPCodeEmail({ toEmail: cleanEmail, displayName, code });
     if (resendResult.success) {
@@ -151,17 +166,40 @@ export const verifyOTPCode = async (email, inputCode) => {
     };
   }
 
-  // Comparar código
-  if (otpRecord.code !== cleanCode) {
-    otpRecord.attempts += 1;
-    memoryOTPStore.set(cleanEmail, otpRecord);
-    try {
-      localStorage.setItem(`sap_otp_${cleanEmail}`, JSON.stringify(otpRecord));
-    } catch (e) {}
+  // Comparar código local o verificar vía Supabase Auth
+  let isMatch = otpRecord && otpRecord.code === cleanCode;
 
+  if (!isMatch && isSupabaseConfigured && supabase?.auth) {
+    try {
+      const { data: supData, error: supErr } = await supabase.auth.verifyOtp({
+        email: cleanEmail,
+        token: cleanCode,
+        type: 'email'
+      });
+      if (!supErr && supData?.user) {
+        isMatch = true;
+        console.log(`[OTP Service] 🚀 Código de 6 dígitos verificado exitosamente vía Supabase Auth para ${cleanEmail}`);
+      }
+    } catch (sErr) {
+      console.warn('[OTP Service] Supabase verifyOtp aviso:', sErr);
+    }
+  }
+
+  if (!isMatch) {
+    if (otpRecord) {
+      otpRecord.attempts += 1;
+      memoryOTPStore.set(cleanEmail, otpRecord);
+      try {
+        localStorage.setItem(`sap_otp_${cleanEmail}`, JSON.stringify(otpRecord));
+      } catch (e) {}
+      return {
+        success: false,
+        error: `Código incorrecto. Intento ${otpRecord.attempts} de 5.`
+      };
+    }
     return {
       success: false,
-      error: `Código incorrecto. Intento ${otpRecord.attempts} de 5.`
+      error: 'Código de 6 dígitos incorrecto o no encontrado. Por favor verifica e intenta nuevamente.'
     };
   }
 
