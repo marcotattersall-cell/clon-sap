@@ -382,6 +382,20 @@ export const LoginScreen = () => {
 
                   <button
                     type="button"
+                    disabled={checkingVerification}
+                    onClick={handleCheckVerification}
+                    className="w-full bg-sky-600/30 hover:bg-sky-600/50 text-sky-200 border border-sky-500/40 font-bold text-xs py-2.5 px-4 rounded-xl transition-all flex items-center justify-center space-x-2 cursor-pointer"
+                  >
+                    {checkingVerification ? (
+                      <RefreshCw className="w-4 h-4 animate-spin text-sky-400" />
+                    ) : (
+                      <Check className="w-4 h-4 text-sky-400" />
+                    )}
+                    <span>Ya hice clic en la liga de mi correo (Verificar Estado)</span>
+                  </button>
+
+                  <button
+                    type="button"
                     disabled={resendingEmail || otpCountdown > 0}
                     onClick={handleRequestNewOTP}
                     className="w-full bg-slate-800 hover:bg-slate-700 disabled:opacity-50 text-slate-200 font-bold text-xs py-2.5 px-4 rounded-xl transition-all flex items-center justify-center space-x-2 border border-slate-700 cursor-pointer"
