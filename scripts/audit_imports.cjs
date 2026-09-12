@@ -14,7 +14,7 @@ function getAllFiles(dirPath, arrayOfFiles = []) {
     const fullPath = path.join(dirPath, file);
     if (fs.statSync(fullPath).isDirectory()) {
       getAllFiles(fullPath, arrayOfFiles);
-    } else if (file.endsWith('.jsx') || file.endsWith('.js')) {
+    } else if (file.endsWith('.jsx') || file.endsWith('.js') || file.endsWith('.tsx') || file.endsWith('.ts')) {
       arrayOfFiles.push(fullPath);
     }
   });

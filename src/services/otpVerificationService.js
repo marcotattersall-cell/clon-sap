@@ -1,6 +1,7 @@
-import { upsertDocument, subscribeCollection } from './dbService';
+import { upsertDocument } from './dbService';
 import { sendOTPCodeEmail } from './resendEmailService';
 import { supabase, isSupabaseConfigured } from '../supabase/config';
+import { functionsInstance, httpsCallable } from '../firebase/config';
 
 /**
  * Servicio de Generación y Validación de Códigos de Verificación OTP (6 dígitos)
@@ -79,7 +80,7 @@ export const generateAndSendOTP = async (email, displayName = 'Usuario ERP') => 
     console.warn('[OTP Service] Error al transmitir vía Resend:', rErr);
   }
 
-  // 5. Registrar documento de correo transaccional en la colección 'mail' (Firebase Trigger Email Extension)
+  // 6. Registrar documento de correo transaccional en la colección 'mail' (Firebase Trigger Email Extension)
   try {
     const mailDocId = `OTP_MAIL_${cleanEmail.replace(/[^a-z0-9]/g, '_')}_${Date.now()}`;
     await upsertDocument('mail', mailDocId, {
@@ -128,6 +129,26 @@ export const verifyOTPCode = async (email, inputCode) => {
   if (cleanCode.length !== 6 || !/^\d{6}$/.test(cleanCode)) {
     return { success: false, error: 'El código de verificación debe contener exactamente 6 dígitos numéricos.' };
   }
+
+  // 0. Validación en Cloud Function HTTPS Callable
+  if (functionsInstance) {
+    try {
+      const verifyCallable = httpsCallable(functionsInstance, 'verifyOTPCodeCallable');
+      const res = await verifyCallable({ email: cleanEmail, code: cleanCode });
+      if (res?.data?.success) {
+        console.log(`[OTP Service] 🚀 Código de 6 dígitos verificado exitosamente vía Cloud Function HTTPS Callable para ${cleanEmail}`);
+        memoryOTPStore.delete(cleanEmail);
+        try { localStorage.removeItem(`sap_otp_${cleanEmail}`); } catch (e) {}
+        return { success: true, cloudVerified: true };
+      }
+    } catch (cErr) {
+      console.warn('[OTP Service] Cloud Function Callable aviso / fallback:', cErr?.message || cErr);
+      if (cErr?.message && (cErr.message.includes('incorrecto') || cErr.message.includes('expirado') || cErr.message.includes('límite'))) {
+        return { success: false, error: cErr.message };
+      }
+    }
+  }
+
 
   // Buscar en memoria local o localStorage
   let otpRecord = memoryOTPStore.get(cleanEmail);

@@ -50,8 +50,11 @@ if (app) {
   }
 }
 
+import { getFunctions, httpsCallable } from 'firebase/functions';
+
 export const db = dbInstance;
 export const auth = app ? getAuth(app) : null;
+export const functionsInstance = app ? getFunctions(app) : null;
 export const googleProvider = new GoogleAuthProvider();
 
 export {
@@ -62,6 +65,8 @@ export {
   updateProfile,
   onAuthStateChanged,
   sendPasswordResetEmail,
-  sendEmailVerification
+  sendEmailVerification,
+  httpsCallable
 };
+
 

@@ -831,6 +831,378 @@ exports.sendWeeklyKPINotification = functions.https.onRequest(async (req, res) =
   }
 });
 
+// ============================================================================
+// 🔐 CLOUD FUNCTIONS: GENERACIÓN Y ENVÍO DE CÓDIGO DE VERIFICACIÓN (AUTH OTP)
+// ============================================================================
+
+/**
+ * Trigger de Firebase Auth: Detecta la creación de un nuevo usuario (onCreate).
+ * Genera un código OTP de 6 dígitos, lo persiste en Firestore ('otp_verifications')
+ * y registra la salida en la colección 'mail' (Firebase Trigger Email extension).
+ */
+exports.onUserCreatedSendVerificationCode = functions.auth.user().onCreate(async (user) => {
+  const email = user.email;
+  if (!email) {
+    console.log(`[Auth Trigger] El usuario ${user.uid} no posee correo electrónico registrado.`);
+    return null;
+  }
+
+  const cleanEmail = email.toLowerCase().trim();
+  const displayName = user.displayName || 'Usuario ERP';
+  const docId = cleanEmail.replace(/[^a-z0-9]/g, "_");
+
+  // 1. Generar código seguro de 6 dígitos
+  const code = Math.floor(100000 + Math.random() * 900000).toString();
+  const expiresAt = Date.now() + 10 * 60 * 1000; // 10 minutos de validez
+
+  const otpData = {
+    email: cleanEmail,
+    uid: user.uid,
+    code,
+    displayName,
+    expiresAt,
+    attempts: 0,
+    status: "PENDING",
+    createdTimestamp: new Date().toISOString()
+  };
+
+  try {
+    // 2. Persistir registro OTP en Firestore
+    await db.collection("otp_verifications").doc(docId).set(otpData);
+
+    // 3. Asegurar perfil inicial del usuario en colección 'users'
+    const userRef = db.collection("users").doc(user.uid);
+    const userSnap = await userRef.get();
+    if (!userSnap.exists) {
+      await userRef.set({
+        uid: user.uid,
+        email: cleanEmail,
+        displayName,
+        emailVerified: user.emailVerified || false,
+        role: "OPERATOR",
+        plant: "0001 (Planta Central)",
+        tenantId: "tenant_demo",
+        createdAt: new Date().toISOString()
+      }, { merge: true });
+    }
+
+    // 4. Registrar despacho de correo transaccional en la colección 'mail'
+    const mailDocId = `OTP_MAIL_${docId}_${Date.now()}`;
+    await db.collection("mail").doc(mailDocId).set({
+      to: [cleanEmail],
+      message: {
+        subject: `[AXOMIRA ERP] Tu código de verificación de 6 dígitos: ${code}`,
+        text: `Hola ${displayName}, tu código de verificación para AXOMIRA ERP es: ${code} (Válido por 10 minutos).`,
+        html: `
+          <div style="font-family: Arial, sans-serif; max-width: 500px; margin: 0 auto; padding: 24px; background-color: #0f172a; color: #f8fafc; border-radius: 16px; border: 1px solid #1e293b;">
+            <h2 style="color: #38bdf8; margin-top: 0; font-weight: 800;">AXOMIRA Intelligent Cloud ERP</h2>
+            <p style="color: #94a3b8; font-size: 14px;">Hola <strong>${displayName}</strong>,</p>
+            <p style="color: #cbd5e1; font-size: 14px;">Tu código de verificación corporativo de 6 dígitos es:</p>
+            <div style="background-color: #1e293b; border: 2px dashed #38bdf8; color: #38bdf8; font-size: 32px; font-weight: 900; text-align: center; padding: 18px; border-radius: 12px; letter-spacing: 6px; margin: 24px 0; font-family: monospace;">
+              ${code}
+            </div>
+            <p style="font-size: 12px; color: #64748b;">Este código es válido por 10 minutos. Si no solicitaste este código, puedes ignorar este mensaje de forma segura.</p>
+          </div>
+        `
+      },
+      createdAt: new Date().toISOString()
+    });
+
+    console.log(`[Auth Trigger] ✉️ Código OTP ${code} generado e instruido por correo a ${cleanEmail} (UID: ${user.uid}).`);
+    return { success: true, email: cleanEmail, expiresAt };
+  } catch (error) {
+    console.error(`[Auth Trigger Error] Error procesando creación de usuario ${user.uid}:`, error);
+    throw error;
+  }
+});
+
+/**
+ * Endpoint HTTP / Callable bajo demanda: Permite a Administradores u Operaciones
+ * generar y enviar un código de verificación de 6 dígitos a cualquier usuario.
+ */
+exports.generateAndSendVerificationCode = functions.https.onRequest(async (req, res) => {
+  res.set("Access-Control-Allow-Origin", "*");
+  res.set("Access-Control-Allow-Headers", "Content-Type, Authorization");
+  res.set("Access-Control-Allow-Methods", "POST, OPTIONS");
+
+  if (req.method === "OPTIONS") {
+    return res.status(204).send("");
+  }
+
+  try {
+    const { email, displayName = "Usuario ERP" } = req.body || {};
+    if (!email) {
+      return res.status(400).json({ error: "El campo 'email' es obligatorio." });
+    }
+
+    const cleanEmail = String(email).toLowerCase().trim();
+    const docId = cleanEmail.replace(/[^a-z0-9]/g, "_");
+    const code = Math.floor(100000 + Math.random() * 900000).toString();
+    const expiresAt = Date.now() + 10 * 60 * 1000;
+
+    const otpData = {
+      email: cleanEmail,
+      code,
+      displayName,
+      expiresAt,
+      attempts: 0,
+      status: "PENDING",
+      createdTimestamp: new Date().toISOString()
+    };
+
+    await db.collection("otp_verifications").doc(docId).set(otpData);
+
+    const mailDocId = `OTP_MAIL_${docId}_${Date.now()}`;
+    await db.collection("mail").doc(mailDocId).set({
+      to: [cleanEmail],
+      message: {
+        subject: `[AXOMIRA ERP] Tu código de verificación de 6 dígitos: ${code}`,
+        text: `Hola ${displayName}, tu código de verificación para AXOMIRA ERP es: ${code} (Válido por 10 minutos).`,
+        html: `
+          <div style="font-family: Arial, sans-serif; max-width: 500px; margin: 0 auto; padding: 24px; background-color: #0f172a; color: #f8fafc; border-radius: 16px; border: 1px solid #1e293b;">
+            <h2 style="color: #38bdf8; margin-top: 0; font-weight: 800;">AXOMIRA Intelligent Cloud ERP</h2>
+            <p style="color: #94a3b8; font-size: 14px;">Hola <strong>${displayName}</strong>,</p>
+            <p style="color: #cbd5e1; font-size: 14px;">Tu código de verificación corporativo de 6 dígitos es:</p>
+            <div style="background-color: #1e293b; border: 2px dashed #38bdf8; color: #38bdf8; font-size: 32px; font-weight: 900; text-align: center; padding: 18px; border-radius: 12px; letter-spacing: 6px; margin: 24px 0; font-family: monospace;">
+              ${code}
+            </div>
+            <p style="font-size: 12px; color: #64748b;">Este código es válido por 10 minutos. Si no solicitaste este código, puedes ignorar este mensaje de forma segura.</p>
+          </div>
+        `
+      },
+      createdAt: new Date().toISOString()
+    });
+
+    return res.status(200).json({
+      status: "SUCCESS",
+      message: `Código de verificación generado y enviado exitosamente a ${cleanEmail}.`,
+      email: cleanEmail,
+      code,
+      expiresAt
+    });
+  } catch (error) {
+    console.error("Error en generateAndSendVerificationCode:", error);
+    return res.status(500).json({ error: "Error al generar código de verificación.", details: error.message });
+  }
+});
+
+/**
+ * Endpoint HTTP / Callable: Valida serverless el código de 6 dígitos ingresado por el usuario.
+ * Marca emailVerified: true en Firestore 'users' y en Firebase Auth.
+ */
+exports.verifyVerificationCode = functions.https.onRequest(async (req, res) => {
+  res.set("Access-Control-Allow-Origin", "*");
+  res.set("Access-Control-Allow-Headers", "Content-Type, Authorization");
+  res.set("Access-Control-Allow-Methods", "POST, OPTIONS");
+
+  if (req.method === "OPTIONS") {
+    return res.status(204).send("");
+  }
+
+  try {
+    const { email, code: inputCode } = req.body || {};
+    if (!email || !inputCode) {
+      return res.status(400).json({ error: "Los campos 'email' y 'code' son obligatorios." });
+    }
+
+    const cleanEmail = String(email).toLowerCase().trim();
+    const cleanCode = String(inputCode).trim();
+    const docId = cleanEmail.replace(/[^a-z0-9]/g, "_");
+
+    const otpDocRef = db.collection("otp_verifications").doc(docId);
+    const otpSnap = await otpDocRef.get();
+
+    if (!otpSnap.exists) {
+      return res.status(404).json({ error: "No se encontró un código de verificación activo para este correo." });
+    }
+
+    const otpData = otpSnap.data();
+
+    // 1. Validar expiración (10 minutos)
+    if (Date.now() > otpData.expiresAt) {
+      return res.status(410).json({ error: "El código de verificación ha expirado. Solicite uno nuevo." });
+    }
+
+    // 2. Validar límite de intentos (5 max)
+    if ((otpData.attempts || 0) >= 5) {
+      return res.status(429).json({ error: "Ha superado el límite de 5 intentos fallidos. Solicite un nuevo código." });
+    }
+
+    // 3. Validar coincidencia de código
+    if (otpData.code !== cleanCode) {
+      const newAttempts = (otpData.attempts || 0) + 1;
+      await otpDocRef.update({ attempts: newAttempts });
+      return res.status(400).json({
+        error: `Código incorrecto. Intento ${newAttempts} de 5.`,
+        attemptsRemaining: 5 - newAttempts
+      });
+    }
+
+    // 4. Marcar OTP como verificado
+    await otpDocRef.update({ status: "VERIFIED", verifiedTimestamp: new Date().toISOString() });
+
+    // 5. Actualizar estado del usuario en Firebase Auth y Firestore
+    if (otpData.uid) {
+      try {
+        await admin.auth().updateUser(otpData.uid, { emailVerified: true });
+        await db.collection("users").doc(otpData.uid).set({ emailVerified: true }, { merge: true });
+      } catch (authErr) {
+        console.warn(`[OTP Verify Warning] No se pudo actualizar emailVerified en Firebase Auth para UID ${otpData.uid}:`, authErr.message);
+      }
+    }
+
+    return res.status(200).json({
+      status: "SUCCESS",
+      message: "Código de 6 dígitos verificado exitosamente. Usuario validado.",
+      email: cleanEmail
+    });
+  } catch (error) {
+    console.error("Error en verifyVerificationCode:", error);
+    return res.status(500).json({ error: "Error interno al verificar el código.", details: error.message });
+  }
+});
+
+/**
+ * Cloud Function HTTPS Callable (onCall): Validar el código introducido por el usuario.
+ * El frontend enviará { email, code } a esta función para validar la identidad y marcar
+ * la cuenta como confirmada (emailVerified: true) en Firebase Auth y Firestore.
+ */
+exports.verifyOTPCodeCallable = functions.https.onCall(async (data, context) => {
+  const { email, code: inputCode } = data || {};
+  if (!email || !inputCode) {
+    throw new functions.https.HttpsError(
+      "invalid-argument",
+      "Los campos 'email' y 'code' son obligatorios para validar el código OTP."
+    );
+  }
+
+  const cleanEmail = String(email).toLowerCase().trim();
+  const cleanCode = String(inputCode).trim();
+  const docId = cleanEmail.replace(/[^a-z0-9]/g, "_");
+
+  const otpDocRef = db.collection("otp_verifications").doc(docId);
+  const otpSnap = await otpDocRef.get();
+
+  if (!otpSnap.exists) {
+    throw new functions.https.HttpsError(
+      "not-found",
+      "No se encontró un código de verificación activo para este correo."
+    );
+  }
+
+  const otpData = otpSnap.data();
+
+  // 1. Validar expiración (10 minutos)
+  if (Date.now() > otpData.expiresAt) {
+    throw new functions.https.HttpsError(
+      "deadline-exceeded",
+      "El código de verificación de 6 dígitos ha expirado (10 min). Por favor solicite uno nuevo."
+    );
+  }
+
+  // 2. Validar límite de intentos (5 max)
+  if ((otpData.attempts || 0) >= 5) {
+    throw new functions.https.HttpsError(
+      "resource-exhausted",
+      "Ha superado el límite de 5 intentos fallidos. Por favor solicite un nuevo código OTP."
+    );
+  }
+
+  // 3. Validar coincidencia de código
+  if (otpData.code !== cleanCode) {
+    const newAttempts = (otpData.attempts || 0) + 1;
+    await otpDocRef.update({ attempts: newAttempts });
+    throw new functions.https.HttpsError(
+      "invalid-argument",
+      `Código de 6 dígitos incorrecto. Intento ${newAttempts} de 5.`
+    );
+  }
+
+  // 4. Marcar OTP como verificado
+  await otpDocRef.update({
+    status: "VERIFIED",
+    verifiedTimestamp: new Date().toISOString()
+  });
+
+  // 5. Actualizar estado del usuario en Firebase Auth y Firestore
+  const uid = otpData.uid || context.auth?.uid;
+  if (uid) {
+    try {
+      await admin.auth().updateUser(uid, { emailVerified: true });
+      await db.collection("users").doc(uid).set({ emailVerified: true }, { merge: true });
+    } catch (authErr) {
+      console.warn(`[OTP Verify Callable Warning] Error al marcar emailVerified en Firebase Auth para UID ${uid}:`, authErr.message);
+    }
+  }
+
+  return {
+    success: true,
+    message: "Código de 6 dígitos verificado exitosamente. Identidad validada y cuenta confirmada.",
+    email: cleanEmail,
+    emailVerified: true
+  };
+});
+
+/**
+ * Cloud Function HTTPS Callable (onCall): Generar y enviar código de 6 dígitos.
+ */
+exports.generateVerificationCodeCallable = functions.https.onCall(async (data, context) => {
+  const { email, displayName = "Usuario ERP" } = data || {};
+  if (!email) {
+    throw new functions.https.HttpsError(
+      "invalid-argument",
+      "El campo 'email' es obligatorio."
+    );
+  }
+
+  const cleanEmail = String(email).toLowerCase().trim();
+  const docId = cleanEmail.replace(/[^a-z0-9]/g, "_");
+  const code = Math.floor(100000 + Math.random() * 900000).toString();
+  const expiresAt = Date.now() + 10 * 60 * 1000;
+
+  const otpData = {
+    email: cleanEmail,
+    code,
+    displayName,
+    expiresAt,
+    attempts: 0,
+    status: "PENDING",
+    createdTimestamp: new Date().toISOString()
+  };
+
+  await db.collection("otp_verifications").doc(docId).set(otpData);
+
+  const mailDocId = `OTP_MAIL_${docId}_${Date.now()}`;
+  await db.collection("mail").doc(mailDocId).set({
+    to: [cleanEmail],
+    message: {
+      subject: `[AXOMIRA ERP] Tu código de verificación de 6 dígitos: ${code}`,
+      text: `Hola ${displayName}, tu código de verificación para AXOMIRA ERP es: ${code} (Válido por 10 minutos).`,
+      html: `
+        <div style="font-family: Arial, sans-serif; max-width: 500px; margin: 0 auto; padding: 24px; background-color: #0f172a; color: #f8fafc; border-radius: 16px; border: 1px solid #1e293b;">
+          <h2 style="color: #38bdf8; margin-top: 0; font-weight: 800;">AXOMIRA Intelligent Cloud ERP</h2>
+          <p style="color: #94a3b8; font-size: 14px;">Hola <strong>${displayName}</strong>,</p>
+          <p style="color: #cbd5e1; font-size: 14px;">Tu código de verificación corporativo de 6 dígitos es:</p>
+          <div style="background-color: #1e293b; border: 2px dashed #38bdf8; color: #38bdf8; font-size: 32px; font-weight: 900; text-align: center; padding: 18px; border-radius: 12px; letter-spacing: 6px; margin: 24px 0; font-family: monospace;">
+            ${code}
+          </div>
+          <p style="font-size: 12px; color: #64748b;">Este código es válido por 10 minutos. Si no solicitaste este código, puedes ignorar este mensaje de forma segura.</p>
+        </div>
+      `
+    },
+    createdAt: new Date().toISOString()
+  });
+
+  return {
+    success: true,
+    message: `Código de verificación generado y enviado exitosamente a ${cleanEmail}.`,
+    email: cleanEmail,
+    expiresAt
+  };
+});
+
+
+
 
 
 
