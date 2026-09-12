@@ -1,4 +1,5 @@
 import { motion } from 'motion/react';
+import { AxomiraLogo } from './common/AxomiraLogo';
 
 const Linkedin = ({ className }) => (
   <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -22,17 +23,6 @@ const Instagram = ({ className }) => (
   </svg>
 );
 
-function LogoIcon() {
-  return (
-    <div className="w-8 h-8 bg-[#31A8FF] rounded-[8px] flex items-center justify-center">
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <path d="M4 20C4 20 4 14 10 10C16 6 20 4 20 4C20 4 18 8 14 14C10 20 4 20 4 20Z" fill="white" />
-        <path d="M4 20L10 14" stroke="white" strokeWidth="2" strokeLinecap="round" />
-      </svg>
-    </div>
-  );
-}
-
 function FooterCard() {
   const socials = [
     { name: 'LinkedIn', icon: Linkedin },
@@ -40,9 +30,9 @@ function FooterCard() {
     { name: 'Instagram', icon: Instagram },
   ];
 
-  const productLinks = ['Features', 'Solutions', 'Pricing', 'Updates'];
-  const scienceLinks = ['Approach', 'Identity', 'Research', 'Metrics'];
-  const companyLinks = ['About Us', 'Partners', 'Careers'];
+  const productLinks = ['Mantenimiento (PM)', 'Almacén (MM)', 'Recursos Humanos (HCM)', 'Gestión de Flota'];
+  const scienceLinks = ['Analítica & BI', 'Seguridad RBAC', 'Auditoría SAP', 'Multi-Inquilino'];
+  const companyLinks = ['Sobre Axomira', 'Partners', 'Centro de Soporte'];
 
   return (
     <div className="w-full max-w-6xl mx-auto">
@@ -51,12 +41,17 @@ function FooterCard() {
           <div className="p-8 md:p-10 lg:p-12 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-12">
             {/* Brand Info */}
             <div className="lg:col-span-2 space-y-8">
-              <div className="flex items-center gap-2.5">
-                <LogoIcon />
-                <span className="text-[26px] font-bold tracking-tight text-[#0F172A]">vize</span>
+              <div className="flex items-center gap-3">
+                <AxomiraLogo variant="mark" className="w-9 h-9" />
+                <div className="flex flex-col">
+                  <span className="text-[26px] font-black tracking-tight text-[#0F172A] leading-none">axomira</span>
+                  <span className="text-[9px] font-extrabold tracking-[0.24em] text-emerald-600 uppercase mt-1">
+                    Intelligent Cloud ERP
+                  </span>
+                </div>
               </div>
-              <p className="text-[#64748B] leading-relaxed text-[16px] font-normal max-w-[320px]">
-                Premium strategic solutions designed to elevate your brand presence through advanced marketing.
+              <p className="text-[#64748B] leading-relaxed text-[15px] font-normal max-w-[340px]">
+                Plataforma ERP Enterprise de alta precisión. Módulos transaccionales: Mantenimiento (PM), Almacén (MM), Recursos Humanos (HCM), Flota y Analítica Integrada.
               </p>
               <div className="flex items-center gap-3">
                 {socials.map((social) => {
@@ -75,9 +70,9 @@ function FooterCard() {
               </div>
             </div>
 
-            {/* Product Column */}
+            {/* Módulos ERP */}
             <div className="space-y-6">
-              <h4 className="text-[14px] font-medium text-[#94A3B8]">Product</h4>
+              <h4 className="text-[14px] font-medium text-[#94A3B8]">Módulos ERP</h4>
               <ul className="space-y-4">
                 {productLinks.map((link) => (
                   <li key={link}>
@@ -89,9 +84,9 @@ function FooterCard() {
               </ul>
             </div>
 
-            {/* Science Column */}
+            {/* Plataforma */}
             <div className="space-y-6">
-              <h4 className="text-[14px] font-medium text-[#94A3B8]">Science</h4>
+              <h4 className="text-[14px] font-medium text-[#94A3B8]">Plataforma</h4>
               <ul className="space-y-4">
                 {scienceLinks.map((link) => (
                   <li key={link}>
@@ -103,9 +98,9 @@ function FooterCard() {
               </ul>
             </div>
 
-            {/* Company Column */}
+            {/* Empresa */}
             <div className="space-y-6">
-              <h4 className="text-[14px] font-medium text-[#94A3B8]">Company</h4>
+              <h4 className="text-[14px] font-medium text-[#94A3B8]">Empresa</h4>
               <ul className="space-y-4">
                 {companyLinks.map((link) => (
                   <li key={link}>
@@ -121,14 +116,14 @@ function FooterCard() {
 
         {/* Bottom Legal Bar */}
         <div className="px-6 sm:px-12 md:px-16 lg:px-20 py-5 flex flex-col md:flex-row justify-between items-center gap-6 text-[15px]">
-          <p className="text-[#64748B] font-medium">© 2025 Vize. All rights reserved.</p>
+          <p className="text-[#64748B] font-medium">© 2026 AXOMIRA Intelligent Cloud ERP. Todos los derechos reservados.</p>
           <div className="flex flex-row gap-8 text-[#64748B] font-medium items-center">
             <a href="#" className="hover:text-[#1E293B] transition-colors">
-              Legal Center
+              Centro Legal
             </a>
             <div className="w-[1px] h-4 bg-slate-300" />
             <a href="#" className="hover:text-[#1E293B] transition-colors">
-              User Agreement
+              Acuerdo de Usuario
             </a>
           </div>
         </div>
@@ -172,10 +167,10 @@ function GlassText() {
         className="relative"
       >
         <h1
-          className="text-[min(25vw,400px)] font-bold tracking-normal leading-none select-none text-white px-4"
+          className="text-[min(18vw,300px)] font-black tracking-tighter leading-none select-none text-white px-4 uppercase"
           style={{ filter: 'url(#glass-effect)' }}
         >
-          vize
+          axomira
         </h1>
       </motion.div>
     </div>
