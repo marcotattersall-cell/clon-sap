@@ -34,7 +34,7 @@ function FooterCard({ onEnterERP }) {
 
   const productLinks = ['Mantenimiento (PM)', 'Almacén (MM)', 'Recursos Humanos (HCM)', 'Gestión de Flota'];
   const scienceLinks = ['Analítica & BI', 'Seguridad RBAC', 'Auditoría SAP', 'Multi-Inquilino'];
-  const companyLinks = ['Sobre Axomira', 'Partners', 'Centro de Soporte'];
+  const companyLinks = ['Sobre Synapse', 'Partners', 'Centro de Soporte'];
 
   return (
     <div className="w-full max-w-6xl mx-auto">
@@ -46,26 +46,26 @@ function FooterCard({ onEnterERP }) {
               <div className="flex items-center gap-3">
                 <AxomiraLogo variant="mark" className="w-9 h-9" />
                 <div className="flex flex-col">
-                  <span className="text-[26px] font-black tracking-tight text-[#0F172A] leading-none">axomira</span>
-                  <span className="text-[9px] font-extrabold tracking-[0.24em] text-emerald-600 uppercase mt-1">
-                    Intelligent Cloud ERP
+                  <span className="text-[26px] font-black tracking-tight text-[#0F172A] leading-none">synapse</span>
+                  <span className="text-[9px] font-extrabold tracking-[0.22em] text-blue-600 uppercase mt-1">
+                    Enterprise Operating System
                   </span>
                 </div>
               </div>
               <p className="text-[#64748B] leading-relaxed text-[15px] font-normal max-w-[340px]">
-                Plataforma ERP Enterprise de alta precisión. Módulos transaccionales: Mantenimiento (PM), Almacén (MM), Recursos Humanos (HCM), Flota y Analítica Integrada.
+                Sistema Operativo Empresarial Autónomo de alta precisión. Integración inmutable de Mantenimiento PM, Inventarios MM, Gestión de Flotas y Recursos Humanos (HCM).
               </p>
 
-              {/* Botón de Ingreso al Sistema / Login */}
+              {/* Botón de Ingreso a Synapse ERP */}
               {onEnterERP && (
                 <div className="pt-2">
                   <button
                     onClick={onEnterERP}
                     type="button"
-                    className="w-full sm:w-auto bg-[#31A8FF] hover:bg-[#008AE6] text-white font-bold text-sm px-6 py-3 rounded-xl shadow-md hover:shadow-lg transition-all active:scale-95 flex items-center justify-center gap-2 cursor-pointer"
+                    className="w-full sm:w-auto bg-[#2563EB] hover:bg-[#1D4ED8] text-white font-bold text-sm px-6 py-3 rounded-xl shadow-md hover:shadow-lg transition-all active:scale-95 flex items-center justify-center gap-2 cursor-pointer"
                   >
                     <LogIn className="w-4 h-4" />
-                    <span>Ingresar a AXOMIRA ERP</span>
+                    <span>Ingresar a SYNAPSE ERP</span>
                   </button>
                 </div>
               )}
@@ -93,7 +93,7 @@ function FooterCard({ onEnterERP }) {
               <ul className="space-y-4">
                 {productLinks.map((link) => (
                   <li key={link}>
-                    <button onClick={onEnterERP} className="text-[15px] font-medium text-[#1E293B] hover:text-[#31A8FF] transition-colors text-left">
+                    <button onClick={onEnterERP} className="text-[15px] font-medium text-[#1E293B] hover:text-[#2563EB] transition-colors text-left">
                       {link}
                     </button>
                   </li>
@@ -107,7 +107,7 @@ function FooterCard({ onEnterERP }) {
               <ul className="space-y-4">
                 {scienceLinks.map((link) => (
                   <li key={link}>
-                    <button onClick={onEnterERP} className="text-[15px] font-medium text-[#1E293B] hover:text-[#31A8FF] transition-colors text-left">
+                    <button onClick={onEnterERP} className="text-[15px] font-medium text-[#1E293B] hover:text-[#2563EB] transition-colors text-left">
                       {link}
                     </button>
                   </li>
@@ -121,7 +121,7 @@ function FooterCard({ onEnterERP }) {
               <ul className="space-y-4">
                 {companyLinks.map((link) => (
                   <li key={link}>
-                    <a href="#" className="text-[15px] font-medium text-[#1E293B] hover:text-[#31A8FF] transition-colors">
+                    <a href="#" className="text-[15px] font-medium text-[#1E293B] hover:text-[#2563EB] transition-colors">
                       {link}
                     </a>
                   </li>
@@ -133,12 +133,12 @@ function FooterCard({ onEnterERP }) {
 
         {/* Bottom Legal Bar */}
         <div className="px-6 sm:px-12 md:px-16 lg:px-20 py-5 flex flex-col md:flex-row justify-between items-center gap-6 text-[15px]">
-          <p className="text-[#64748B] font-medium">© 2026 AXOMIRA Intelligent Cloud ERP. Todos los derechos reservados.</p>
+          <p className="text-[#64748B] font-medium">© 2026 SYNAPSE Enterprise ERP. Todos los derechos reservados.</p>
           <div className="flex flex-row gap-6 text-[#64748B] font-medium items-center">
             {onEnterERP && (
               <button
                 onClick={onEnterERP}
-                className="text-[#31A8FF] font-bold hover:underline transition-colors flex items-center gap-1.5"
+                className="text-[#2563EB] font-bold hover:underline transition-colors flex items-center gap-1.5"
               >
                 <LogIn className="w-4 h-4" />
                 <span>Acceso Clientes / Login</span>
@@ -164,7 +164,7 @@ function GlassText({ onEnterERP }) {
     <div
       onClick={onEnterERP}
       className="relative w-full flex items-center justify-center select-none pt-0 cursor-pointer"
-      title="Hacer clic para ingresar a AXOMIRA ERP"
+      title="Hacer clic para ingresar a SYNAPSE ERP"
     >
       <svg className="absolute w-0 h-0" aria-hidden="true" focusable="false">
         <defs>
@@ -201,7 +201,7 @@ function GlassText({ onEnterERP }) {
           className="text-[min(18vw,300px)] font-black tracking-tighter leading-none select-none text-white px-4 uppercase"
           style={{ filter: 'url(#glass-effect)' }}
         >
-          axomira
+          synapse
         </h1>
       </motion.div>
     </div>
