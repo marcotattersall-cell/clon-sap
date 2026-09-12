@@ -40,8 +40,8 @@ export function LandingPage({ onEnterERP }) {
           <div className="flex items-center space-x-3 cursor-pointer" onClick={onEnterERP}>
             <AxomiraLogo variant="icon" dark className="w-8 h-8" />
             <div className="leading-tight">
-              <span className="font-extrabold text-sm tracking-tight text-white font-mono block">SYNAPSE ERP</span>
-              <span className="text-[9px] text-blue-400 font-semibold uppercase tracking-wider block">Autonomous Enterprise OS</span>
+              <span className="font-extrabold text-sm tracking-tight text-white font-mono block">AXOMIRA ERP</span>
+              <span className="text-[9px] text-blue-400 font-semibold uppercase tracking-wider block">Enterprise Cloud ERP</span>
             </div>
           </div>
 
@@ -138,7 +138,7 @@ export function LandingPage({ onEnterERP }) {
                   <div className="w-3 h-3 rounded-full bg-rose-500/80"></div>
                   <div className="w-3 h-3 rounded-full bg-amber-500/80"></div>
                   <div className="w-3 h-3 rounded-full bg-emerald-500/80"></div>
-                  <span className="text-xs font-mono text-slate-400 font-bold ml-2">Synapse ERP • Cockpit Operativo BHP / Codelco</span>
+                  <span className="text-xs font-mono text-slate-400 font-bold ml-2">Axomira ERP • Cockpit Operativo BHP / Codelco</span>
                 </div>
                 <div className="flex items-center space-x-2 text-xs text-slate-400 font-mono">
                   <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>

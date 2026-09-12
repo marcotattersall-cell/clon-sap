@@ -34,7 +34,7 @@ function FooterCard({ onEnterERP }) {
 
   const productLinks = ['Mantenimiento (PM)', 'Almacén (MM)', 'Recursos Humanos (HCM)', 'Gestión de Flota'];
   const scienceLinks = ['Analítica & BI', 'Seguridad RBAC', 'Auditoría SAP', 'Multi-Inquilino'];
-  const companyLinks = ['Sobre Synapse', 'Partners', 'Centro de Soporte'];
+  const companyLinks = ['Sobre Axomira', 'Partners', 'Centro de Soporte'];
 
   return (
     <div className="w-full max-w-6xl mx-auto">
@@ -46,17 +46,17 @@ function FooterCard({ onEnterERP }) {
               <div className="flex items-center gap-3">
                 <AxomiraLogo variant="mark" className="w-9 h-9" />
                 <div className="flex flex-col">
-                  <span className="text-[26px] font-black tracking-tight text-[#0F172A] leading-none">synapse</span>
-                  <span className="text-[9px] font-extrabold tracking-[0.22em] text-blue-600 uppercase mt-1">
-                    Enterprise Operating System
+                  <span className="text-[26px] font-black tracking-tight text-[#0F172A] leading-none">axomira</span>
+                  <span className="text-[9px] font-extrabold tracking-[0.24em] text-blue-600 uppercase mt-1">
+                    Intelligent Cloud ERP
                   </span>
                 </div>
               </div>
               <p className="text-[#64748B] leading-relaxed text-[15px] font-normal max-w-[340px]">
-                Sistema Operativo Empresarial Autónomo de alta precisión. Integración inmutable de Mantenimiento PM, Inventarios MM, Gestión de Flotas y Recursos Humanos (HCM).
+                Plataforma ERP Enterprise de alta precisión. Módulos transaccionales: Mantenimiento (PM), Almacén (MM), Recursos Humanos (HCM), Flota y Analítica Integrada.
               </p>
 
-              {/* Botón de Ingreso a Synapse ERP */}
+              {/* Botón de Ingreso a Axomira ERP */}
               {onEnterERP && (
                 <div className="pt-2">
                   <button
@@ -65,7 +65,7 @@ function FooterCard({ onEnterERP }) {
                     className="w-full sm:w-auto bg-[#2563EB] hover:bg-[#1D4ED8] text-white font-bold text-sm px-6 py-3 rounded-xl shadow-md hover:shadow-lg transition-all active:scale-95 flex items-center justify-center gap-2 cursor-pointer"
                   >
                     <LogIn className="w-4 h-4" />
-                    <span>Ingresar a SYNAPSE ERP</span>
+                    <span>Ingresar a AXOMIRA ERP</span>
                   </button>
                 </div>
               )}
@@ -133,7 +133,7 @@ function FooterCard({ onEnterERP }) {
 
         {/* Bottom Legal Bar */}
         <div className="px-6 sm:px-12 md:px-16 lg:px-20 py-5 flex flex-col md:flex-row justify-between items-center gap-6 text-[15px]">
-          <p className="text-[#64748B] font-medium">© 2026 SYNAPSE Enterprise ERP. Todos los derechos reservados.</p>
+          <p className="text-[#64748B] font-medium">© 2026 AXOMIRA Intelligent Cloud ERP. Todos los derechos reservados.</p>
           <div className="flex flex-row gap-6 text-[#64748B] font-medium items-center">
             {onEnterERP && (
               <button
@@ -164,7 +164,7 @@ function GlassText({ onEnterERP }) {
     <div
       onClick={onEnterERP}
       className="relative w-full flex items-center justify-center select-none pt-0 cursor-pointer"
-      title="Hacer clic para ingresar a SYNAPSE ERP"
+      title="Hacer clic para ingresar a AXOMIRA ERP"
     >
       <svg className="absolute w-0 h-0" aria-hidden="true" focusable="false">
         <defs>
@@ -201,7 +201,7 @@ function GlassText({ onEnterERP }) {
           className="text-[min(18vw,300px)] font-black tracking-tighter leading-none select-none text-white px-4 uppercase"
           style={{ filter: 'url(#glass-effect)' }}
         >
-          synapse
+          axomira
         </h1>
       </motion.div>
     </div>
