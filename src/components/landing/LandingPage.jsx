@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import AxomiraLogo from '../common/AxomiraLogo';
+import Footer from '../Footer';
 import { RequestDemoModal } from '../modals/RequestDemoModal';
 import { 
   ShieldCheck, 
@@ -483,21 +484,9 @@ export function LandingPage({ onEnterERP }) {
       </section>
 
       {/* 7. FINAL CTA & FOOTER */}
-      <footer className="bg-slate-950 border-t border-slate-800 py-12">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center space-y-6">
-          <div className="flex justify-center items-center space-x-2">
-            <AxomiraLogo variant="icon" dark className="w-8 h-8" />
-            <span className="font-extrabold text-sm text-white font-mono">AXOMIRA CLOUD ERP</span>
-          </div>
-          <p className="text-xs text-slate-500 max-w-md mx-auto">
-            Plataforma Enterprise de Gestión de Mantenimiento PM, Inventario MM y Flotas Mineras.
-          </p>
-          <div className="pt-4 border-t border-slate-900 text-[11px] text-slate-600 flex flex-col sm:flex-row justify-between items-center gap-2">
-            <span>© 2026 Axomira ERP Enterprise. Todos los derechos reservados.</span>
-            <span>Seguridad ISO 27001 • Aislamiento Multi-Tenant Certificado</span>
-          </div>
-        </div>
-      </footer>
+      <section className="pt-12 pb-8 bg-slate-950 border-t border-slate-800">
+        <Footer onEnterERP={onEnterERP} />
+      </section>
 
       {/* 8. REQUEST DEMO MODAL FORM */}
       <RequestDemoModal

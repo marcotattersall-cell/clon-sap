@@ -1,4 +1,6 @@
+import React from 'react';
 import { motion } from 'motion/react';
+import { LogIn } from 'lucide-react';
 import { AxomiraLogo } from './common/AxomiraLogo';
 
 const Linkedin = ({ className }) => (
@@ -23,7 +25,7 @@ const Instagram = ({ className }) => (
   </svg>
 );
 
-function FooterCard() {
+function FooterCard({ onEnterERP }) {
   const socials = [
     { name: 'LinkedIn', icon: Linkedin },
     { name: 'Twitter', icon: Twitter },
@@ -40,7 +42,7 @@ function FooterCard() {
         <div className="bg-white rounded-[40px] m-2 shadow-sm">
           <div className="p-8 md:p-10 lg:p-12 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-12">
             {/* Brand Info */}
-            <div className="lg:col-span-2 space-y-8">
+            <div className="lg:col-span-2 space-y-6">
               <div className="flex items-center gap-3">
                 <AxomiraLogo variant="mark" className="w-9 h-9" />
                 <div className="flex flex-col">
@@ -53,7 +55,22 @@ function FooterCard() {
               <p className="text-[#64748B] leading-relaxed text-[15px] font-normal max-w-[340px]">
                 Plataforma ERP Enterprise de alta precisión. Módulos transaccionales: Mantenimiento (PM), Almacén (MM), Recursos Humanos (HCM), Flota y Analítica Integrada.
               </p>
-              <div className="flex items-center gap-3">
+
+              {/* Botón de Ingreso al Sistema / Login */}
+              {onEnterERP && (
+                <div className="pt-2">
+                  <button
+                    onClick={onEnterERP}
+                    type="button"
+                    className="w-full sm:w-auto bg-[#31A8FF] hover:bg-[#008AE6] text-white font-bold text-sm px-6 py-3 rounded-xl shadow-md hover:shadow-lg transition-all active:scale-95 flex items-center justify-center gap-2 cursor-pointer"
+                  >
+                    <LogIn className="w-4 h-4" />
+                    <span>Ingresar a AXOMIRA ERP</span>
+                  </button>
+                </div>
+              )}
+
+              <div className="flex items-center gap-3 pt-2">
                 {socials.map((social) => {
                   const Icon = social.icon;
                   return (
@@ -76,9 +93,9 @@ function FooterCard() {
               <ul className="space-y-4">
                 {productLinks.map((link) => (
                   <li key={link}>
-                    <a href="#" className="text-[15px] font-medium text-[#1E293B] hover:text-[#31A8FF] transition-colors">
+                    <button onClick={onEnterERP} className="text-[15px] font-medium text-[#1E293B] hover:text-[#31A8FF] transition-colors text-left">
                       {link}
-                    </a>
+                    </button>
                   </li>
                 ))}
               </ul>
@@ -90,9 +107,9 @@ function FooterCard() {
               <ul className="space-y-4">
                 {scienceLinks.map((link) => (
                   <li key={link}>
-                    <a href="#" className="text-[15px] font-medium text-[#1E293B] hover:text-[#31A8FF] transition-colors">
+                    <button onClick={onEnterERP} className="text-[15px] font-medium text-[#1E293B] hover:text-[#31A8FF] transition-colors text-left">
                       {link}
-                    </a>
+                    </button>
                   </li>
                 ))}
               </ul>
@@ -117,7 +134,17 @@ function FooterCard() {
         {/* Bottom Legal Bar */}
         <div className="px-6 sm:px-12 md:px-16 lg:px-20 py-5 flex flex-col md:flex-row justify-between items-center gap-6 text-[15px]">
           <p className="text-[#64748B] font-medium">© 2026 AXOMIRA Intelligent Cloud ERP. Todos los derechos reservados.</p>
-          <div className="flex flex-row gap-8 text-[#64748B] font-medium items-center">
+          <div className="flex flex-row gap-6 text-[#64748B] font-medium items-center">
+            {onEnterERP && (
+              <button
+                onClick={onEnterERP}
+                className="text-[#31A8FF] font-bold hover:underline transition-colors flex items-center gap-1.5"
+              >
+                <LogIn className="w-4 h-4" />
+                <span>Acceso Clientes / Login</span>
+              </button>
+            )}
+            <div className="w-[1px] h-4 bg-slate-300" />
             <a href="#" className="hover:text-[#1E293B] transition-colors">
               Centro Legal
             </a>
@@ -132,9 +159,13 @@ function FooterCard() {
   );
 }
 
-function GlassText() {
+function GlassText({ onEnterERP }) {
   return (
-    <div className="relative w-full flex items-center justify-center select-none pt-0">
+    <div
+      onClick={onEnterERP}
+      className="relative w-full flex items-center justify-center select-none pt-0 cursor-pointer"
+      title="Hacer clic para ingresar a AXOMIRA ERP"
+    >
       <svg className="absolute w-0 h-0" aria-hidden="true" focusable="false">
         <defs>
           <filter id="glass-effect" x="-50%" y="-50%" width="200%" height="200%">
@@ -177,11 +208,11 @@ function GlassText() {
   );
 }
 
-export default function Footer() {
+export default function Footer({ onEnterERP }) {
   return (
     <footer className="w-full flex flex-col items-center gap-0">
-      <FooterCard />
-      <GlassText />
+      <FooterCard onEnterERP={onEnterERP} />
+      <GlassText onEnterERP={onEnterERP} />
     </footer>
   );
 }
