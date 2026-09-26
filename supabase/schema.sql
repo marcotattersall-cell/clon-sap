@@ -297,6 +297,34 @@ CREATE POLICY "Acceso total a telemetry_logs" ON public.telemetry_logs FOR ALL U
 CREATE POLICY "Acceso total a demo_requests" ON public.demo_requests FOR ALL USING (true);
 
 -- ====================================================================
+-- POLÍTICAS RLS DINÁMICAS INYECTADAS DESDE EL TOKEN JWT (SOBRESALIENTE)
+-- ====================================================================
+CREATE POLICY tenant_isolation_policy_materials ON public.materials
+FOR ALL TO authenticated
+USING (tenant_id = COALESCE(NULLIF((auth.jwt() ->> 'tenant_id'), ''), tenant_id));
+
+CREATE POLICY tenant_isolation_policy_work_orders ON public.work_orders
+FOR ALL TO authenticated
+USING (tenant_id = COALESCE(NULLIF((auth.jwt() ->> 'tenant_id'), ''), tenant_id));
+
+CREATE POLICY tenant_isolation_policy_assets ON public.assets
+FOR ALL TO authenticated
+USING (tenant_id = COALESCE(NULLIF((auth.jwt() ->> 'tenant_id'), ''), tenant_id));
+
+CREATE POLICY tenant_isolation_policy_migo ON public.migo_documents
+FOR ALL TO authenticated
+USING (tenant_id = COALESCE(NULLIF((auth.jwt() ->> 'tenant_id'), ''), tenant_id));
+
+CREATE POLICY tenant_isolation_policy_purchase_orders ON public.purchase_orders
+FOR ALL TO authenticated
+USING (tenant_id = COALESCE(NULLIF((auth.jwt() ->> 'tenant_id'), ''), tenant_id));
+
+CREATE POLICY tenant_isolation_policy_audit ON public.audit_logs
+FOR ALL TO authenticated
+USING (tenant_id = COALESCE(NULLIF((auth.jwt() ->> 'tenant_id'), ''), tenant_id));
+
+
+-- ====================================================================
 -- ACTIVAR SUPABASE REALTIME EN LAS TABLAS DE CLON SAP
 -- ====================================================================
 ALTER PUBLICATION supabase_realtime ADD TABLE public.plants;
