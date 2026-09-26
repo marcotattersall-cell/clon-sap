@@ -386,11 +386,16 @@ END;
 $$ LANGUAGE plpgsql;
 
 -- ====================================================================
--- ÍNDICES GIN PARA CONSULTAS ULTRA-RÁPIDAS SOBRE CAMPOS JSONB Z-FIELDS
+-- ÍNDICES GIN PARA CONSULTAS ULTRA-RÁPIDAS SOBRE CAMPOS JSONB Z-FIELDS (SOBRESALIENTE)
 -- ====================================================================
 CREATE INDEX IF NOT EXISTS idx_materials_jsonb_gin ON public.materials USING GIN (data);
 CREATE INDEX IF NOT EXISTS idx_work_orders_jsonb_gin ON public.work_orders USING GIN (data);
 CREATE INDEX IF NOT EXISTS idx_migo_documents_jsonb_gin ON public.migo_documents USING GIN (data);
 CREATE INDEX IF NOT EXISTS idx_assets_jsonb_gin ON public.assets USING GIN (data);
+CREATE INDEX IF NOT EXISTS idx_purchase_orders_jsonb_gin ON public.purchase_orders USING GIN (data);
+CREATE INDEX IF NOT EXISTS idx_notifications_jsonb_gin ON public.notifications USING GIN (data);
+CREATE INDEX IF NOT EXISTS idx_demo_requests_jsonb_gin ON public.demo_requests USING GIN (data);
+CREATE INDEX IF NOT EXISTS idx_telemetry_logs_jsonb_gin ON public.telemetry_logs USING GIN (data);
+
 
 
