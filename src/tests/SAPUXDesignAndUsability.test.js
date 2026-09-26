@@ -6,7 +6,6 @@ describe('🎨 SAP Fiori Stealth & User Experience (UX/UI) Audit Test Suite', ()
   describe('1. Estructura Jerárquica y Navegación Breadcrumbs UX', () => {
     it('debe definir mapeos de navegación completos para todas las pantallas del sistema', () => {
       const requiredTabs = [
-        'LANDING',
         'LAUNCHPAD',
         'WORK_ORDERS',
         'ASSETS',

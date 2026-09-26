@@ -14,7 +14,6 @@ import { LoginScreen } from './components/auth/LoginScreen';
 import { MobileBottomNav } from './components/shell/MobileBottomNav';
 import { AICopilotChatbox } from './components/common/AICopilotChatbox';
 import { DevToolsFab } from './components/common/DevToolsFab';
-import { LandingPage } from './components/landing/LandingPage';
 import AxomiraLogo from './components/common/AxomiraLogo';
 import { NebexEntranceSplash } from './components/common/NebexEntranceSplash';
 import { AlertCircle, CheckCircle2, Info, Loader2, ShieldCheck } from 'lucide-react';
@@ -232,12 +231,7 @@ const SAPAppContent = () => {
     );
   }
 
-  // 2. Landing Page Portal Mode (Primera vista pública por defecto)
-  if (activeTab === 'LANDING') {
-    return <LandingPage onEnterERP={() => setActiveTab(user ? 'LAUNCHPAD' : 'LOGIN')} />;
-  }
-
-  // 3. Authentication Gate & Login Screen Navigation
+  // 2. Authentication Gate & Login Screen Navigation
   if (!user || activeTab === 'LOGIN') {
     return <LoginScreen />;
   }

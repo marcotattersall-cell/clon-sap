@@ -56,7 +56,7 @@ export const SAPProvider = ({ children }) => {
       return 'dark';
     }
   });
-  const [activeTab, setActiveTab] = useState('LANDING');
+  const [activeTab, setActiveTab] = useState('LAUNCHPAD');
   const [searchTerm, setSearchTerm] = useState('');
   const [globalToasts, setGlobalToasts] = useState([]);
   const [tecoModalData, setTecoModalData] = useState(null);

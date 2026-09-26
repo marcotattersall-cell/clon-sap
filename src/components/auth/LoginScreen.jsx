@@ -284,14 +284,6 @@ export const LoginScreen = () => {
         </div>
 
         <div className="hidden sm:flex items-center space-x-3 text-xs text-slate-400">
-          <button
-            onClick={() => setActiveTab('LANDING')}
-            className="bg-sky-500/10 hover:bg-sky-500/20 text-sky-400 border border-sky-500/30 px-2.5 py-1 rounded font-bold transition-all flex items-center gap-1.5 cursor-pointer"
-          >
-            <Globe className="w-3.5 h-3.5" />
-            <span>Ver Landing Page</span>
-          </button>
-          <span className="text-slate-600">|</span>
           <span>Planta Central 0001</span>
         </div>
       </header>
