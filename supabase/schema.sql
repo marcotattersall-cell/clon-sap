@@ -313,3 +313,56 @@ ALTER PUBLICATION supabase_realtime ADD TABLE public.audit_logs;
 ALTER PUBLICATION supabase_realtime ADD TABLE public.telemetry_logs;
 ALTER PUBLICATION supabase_realtime ADD TABLE public.demo_requests;
 
+-- ====================================================================
+-- FUNCIONES ALMACENADAS ATÓMICAS SERVER-SIDE (ELEVACIÓN A SOBRESALIENTE)
+-- ====================================================================
+
+CREATE OR REPLACE FUNCTION process_migo_261_atomic(
+    p_tenant_id TEXT,
+    p_material_id TEXT,
+    p_work_order_id TEXT,
+    p_qty NUMERIC
+) RETURNS JSONB AS $$
+DECLARE
+    v_unit_price NUMERIC := 0;
+    v_total_cost NUMERIC := 0;
+BEGIN
+    -- Bloquear fila de stock pesimistamente
+    SELECT unit_price INTO v_unit_price 
+    FROM public.materials 
+    WHERE id = p_material_id AND tenant_id = p_tenant_id FOR UPDATE;
+
+    IF NOT FOUND THEN
+        RAISE EXCEPTION 'Material % no encontrado para el tenant %', p_material_id, p_tenant_id;
+    END IF;
+
+    -- Descontar stock atómicamente
+    UPDATE public.materials 
+    SET stock = stock - p_qty, updated_at = NOW() 
+    WHERE id = p_material_id AND tenant_id = p_tenant_id;
+
+    -- Incrementar costo real en la Orden de Trabajo
+    v_total_cost := p_qty * COALESCE(v_unit_price, 0);
+    UPDATE public.work_orders 
+    SET actual_cost = COALESCE(actual_cost, 0) + v_total_cost, updated_at = NOW()
+    WHERE id = p_work_order_id AND tenant_id = p_tenant_id;
+
+    RETURN jsonb_build_object(
+        'success', true,
+        'material_id', p_material_id,
+        'work_order_id', p_work_order_id,
+        'quantity_issued', p_qty,
+        'cost_accumulated', v_total_cost
+    );
+END;
+$$ LANGUAGE plpgsql;
+
+-- ====================================================================
+-- ÍNDICES GIN PARA CONSULTAS ULTRA-RÁPIDAS SOBRE CAMPOS JSONB Z-FIELDS
+-- ====================================================================
+CREATE INDEX IF NOT EXISTS idx_materials_jsonb_gin ON public.materials USING GIN (data);
+CREATE INDEX IF NOT EXISTS idx_work_orders_jsonb_gin ON public.work_orders USING GIN (data);
+CREATE INDEX IF NOT EXISTS idx_migo_documents_jsonb_gin ON public.migo_documents USING GIN (data);
+CREATE INDEX IF NOT EXISTS idx_assets_jsonb_gin ON public.assets USING GIN (data);
+
+
