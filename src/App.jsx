@@ -13,7 +13,6 @@ import { AuthModal } from './components/auth/AuthModal';
 import { LoginScreen } from './components/auth/LoginScreen';
 import { MobileBottomNav } from './components/shell/MobileBottomNav';
 import { AICopilotChatbox } from './components/common/AICopilotChatbox';
-import { DevToolsFab } from './components/common/DevToolsFab';
 import AxomiraLogo from './components/common/AxomiraLogo';
 import { NebexEntranceSplash } from './components/common/NebexEntranceSplash';
 import { AlertCircle, CheckCircle2, Info, Loader2, ShieldCheck } from 'lucide-react';
@@ -409,9 +408,6 @@ const SAPAppContent = () => {
 
       {/* Floating AI Copilot Chatbox */}
       <AICopilotChatbox />
-
-      {/* Floating Dev & Simulation Tools FAB */}
-      <DevToolsFab />
 
       {/* Toast Notifications */}
       <ToastContainer />
