@@ -382,6 +382,41 @@ export const WorkOrderMaster = ({ onOpenCreateWO, onOpenMIGOForWO }) => {
         </div>
       </div>
 
+      {/* Chips de Filtrado Activo */}
+      {(selectedStatusFilter !== 'ALL' || selectedPriorityFilter !== 'ALL' || Boolean(searchTerm)) && (
+        <div className="bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 px-4 py-2.5 rounded-xl flex flex-wrap items-center gap-2 text-xs">
+          <span className="font-bold text-slate-500 uppercase tracking-wider text-[10px] font-mono mr-1">Filtros Activos:</span>
+          {searchTerm && (
+            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg font-semibold bg-sky-500/10 text-sky-600 dark:text-sky-400 border border-sky-500/30">
+              <span>Búsqueda: "{searchTerm}"</span>
+              <button onClick={() => setSearchTerm('')} className="hover:opacity-75 cursor-pointer"><X className="w-3.5 h-3.5" /></button>
+            </span>
+          )}
+          {selectedStatusFilter !== 'ALL' && (
+            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg font-semibold bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/30">
+              <span>Estado: {selectedStatusFilter === 'STALE_24H' ? 'Estancadas (>24h)' : selectedStatusFilter}</span>
+              <button onClick={() => setSelectedStatusFilter('ALL')} className="hover:opacity-75 cursor-pointer"><X className="w-3.5 h-3.5" /></button>
+            </span>
+          )}
+          {selectedPriorityFilter !== 'ALL' && (
+            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg font-semibold bg-purple-500/10 text-purple-600 dark:text-purple-400 border border-purple-500/30">
+              <span>Prioridad: {selectedPriorityFilter}</span>
+              <button onClick={() => setSelectedPriorityFilter('ALL')} className="hover:opacity-75 cursor-pointer"><X className="w-3.5 h-3.5" /></button>
+            </span>
+          )}
+          <button
+            onClick={() => {
+              setSearchTerm('');
+              setSelectedStatusFilter('ALL');
+              setSelectedPriorityFilter('ALL');
+            }}
+            className="text-[11px] font-bold text-slate-500 hover:text-slate-800 dark:hover:text-slate-200 underline cursor-pointer ml-auto"
+          >
+            Limpiar Todos los Filtros
+          </button>
+        </div>
+      )}
+
       {/* ----------------- VIEW MODE 1: KANBAN MINIMALISTA ----------------- */}
       {viewMode === 'KANBAN' && (
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">

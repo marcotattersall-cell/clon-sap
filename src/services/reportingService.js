@@ -95,7 +95,7 @@ export const generateFleetPdMReport = ({ assets = [], plantName = 'Planta Centra
       location: a.location || 'Faena Norte',
       status: a.status,
       healthScore: `${a.healthScore || a.healthIndex || 90}/100`,
-      rul: `${a.predictedRUL || Math.floor(Math.random() * 80 + 30)} hrs`,
+      rul: `${a.predictedRUL || Math.round((Number(a.healthScore || a.healthIndex || 80)) * 1.2)} hrs`,
       hourmeter: `${a.hourmeter || 4200} hrs`
     }))
   };

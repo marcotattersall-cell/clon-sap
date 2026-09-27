@@ -28,7 +28,9 @@ import {
   HardHat,
   LayoutGrid,
   Trash2,
-  RotateCcw
+  RotateCcw,
+  ChevronDown,
+  ChevronUp
 } from 'lucide-react';
 import {
   ResponsiveContainer,
@@ -57,7 +59,9 @@ export const FioriLaunchpad = ({ onOpenCreateWO, onOpenCreateMIGO }) => {
     plants,
     activePlant,
     clearAllTenantData,
-    resetData
+    resetData,
+    dashboardCollapsedState = {},
+    toggleDashboardSection
   } = useSAP();
 
   // Metrics calculations
@@ -82,8 +86,8 @@ export const FioriLaunchpad = ({ onOpenCreateWO, onOpenCreateMIGO }) => {
   const totalActualPMCost = workOrders.reduce((sum, w) => sum + (Number(w.actualCost) || 0), 0);
 
   const monthlyData = useMemo(() => {
-    const basePresupuesto = totalPlannedPMCost > 0 ? Math.round(totalPlannedPMCost) : 15000;
-    const baseGasto = totalActualPMCost > 0 ? Math.round(totalActualPMCost) : 13800;
+    const basePresupuesto = Math.round(totalPlannedPMCost);
+    const baseGasto = Math.round(totalActualPMCost);
 
     return [
       { month: 'Ene 2026', presupuestoPM: Math.round(basePresupuesto * 0.85), gastoPM: Math.round(baseGasto * 0.82), valoracionMM: Math.round(totalStockValuation * 0.80) },
@@ -105,13 +109,26 @@ export const FioriLaunchpad = ({ onOpenCreateWO, onOpenCreateMIGO }) => {
             <Layers className="w-5 h-5 text-sap-blue dark:text-sky-400" />
             <span>Mosaicos Principales (Executive Horizon Tiles)</span>
           </h2>
-          <span className="text-xs text-slate-500 dark:text-slate-400 font-medium flex items-center gap-1">
-            <Sparkles className="w-3.5 h-3.5 text-amber-500" />
-            Actualización Automática Vía WebSocket Mock
-          </span>
+          <div className="flex items-center space-x-3">
+            <span className="text-xs text-slate-500 dark:text-slate-400 font-medium flex items-center gap-1 hidden sm:flex">
+              <Sparkles className="w-3.5 h-3.5 text-amber-500" />
+              Sincronización en Tiempo Real Vía Supabase Database
+            </span>
+            {toggleDashboardSection && (
+              <button
+                onClick={() => toggleDashboardSection('tiles')}
+                className="p-1 rounded-lg bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-300 dark:hover:bg-slate-700 transition-colors flex items-center gap-1 text-xs font-semibold px-2 cursor-pointer"
+                title={dashboardCollapsedState['tiles'] ? 'Expandir Sección' : 'Colapsar Sección'}
+              >
+                <span>{dashboardCollapsedState['tiles'] ? 'Expandir' : 'Colapsar'}</span>
+                {dashboardCollapsedState['tiles'] ? <ChevronDown className="w-4 h-4" /> : <ChevronUp className="w-4 h-4" />}
+              </button>
+            )}
+          </div>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-5 gap-4">
+        {!dashboardCollapsedState['tiles'] && (
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-5 gap-4">
           {/* Tile 1: Órdenes de Trabajo Activas */}
           <div
             onClick={() => setActiveTab('WORK_ORDERS')}
@@ -263,8 +280,8 @@ export const FioriLaunchpad = ({ onOpenCreateWO, onOpenCreateMIGO }) => {
               </span>
             </div>
           </div>
-
         </div>
+        )}
       </div>
 
       {/* Interactive SAP Analytics Dashboard Chart Section */}
@@ -279,16 +296,29 @@ export const FioriLaunchpad = ({ onOpenCreateWO, onOpenCreateMIGO }) => {
               Seguimiento comparativo de Costes PM/FI-CO y valoración de almacén acumulada 2026
             </p>
           </div>
-          <button
-            onClick={() => setActiveTab('ANALYTICS')}
-            className="text-xs font-bold text-sap-blue dark:text-sky-400 hover:underline flex items-center gap-1 shrink-0"
-          >
-            <span>Abrir Analytics Cockpit</span>
-            <ArrowRight className="w-3.5 h-3.5" />
-          </button>
+          <div className="flex items-center space-x-3 shrink-0">
+            <button
+              onClick={() => setActiveTab('ANALYTICS')}
+              className="text-xs font-bold text-sap-blue dark:text-sky-400 hover:underline flex items-center gap-1"
+            >
+              <span>Abrir Analytics Cockpit</span>
+              <ArrowRight className="w-3.5 h-3.5" />
+            </button>
+            {toggleDashboardSection && (
+              <button
+                onClick={() => toggleDashboardSection('analytics_chart')}
+                className="p-1 rounded-lg bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-300 dark:hover:bg-slate-700 transition-colors flex items-center gap-1 text-xs font-semibold px-2 cursor-pointer"
+                title={dashboardCollapsedState['analytics_chart'] ? 'Expandir Gráfico' : 'Colapsar Gráfico'}
+              >
+                <span>{dashboardCollapsedState['analytics_chart'] ? 'Expandir' : 'Colapsar'}</span>
+                {dashboardCollapsedState['analytics_chart'] ? <ChevronDown className="w-4 h-4" /> : <ChevronUp className="w-4 h-4" />}
+              </button>
+            )}
+          </div>
         </div>
 
-        <div className="h-64 w-full">
+        {!dashboardCollapsedState['analytics_chart'] && (
+          <div className="h-64 w-full">
           <ResponsiveContainer width="100%" height={240}>
             <BarChart data={monthlyData} margin={{ top: 10, right: 20, left: 0, bottom: 0 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
@@ -304,6 +334,7 @@ export const FioriLaunchpad = ({ onOpenCreateWO, onOpenCreateMIGO }) => {
             </BarChart>
           </ResponsiveContainer>
         </div>
+        )}
       </div>
 
       {/* Operational Dashboard: Quick Status & Live Lists */}

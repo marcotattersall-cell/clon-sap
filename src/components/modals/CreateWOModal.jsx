@@ -83,6 +83,16 @@ export const CreateWOModal = ({ isOpen, onClose, initialAssetId }) => {
     (w.status === 'CRTE' || w.status === 'REL' || w.status === 'PCNF')
   );
 
+  const isFormDirty = Boolean(notes.trim() || hourmeter || odometer);
+
+  const handleCloseWithGuard = () => {
+    if (isFormDirty) {
+      const confirmDiscard = window.confirm('¿Deseas salir? Tienes datos no guardados en el formulario de la Orden de Trabajo.');
+      if (!confirmDiscard) return;
+    }
+    onClose();
+  };
+
   if (!isOpen) return null;
 
   const handleSubmit = (e) => {
@@ -184,7 +194,7 @@ export const CreateWOModal = ({ isOpen, onClose, initialAssetId }) => {
       <div className="sticky top-0 z-30 bg-slate-900 text-white px-6 py-3.5 border-b border-slate-800 flex items-center justify-between shadow-2xl shrink-0">
         <div className="flex items-center space-x-4">
           <button
-            onClick={onClose}
+            onClick={handleCloseWithGuard}
             type="button"
             className="p-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white transition-all flex items-center gap-2 text-xs font-bold border border-slate-700 cursor-pointer"
           >
@@ -209,7 +219,7 @@ export const CreateWOModal = ({ isOpen, onClose, initialAssetId }) => {
         <div className="flex items-center space-x-3">
           <button
             type="button"
-            onClick={onClose}
+            onClick={handleCloseWithGuard}
             className="px-4 py-2 rounded-xl text-xs font-bold text-slate-400 hover:text-white hover:bg-slate-800 transition-colors"
           >
             Cancelar

@@ -38,7 +38,7 @@ export const QRScannerModal = ({ isOpen, onClose, onScanSuccess, title = "Escán
             }
             onClose();
           },
-          (errorMessage) => {
+          (_errorMessage) => {
             // Ignorar errores frame-by-frame sin código detectado
           }
         );

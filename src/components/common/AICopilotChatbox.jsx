@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useSAP } from '../../context/SAPContext';
+import { queryAICopilot } from '../../services/aiCopilotService';
 import {
   MessageSquare,
   Bot,
@@ -11,7 +12,9 @@ import {
   HardHat,
   ChevronRight,
   RefreshCw,
-  FileText
+  FileText,
+  Database,
+  Cpu
 } from 'lucide-react';
 const ExecutiveReportGeneratorModal = React.lazy(() => import('../modals/ExecutiveReportGeneratorModal').then(m => ({ default: m.ExecutiveReportGeneratorModal })));
 
@@ -21,6 +24,8 @@ export const AICopilotChatbox = () => {
     materials = [],
     employees = [],
     assets = [],
+    purchaseOrders = [],
+    activeTenant = 'tenant_demo',
     setActiveTab,
     addToast
   } = useSAP();
@@ -36,7 +41,7 @@ export const AICopilotChatbox = () => {
       id: 1,
       sender: 'bot',
       timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-      text: '¡Hola! Soy tu Copiloto Axomira AI. Estoy conectado en tiempo real al sistema ERP. ¿En qué puedo ayudarte hoy?',
+      text: '¡Hola! Soy tu Copiloto Axomira AI activado con **RAG Híbrido ERP**. Conectado en tiempo real a tus módulos transaccionales. ¿En qué puedo ayudarte hoy?',
       quickActions: [
         { label: '📊 Generar Reporte BI', query: 'Genera el informe ejecutivo de mantenimiento y presupuesto' },
         { label: '🚨 Órdenes Críticas', query: '¿Cuáles son las órdenes PM de prioridad Alta?' },
@@ -56,83 +61,7 @@ export const AICopilotChatbox = () => {
     }
   }, [messages, isOpen]);
 
-  // Intelligent Context-Aware AI Response Engine
-  const generateAIResponse = (userQuery) => {
-    const q = userQuery.toLowerCase();
-
-    // 0. Consultas sobre Reportes / Informes / PDF / BI
-    if (q.includes('reporte') || q.includes('informe') || q.includes('pdf') || q.includes('excel') || q.includes('bi') || q.includes('exportar')) {
-      return {
-        text: `📄 **Motor de Reportes Ejecutivos BI Activado:**\nPuedo sintetizar automáticamente los indicadores de Mantenimiento PM, Inventario MM, Salud de Flota PdM o Acreditaciones HCM en un informe auditable listo para imprimir o exportar a Excel.`,
-        actionType: 'OPEN_REPORT_MODAL',
-        actionLabel: '📄 Abrir Generador de Reportes BI'
-      };
-    }
-
-    // 1. Consultas sobre Órdenes de Trabajo (PM)
-    if (q.includes('orden') || q.includes('ot') || q.includes('pm') || q.includes('mantenimiento') || q.includes('crítica')) {
-      const highPriorityWO = workOrders.filter(w => w.priority === 'Muy Alta' || w.priority === 'Alta');
-      const openWO = workOrders.filter(w => w.status !== 'TECO' && w.status !== 'CLSD');
-
-      return {
-        text: `📊 **Informe de Mantenimiento PM (En Vivo):**\nActualmente tienes **${openWO.length} órdenes abiertas**, de las cuales **${highPriorityWO.length} son de alta prioridad**.\n\nÓrdenes más relevantes:\n${highPriorityWO.slice(0, 3).map(w => `• **${w.id}**: ${w.title} (${w.priority})`).join('\n')}`,
-        targetTab: 'WORK_ORDERS',
-        tabLabel: 'Ir al Módulo de Órdenes (#mnt-ordenes)'
-      };
-    }
-
-    // 2. Consultas sobre Inventario / Stock (MM / MIGO)
-    if (q.includes('stock') || q.includes('material') || q.includes('migo') || q.includes('reorden') || q.includes('repuesto')) {
-      const lowStock = materials.filter(m => m.stock <= m.reorderPoint);
-
-      return {
-        text: `📦 **Auditoría de Almacén:**\nHay **${lowStock.length} materiales en punto de reorden crítico**.\n\nItems críticos:\n${lowStock.slice(0, 3).map(m => `• **${m.id}**: ${m.name} (Stock: ${m.stock} ${m.unit} | Mín: ${m.reorderPoint})`).join('\n')}`,
-        targetTab: 'INVENTORY',
-        tabLabel: 'Ver Maestro de Materiales (#inv-materiales)'
-      };
-    }
-
-    // 3. Consultas sobre Personal / RRHH / Acreditaciones (HCM)
-    if (q.includes('acreditacion') || q.includes('personal') || q.includes('empleado') || q.includes('rrhh') || q.includes('vencimiento')) {
-      const getDays = (dateStr) => {
-        if (!dateStr) return 999;
-        const target = new Date(dateStr);
-        return Math.ceil((target.getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24));
-      };
-
-      const alerts = employees.filter(e => {
-        const m = getDays(e.medicalExamExpiry);
-        const a = getDays(e.accreditationExpiry);
-        return m <= 30 || a <= 30;
-      });
-
-      return {
-        text: `👷 **Auditoría de Cumplimiento HCM:**\nDetecté **${alerts.length} colaboradores con acreditaciones o exámenes médicos por vencer** en los próximos 30 días.\n\nCasos prioritarios:\n${alerts.slice(0, 3).map(e => `• **${e.name}** (${e.position})`).join('\n')}`,
-        targetTab: 'HR',
-        tabLabel: 'Ir a Fichas de Personal (#rrhh-personal)'
-      };
-    }
-
-    // 4. Consultas sobre Equipos / Flota / Activos (IE03)
-    if (q.includes('equipo') || q.includes('activo') || q.includes('flota') || q.includes('maquinaria') || q.includes('chancador')) {
-      const maintenanceAssets = assets.filter(a => a.status === 'MAINTENANCE');
-      const operativeAssets = assets.filter(a => a.status === 'OPERATIVE');
-
-      return {
-        text: `🚜 **Resumen de Parque de Equipos (#flota-activos):**\nDisponibilidad de Flota: **${operativeAssets.length} Operativos** vs **${maintenanceAssets.length} en Mantenimiento**.\n\nEquipos en taller:\n${maintenanceAssets.length > 0 ? maintenanceAssets.map(a => `• **${a.id}**: ${a.name} (Salud: ${a.healthScore}%)`).join('\n') : '• Todos los equipos clave están operativos.'}`,
-        targetTab: 'ASSETS',
-        tabLabel: 'Ver Jerarquía de Activos (#flota-activos)'
-      };
-    }
-
-    // Response generico inteligente
-    return {
-      text: `🤖 Comprendo tu consulta sobre *"${userQuery}"*. Puedo realizar análisis transaccionales de **Órdenes PM**, **Movimientos MIGO 261/101**, **Acreditaciones de Faenas Mineras** o **Telemetría de Maquinaria**.\n\nPrueba seleccionando una de las sugerencias rápidas abajo.`,
-      targetTab: null
-    };
-  };
-
-  const handleSendMessage = (textToSend) => {
+  const handleSendMessage = async (textToSend) => {
     const query = textToSend || inputText;
     if (!query.trim()) return;
 
@@ -147,8 +76,17 @@ export const AICopilotChatbox = () => {
     if (!textToSend) setInputText('');
     setIsTyping(true);
 
-    setTimeout(() => {
-      const aiResult = generateAIResponse(query);
+    const erpState = {
+      workOrders,
+      materials,
+      employees,
+      assets,
+      purchaseOrders,
+      activeTenant
+    };
+
+    try {
+      const aiResult = await queryAICopilot(query, erpState, messages);
 
       const botMsg = {
         id: Date.now() + 1,
@@ -156,12 +94,21 @@ export const AICopilotChatbox = () => {
         timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
         text: aiResult.text,
         targetTab: aiResult.targetTab,
-        tabLabel: aiResult.tabLabel
+        tabLabel: aiResult.tabLabel,
+        actionType: aiResult.actionType,
+        actionLabel: aiResult.actionLabel,
+        ragFactsUsed: aiResult.ragFactsUsed,
+        intentSummary: aiResult.intentSummary,
+        isGeminiPowered: aiResult.isGeminiPowered
       };
 
       setMessages(prev => [...prev, botMsg]);
+    } catch (err) {
+      console.error('[AICopilotChatbox] Error consultando IA:', err);
+      addToast('Error conectando con el servicio AI RAG', 'error');
+    } finally {
       setIsTyping(false);
-    }, 600);
+    }
   };
 
   return (
@@ -207,6 +154,19 @@ export const AICopilotChatbox = () => {
                       : 'bg-slate-800/90 border border-slate-700/80 text-slate-100 rounded-bl-none shadow'
                   }`}
                 >
+                  {/* Badge de RAG Grounding */}
+                  {msg.sender === 'bot' && msg.ragFactsUsed !== undefined && (
+                    <div className="flex items-center gap-1.5 mb-2 pb-1.5 border-b border-slate-700/50 text-[10px] font-mono text-sky-400">
+                      <Database className="w-3 h-3 text-emerald-400 shrink-0" />
+                      <span>RAG Context: {msg.ragFactsUsed} hechos ERP recuperados</span>
+                      {msg.isGeminiPowered ? (
+                        <span className="ml-auto bg-purple-500/20 text-purple-300 border border-purple-500/40 px-1.5 py-0.5 rounded text-[9px]">Gemini 1.5 AI</span>
+                      ) : (
+                        <span className="ml-auto bg-sky-500/20 text-sky-300 border border-sky-500/40 px-1.5 py-0.5 rounded text-[9px]">RAG Grounded</span>
+                      )}
+                    </div>
+                  )}
+
                   {msg.text}
 
                   {/* Acciones Rápidas del Bot */}
@@ -269,7 +229,7 @@ export const AICopilotChatbox = () => {
             {isTyping && (
               <div className="flex items-center space-x-2 text-slate-400 text-xs italic bg-slate-800/60 p-2.5 rounded-xl max-w-xs border border-slate-700/50">
                 <RefreshCw className="w-3.5 h-3.5 animate-spin text-sky-400" />
-                <span>Copiloto AI analizando base de datos ERP...</span>
+                <span>Copiloto AI recuperando contexto ERP y razonando con RAG...</span>
               </div>
             )}
             <div ref={messagesEndRef} />

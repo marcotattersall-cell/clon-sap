@@ -38,23 +38,37 @@ const ViewLoader = () => (
 );
 
 const ToastContainer = () => {
-  const { globalToasts } = useSAP();
+  const { globalToasts, removeToast } = useSAP();
 
   return (
     <div className="fixed bottom-5 right-5 z-50 space-y-2.5 max-w-md pointer-events-none">
       {globalToasts.map(toast => (
         <div
           key={toast.id}
-          className={`pointer-events-auto p-4 rounded-xl shadow-2xl border text-xs font-semibold flex items-start space-x-3 transition-all transform animate-in slide-in-from-bottom-5 backdrop-blur-md ${
+          className={`pointer-events-auto p-4 rounded-xl shadow-2xl border text-xs font-semibold flex items-center justify-between space-x-3 transition-all transform animate-in slide-in-from-bottom-5 backdrop-blur-md ${
             toast.type === 'success' ? 'bg-slate-900/95 text-emerald-100 border-emerald-500/50 shadow-emerald-950/40 ring-1 ring-emerald-500/20' :
             toast.type === 'error' ? 'bg-slate-900/95 text-rose-100 border-rose-500/50 shadow-rose-950/40' :
             'bg-slate-900/95 text-slate-100 border-slate-700 shadow-slate-950/40'
           }`}
         >
-          {toast.type === 'success' && <ShieldCheck className="w-5 h-5 text-emerald-400 shrink-0 mt-0.5" />}
-          {toast.type === 'error' && <AlertCircle className="w-5 h-5 text-rose-400 shrink-0 mt-0.5" />}
-          {toast.type === 'info' && <Info className="w-5 h-5 text-sky-400 shrink-0 mt-0.5" />}
-          <div className="flex-1 leading-relaxed">{toast.message}</div>
+          <div className="flex items-start space-x-3 flex-1 min-w-0">
+            {toast.type === 'success' && <ShieldCheck className="w-5 h-5 text-emerald-400 shrink-0 mt-0.5" />}
+            {toast.type === 'error' && <AlertCircle className="w-5 h-5 text-rose-400 shrink-0 mt-0.5" />}
+            {toast.type === 'info' && <Info className="w-5 h-5 text-sky-400 shrink-0 mt-0.5" />}
+            <div className="flex-1 leading-relaxed">{toast.message}</div>
+          </div>
+
+          {toast.action && (
+            <button
+              onClick={() => {
+                toast.action.onClick();
+                if (removeToast) removeToast(toast.id);
+              }}
+              className="ml-3 shrink-0 bg-sky-600 hover:bg-sky-500 text-white font-bold px-3 py-1.5 rounded-lg text-[11px] shadow transition-colors cursor-pointer"
+            >
+              {toast.action.label || 'Deshacer'}
+            </button>
+          )}
         </div>
       ))}
     </div>
@@ -217,6 +231,23 @@ const SAPAppContent = () => {
     }
     prevUserRef.current = user;
   }, [user]);
+
+  // ⌨️ Universal User Freedom: Tecla Escape para cerrar modales activos
+  React.useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.key === 'Escape') {
+        if (isCreateWOOpen) setIsCreateWOOpen(false);
+        else if (isCreateMaterialOpen) setIsCreateMaterialOpen(false);
+        else if (isCreatePlantOpen) setIsCreatePlantOpen(false);
+        else if (isCreateEmployeeOpen) setIsCreateEmployeeOpen(false);
+        else if (isCreateAbsenceOpen) setIsCreateAbsenceOpen(false);
+        else if (isExecutiveReportOpen) setIsExecutiveReportOpen(false);
+        else if (isAuthOpen) setIsAuthOpen(false);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isCreateWOOpen, isCreateMaterialOpen, isCreatePlantOpen, isCreateEmployeeOpen, isCreateAbsenceOpen, isExecutiveReportOpen, isAuthOpen]);
 
   // 1. Loading state
   if (loading) {

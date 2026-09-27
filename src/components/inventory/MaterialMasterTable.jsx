@@ -241,6 +241,48 @@ export const MaterialMasterTable = ({ onOpenCreateMaterial, onOpenMIGOForMateria
         </label>
       </div>
 
+      {/* Chips de Filtrado Activo */}
+      {(selectedType !== 'ALL' || selectedLocation !== 'ALL' || onlyLowStock || Boolean(searchTerm)) && (
+        <div className="fiori-glass px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 flex flex-wrap items-center gap-2 text-xs">
+          <span className="font-bold text-slate-500 uppercase tracking-wider text-[10px] font-mono mr-1">Filtros Activos:</span>
+          {searchTerm && (
+            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg font-semibold bg-sky-500/10 text-sky-600 dark:text-sky-400 border border-sky-500/30">
+              <span>Búsqueda: "{searchTerm}"</span>
+              <button onClick={() => setSearchTerm('')} className="hover:opacity-75 cursor-pointer"><XCircle className="w-3.5 h-3.5" /></button>
+            </span>
+          )}
+          {selectedType !== 'ALL' && (
+            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg font-semibold bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-500/30">
+              <span>Tipo: {selectedType === 'SPARE' ? 'Repuestos (SPARE)' : selectedType === 'RAW' ? 'Materia Prima (RAW)' : selectedType}</span>
+              <button onClick={() => setSelectedType('ALL')} className="hover:opacity-75 cursor-pointer"><XCircle className="w-3.5 h-3.5" /></button>
+            </span>
+          )}
+          {selectedLocation !== 'ALL' && (
+            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg font-semibold bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/30">
+              <span>Almacén: {selectedLocation}</span>
+              <button onClick={() => setSelectedLocation('ALL')} className="hover:opacity-75 cursor-pointer"><XCircle className="w-3.5 h-3.5" /></button>
+            </span>
+          )}
+          {onlyLowStock && (
+            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg font-semibold bg-rose-500/10 text-rose-600 dark:text-rose-400 border border-rose-500/30">
+              <span>⚠️ Bajo Reorder Point</span>
+              <button onClick={() => setOnlyLowStock(false)} className="hover:opacity-75 cursor-pointer"><XCircle className="w-3.5 h-3.5" /></button>
+            </span>
+          )}
+          <button
+            onClick={() => {
+              setSearchTerm('');
+              setSelectedType('ALL');
+              setSelectedLocation('ALL');
+              setOnlyLowStock(false);
+            }}
+            className="text-[11px] font-bold text-slate-500 hover:text-slate-800 dark:hover:text-slate-200 underline cursor-pointer ml-auto"
+          >
+            Limpiar Todos los Filtros
+          </button>
+        </div>
+      )}
+
       {/* Main Material Master SAP Grid Table (Virtualizada) */}
       <div className="fiori-glass rounded-2xl border border-slate-200 dark:border-slate-800 overflow-hidden shadow-lg">
         <div ref={parentRef} className="overflow-auto max-h-[600px] custom-scrollbar">

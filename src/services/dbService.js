@@ -64,28 +64,13 @@ export const getActiveDbService = () => {
 };
 
 export const subscribeCollection = (collectionName, onUpdate, onError, constraints = [], tenantId = DEFAULT_TENANT_ID) => {
-  const fallback = getFallbackFixtures(collectionName);
-
   const safeOnUpdate = (items) => {
-    // Si Supabase está configurado con credenciales reales de Producción,
-    // se respetan los datos reales de la base de datos (incluso si está limpia/vacía).
-    if (isSupabaseConfigured) {
-      onUpdate(Array.isArray(items) ? items : []);
-    } else if (Array.isArray(items) && items.length === 0 && fallback.length > 0) {
-      console.warn(`[dbService Protection] Supabase no configurado o sin conexión para '${collectionName}'. Activando datos de respaldo (fixtures demo).`);
-      onUpdate(fallback);
-    } else {
-      onUpdate(items);
-    }
+    onUpdate(Array.isArray(items) ? items : []);
   };
 
   const safeOnError = (err) => {
     console.warn(`[dbService Protection] Error en suscripción Supabase para '${collectionName}':`, err);
-    if (!isSupabaseConfigured && fallback.length > 0) {
-      onUpdate(fallback);
-    } else if (isSupabaseConfigured) {
-      onUpdate([]);
-    }
+    onUpdate([]);
     if (onError) onError(err);
   };
 
@@ -156,53 +141,22 @@ export const recordAuditLog = async (params) => {
 };
 
 export const getCollectionDocs = async (collectionName, tenantId = DEFAULT_TENANT_ID) => {
-  const fallback = getFallbackFixtures(collectionName);
   try {
     const docs = await getActiveDbService().getCollectionDocs(collectionName, tenantId);
-    if (Array.isArray(docs) && docs.length === 0 && fallback.length > 0) {
-      console.warn(`[dbService Protection] getCollectionDocs para '${collectionName}' retornó 0 elementos. Usando fixtures de respaldo.`);
-      return fallback;
-    }
-    return docs;
+    return Array.isArray(docs) ? docs : [];
   } catch (err) {
     console.warn(`[dbService Protection] Error en getCollectionDocs para '${collectionName}':`, err);
-    return fallback;
+    return [];
   }
 };
 
 export const getPagedCollectionDocs = async (collectionName, page = 1, pageSize = 50, filters = {}, tenantId = DEFAULT_TENANT_ID) => {
-  const fallback = getFallbackFixtures(collectionName);
   try {
     const res = await getActiveDbService().getPagedCollectionDocs(collectionName, page, pageSize, filters, tenantId);
-    if (res && Array.isArray(res.data) && res.data.length === 0 && fallback.length > 0) {
-      const safePage = Math.max(1, Number(page) || 1);
-      const safePageSize = Math.max(1, Math.min(500, Number(pageSize) || 50));
-      const from = (safePage - 1) * safePageSize;
-      const to = from + safePageSize;
-      const sliced = fallback.slice(from, to);
-      return {
-        data: sliced,
-        totalCount: fallback.length,
-        page: safePage,
-        pageSize: safePageSize,
-        totalPages: Math.ceil(fallback.length / safePageSize) || 1
-      };
-    }
-    return res;
+    return res || { data: [], totalCount: 0, page: 1, pageSize, totalPages: 1 };
   } catch (err) {
     console.warn(`[dbService Protection] Error en getPagedCollectionDocs para '${collectionName}':`, err);
-    const safePage = Math.max(1, Number(page) || 1);
-    const safePageSize = Math.max(1, Math.min(500, Number(pageSize) || 50));
-    const from = (safePage - 1) * safePageSize;
-    const to = from + safePageSize;
-    const sliced = fallback.slice(from, to);
-    return {
-      data: sliced,
-      totalCount: fallback.length,
-      page: safePage,
-      pageSize: safePageSize,
-      totalPages: Math.ceil(fallback.length / safePageSize) || 1
-    };
+    return { data: [], totalCount: 0, page: 1, pageSize, totalPages: 1 };
   }
 };
 

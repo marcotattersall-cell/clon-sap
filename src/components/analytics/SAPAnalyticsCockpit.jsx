@@ -15,13 +15,35 @@ import {
   Line,
   Legend
 } from 'recharts';
-import { Activity, DollarSign, TrendingUp, ShieldCheck, Wrench, Package, PieChart as PieChartIcon, FileText, Send, RefreshCw, Settings } from 'lucide-react';
+import { Activity, DollarSign, TrendingUp, ShieldCheck, Wrench, Package, PieChart as PieChartIcon, FileText, Send, RefreshCw, Settings, ChevronDown, ChevronUp } from 'lucide-react';
 import { NotificationConfigModal } from '../modals/NotificationConfigModal';
 import { triggerWeeklyKPIReportNotification } from '../../services/reportingService';
 const ExecutiveReportGeneratorModal = React.lazy(() => import('../modals/ExecutiveReportGeneratorModal').then(m => ({ default: m.ExecutiveReportGeneratorModal })));
 
 export const SAPAnalyticsCockpit = () => {
-  const { materials, workOrders, assets, purchaseOrders, addToast } = useSAP();
+  const { materials = [], workOrders = [], assets = [], purchaseOrders = [], migoDocuments = [], addToast, dashboardCollapsedState = {}, toggleDashboardSection } = useSAP();
+
+  // Dynamic KPI Calculations from Real Database State
+  const closedWOs = workOrders.filter(w => w.status === 'TECO' || w.status === 'CLSD');
+  const pmComplianceRate = workOrders.length > 0
+    ? ((closedWOs.length / workOrders.length) * 100).toFixed(1)
+    : '0.0';
+
+  const totalAssetHours = assets.reduce((sum, a) => sum + (Number(a.hourmeter) || 0), 0);
+  const totalFailures = workOrders.filter(w => w.type === 'PM01' || w.priority === 'Muy Alta').length;
+  const mtbfHours = totalFailures > 0 ? Math.round(totalAssetHours / totalFailures) : (totalAssetHours > 0 ? Math.round(totalAssetHours / (assets.length || 1)) : 0);
+
+  const woWithActualHrs = workOrders.filter(w => (Number(w.actualHours) || 0) > 0);
+  const totalActualHrs = woWithActualHrs.reduce((sum, w) => sum + Number(w.actualHours), 0);
+  const mttrHours = woWithActualHrs.length > 0 ? (totalActualHrs / woWithActualHrs.length).toFixed(1) : '0.0';
+
+  const totalInventoryValuation = materials.reduce((sum, m) => sum + (Number(m.stock || 0) * Number(m.unitPrice || 0)), 0);
+  const totalMigoConsumptionValuation = migoDocuments
+    .filter(d => d.movementType === '261')
+    .reduce((sum, d) => sum + (Number(d.qty || 0) * 50), 0);
+  const inventoryTurnover = totalInventoryValuation > 0
+    ? (totalMigoConsumptionValuation / totalInventoryValuation).toFixed(1)
+    : '0.0';
   const [isReportModalOpen, setIsReportModalOpen] = React.useState(false);
   const [isConfigModalOpen, setIsConfigModalOpen] = React.useState(false);
   const [isSendingReport, setIsSendingReport] = React.useState(false);
@@ -160,30 +182,48 @@ export const SAPAnalyticsCockpit = () => {
 
 
       {/* KPI Cards Strip */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <div className="fiori-glass p-5 rounded-2xl border border-slate-200 dark:border-slate-800 space-y-1">
-          <div className="text-xs font-bold text-slate-500 uppercase">Cumplimiento PM Preventivo</div>
-          <div className="text-3xl font-black text-emerald-600 dark:text-emerald-400">92.4%</div>
-          <div className="text-[11px] text-slate-400">+3.2% vs mes anterior</div>
+      <div className="space-y-2">
+        <div className="flex items-center justify-between px-1">
+          <span className="text-xs font-bold text-slate-500 uppercase tracking-wider font-mono">Indicadores Clave de Desempeño (KPIs)</span>
+          {toggleDashboardSection && (
+            <button
+              onClick={() => toggleDashboardSection('analytics_kpis')}
+              className="p-1 rounded-lg bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-300 dark:hover:bg-slate-700 transition-colors flex items-center gap-1 text-xs font-semibold px-2 cursor-pointer"
+              title={dashboardCollapsedState['analytics_kpis'] ? 'Expandir KPIs' : 'Colapsar KPIs'}
+            >
+              <span>{dashboardCollapsedState['analytics_kpis'] ? 'Expandir' : 'Colapsar'}</span>
+              {dashboardCollapsedState['analytics_kpis'] ? <ChevronDown className="w-4 h-4" /> : <ChevronUp className="w-4 h-4" />}
+            </button>
+          )}
         </div>
 
-        <div className="fiori-glass p-5 rounded-2xl border border-slate-200 dark:border-slate-800 space-y-1">
-          <div className="text-xs font-bold text-slate-500 uppercase">MTBF (Tiempo Medio Entre Fallos)</div>
-          <div className="text-3xl font-black text-sap-blue">485 hrs</div>
-          <div className="text-[11px] text-slate-400">Meta Planta: 450 hrs</div>
-        </div>
+        {!dashboardCollapsedState['analytics_kpis'] && (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="fiori-glass p-5 rounded-2xl border border-slate-200 dark:border-slate-800 space-y-1">
+              <div className="text-xs font-bold text-slate-500 uppercase">Cumplimiento PM Preventivo</div>
+              <div className="text-3xl font-black text-emerald-600 dark:text-emerald-400">{pmComplianceRate}%</div>
+              <div className="text-[11px] text-slate-400">Calculado en tiempo real ({closedWOs.length}/{workOrders.length} TECO)</div>
+            </div>
 
-        <div className="fiori-glass p-5 rounded-2xl border border-slate-200 dark:border-slate-800 space-y-1">
-          <div className="text-xs font-bold text-slate-500 uppercase">MTTR (Tiempo Medio Reparación)</div>
-          <div className="text-3xl font-black text-amber-500">2.4 hrs</div>
-          <div className="text-[11px] text-slate-400">Reducción del 15%</div>
-        </div>
+            <div className="fiori-glass p-5 rounded-2xl border border-slate-200 dark:border-slate-800 space-y-1">
+              <div className="text-xs font-bold text-slate-500 uppercase">MTBF (Tiempo Medio Entre Fallos)</div>
+              <div className="text-3xl font-black text-sap-blue">{mtbfHours} hrs</div>
+              <div className="text-[11px] text-slate-400">Telemetría de activos ({assets.length} equipos)</div>
+            </div>
 
-        <div className="fiori-glass p-5 rounded-2xl border border-slate-200 dark:border-slate-800 space-y-1">
-          <div className="text-xs font-bold text-slate-500 uppercase">Rotación de Inventario</div>
-          <div className="text-3xl font-black text-purple-500">4.8 x</div>
-          <div className="text-[11px] text-slate-400">Eficiencia Óptima</div>
-        </div>
+            <div className="fiori-glass p-5 rounded-2xl border border-slate-200 dark:border-slate-800 space-y-1">
+              <div className="text-xs font-bold text-slate-500 uppercase">MTTR (Tiempo Medio Reparación)</div>
+              <div className="text-3xl font-black text-amber-500">{mttrHours} hrs</div>
+              <div className="text-[11px] text-slate-400">Promedio horas reales imputadas</div>
+            </div>
+
+            <div className="fiori-glass p-5 rounded-2xl border border-slate-200 dark:border-slate-800 space-y-1">
+              <div className="text-xs font-bold text-slate-500 uppercase">Rotación de Inventario</div>
+              <div className="text-3xl font-black text-purple-500">{inventoryTurnover} x</div>
+              <div className="text-[11px] text-slate-400">Consumo MIGO vs Valoración MM</div>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Charts Grid */}

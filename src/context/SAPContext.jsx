@@ -22,7 +22,6 @@ import {
   DEFAULT_PAYROLL_RUNS
 } from '../fixtures/sapInitialFixtures';
 import { validateChileanRUT } from '../utils/rutUtils';
-import { isSupabaseConfigured } from '../supabase/config';
 
 export const UIContext = createContext(null);
 export const MMContext = createContext(null);
@@ -61,6 +60,28 @@ export const SAPProvider = ({ children }) => {
   const [globalToasts, setGlobalToasts] = useState([]);
   const [tecoModalData, setTecoModalData] = useState(null);
 
+  // Persistencia de Secciones Colapsables del Dashboard en localStorage
+  const [dashboardCollapsedState, setDashboardCollapsedState] = useState(() => {
+    try {
+      const saved = localStorage.getItem('sap_dashboard_collapsed_sections');
+      return saved ? JSON.parse(saved) : {};
+    } catch (e) {
+      return {};
+    }
+  });
+
+  const toggleDashboardSection = useCallback((sectionKey) => {
+    setDashboardCollapsedState(prev => {
+      const updated = { ...prev, [sectionKey]: !prev[sectionKey] };
+      try {
+        localStorage.setItem('sap_dashboard_collapsed_sections', JSON.stringify(updated));
+      } catch (e) {
+        console.warn('Error al guardar estado de secciones:', e);
+      }
+      return updated;
+    });
+  }, []);
+
   // 🎨 Sincronización Síncrona del Tema Global (SAP Fiori Dark Stealth / Morning Horizon)
   useEffect(() => {
     try {
@@ -81,14 +102,18 @@ export const SAPProvider = ({ children }) => {
     setThemeMode(prev => (prev === 'dark' ? 'light' : 'dark'));
   }, []);
 
-  // Optimized Toast Helper with useCallback
-  const addToast = useCallback((message, type = 'info') => {
-    const id = Date.now() + Math.random();
-    setGlobalToasts(prev => [...prev.slice(-4), { id, message, type }]);
-    setTimeout(() => {
-      setGlobalToasts(prev => prev.filter(t => t.id !== id));
-    }, 4500);
+  // Optimized Toast Helper with useCallback (supports Undo actions)
+  const removeToast = useCallback((id) => {
+    setGlobalToasts(prev => prev.filter(t => t.id !== id));
   }, []);
+
+  const addToast = useCallback((message, type = 'info', action = null) => {
+    const id = Date.now() + Math.random();
+    setGlobalToasts(prev => [...prev.slice(-4), { id, message, type, action }]);
+    setTimeout(() => {
+      removeToast(id);
+    }, 6000);
+  }, [removeToast]);
 
   // Generador de Simulación Masiva en Vivo (Transacciones Instantáneas ERP)
   const injectMassiveActionSimulation = useCallback(() => {
@@ -289,7 +314,14 @@ export const SAPProvider = ({ children }) => {
           }));
         }
 
-        addToast(`✅ Documento MIGO ${newMigoDoc.documentId} contabilizado atómicamente en Cloud Firestore.`, 'success');
+        addToast(
+          `✅ Documento MIGO ${newMigoDoc.documentId} contabilizado (${movementType}).`,
+          'success',
+          {
+            label: 'Deshacer (Storno)',
+            onClick: () => stornoMIGOMovement(newMigoDoc.documentId)
+          }
+        );
         return true;
       }
     } catch (err) {
@@ -298,6 +330,36 @@ export const SAPProvider = ({ children }) => {
       return false;
     }
   }, [materials, addToast]);
+
+  // Storno / Anulación de Movimiento MIGO (Movimiento inverso 262 para 261, 102 para 101)
+  const stornoMIGOMovement = useCallback(async (documentId) => {
+    const doc = migoDocuments.find(d => d.documentId === documentId || d.id === documentId);
+    if (!doc) {
+      addToast(`Documento MIGO ${documentId} no encontrado para anulación.`, 'error');
+      return false;
+    }
+    if (doc.isStorno) {
+      addToast(`El documento MIGO ${documentId} ya fue anulado anteriormente.`, 'warning');
+      return false;
+    }
+
+    const inverseType = doc.movementType === '261' ? '262' : doc.movementType === '101' ? '102' : '312';
+    const success = await executeGoodsMovement({
+      movementType: inverseType,
+      materialId: doc.materialId,
+      qty: doc.qty,
+      storageLocation: doc.storageLocation,
+      refDocument: doc.refDocument,
+      notes: `STORNO / Anulación de documento original ${doc.documentId}`
+    });
+
+    if (success) {
+      setMigoDocuments(prev => prev.map(d => (d.documentId === documentId ? { ...d, isStorno: true, stornoRef: inverseType } : d)));
+      addToast(`🔄 Anulación MIGO Storno (${inverseType}) completada para ${documentId}. Stock devuelto.`, 'success');
+      return true;
+    }
+    return false;
+  }, [migoDocuments, executeGoodsMovement, addToast]);
 
 
   // Work Order Status Update & Workflow Audit Traceability
@@ -1113,9 +1175,12 @@ export const SAPProvider = ({ children }) => {
     setSearchTerm,
     globalToasts,
     addToast,
+    removeToast,
     tecoModalData,
-    setTecoModalData
-  }), [currentRole, themeMode, toggleTheme, activeTab, searchTerm, globalToasts, tecoModalData, addToast]);
+    setTecoModalData,
+    dashboardCollapsedState,
+    toggleDashboardSection
+  }), [currentRole, themeMode, toggleTheme, activeTab, searchTerm, globalToasts, tecoModalData, addToast, removeToast, dashboardCollapsedState, toggleDashboardSection]);
 
   const mmValue = useMemo(() => ({
     plants,
@@ -1126,10 +1191,11 @@ export const SAPProvider = ({ children }) => {
     purchaseOrders,
     migoDocuments,
     executeGoodsMovement,
+    stornoMIGOMovement,
     createMaterial,
     updateMaterial,
     deleteMaterial
-  }), [plants, activePlant, setActivePlant, createPlant, materials, purchaseOrders, migoDocuments, executeGoodsMovement, createMaterial, updateMaterial, deleteMaterial]);
+  }), [plants, activePlant, setActivePlant, createPlant, materials, purchaseOrders, migoDocuments, executeGoodsMovement, stornoMIGOMovement, createMaterial, updateMaterial, deleteMaterial]);
 
   const pmValue = useMemo(() => ({
     assets,
