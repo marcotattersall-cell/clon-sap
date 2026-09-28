@@ -38,7 +38,6 @@ export const HRMaster = ({ onOpenCreateEmployee, onOpenCreateAbsence }) => {
     absences = [],
     payrollRuns = [],
     plants = [],
-    reseedEmployees,
     deleteEmployee,
     updateAbsenceStatus,
     processPayrollRun,
@@ -227,17 +226,6 @@ export const HRMaster = ({ onOpenCreateEmployee, onOpenCreateAbsence }) => {
         </div>
 
         <div className="flex flex-wrap items-center gap-2.5 shrink-0">
-          <button
-            onClick={() => {
-              reseedEmployees();
-              resetAllFilters();
-            }}
-            className="bg-slate-100 hover:bg-slate-200 text-slate-800 dark:bg-slate-800 dark:hover:bg-slate-700 dark:text-slate-200 text-xs font-bold px-3.5 py-2.5 rounded-lg border border-slate-300 dark:border-slate-700 shadow-xs flex items-center space-x-1.5 transition-all"
-            title="Cargar catálogo completo de 12 colaboradores mineros e industriales"
-          >
-            <RefreshCw className="w-3.5 h-3.5" />
-            <span>Nómina Completa (12)</span>
-          </button>
           <button
             onClick={onOpenCreateEmployee}
             className="bg-sky-700 hover:bg-sky-800 text-white text-xs font-bold px-4 py-2.5 rounded-lg shadow-xs flex items-center space-x-2 transition-all cursor-pointer"
