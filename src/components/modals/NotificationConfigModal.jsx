@@ -11,8 +11,11 @@ import {
   Truck,
   Users,
   Save,
-  HelpCircle
+  HelpCircle,
+  Wrench,
+  Zap
 } from 'lucide-react';
+import { useSAP } from '../../context/SAPContext';
 import {
   getNotificationConfig,
   saveNotificationConfig,
@@ -20,6 +23,7 @@ import {
 } from '../../services/expirationNotificationService';
 
 export const NotificationConfigModal = ({ isOpen, onClose, addToast }) => {
+  const { autoCreateIoTWorkOrders, setAutoCreateIoTWorkOrders } = useSAP();
   const [loading, setLoading] = useState(false);
   const [testingWebhook, setTestingWebhook] = useState(false);
 
@@ -241,7 +245,7 @@ export const NotificationConfigModal = ({ isOpen, onClose, addToast }) => {
                 />
                 <div className="text-xs">
                   <div className="font-extrabold text-rose-900">Notificar Documentos Vencidos (Críticos)</div>
-                  <div className="text-[11px] text-rose-700">Envío prioritario cuando existan licencias, SOAP o exámene vencidos.</div>
+                  <div className="text-[11px] text-rose-700">Envío prioritario cuando existan licencias, SOAP o exámenes vencidos.</div>
                 </div>
               </label>
 
@@ -257,6 +261,44 @@ export const NotificationConfigModal = ({ isOpen, onClose, addToast }) => {
                   <div className="text-[11px] text-amber-700">Aviso preventivo para gestión de renovación a tiempo.</div>
                 </div>
               </label>
+            </div>
+
+            {/* IoT Auto-Trigger Work Order Toggle */}
+            <div className="p-4 bg-sky-50/70 border border-sky-200 rounded-2xl flex items-center justify-between gap-4">
+              <div className="flex items-start space-x-3">
+                <Zap className="w-5 h-5 text-sky-600 shrink-0 mt-0.5" />
+                <div className="text-xs">
+                  <div className="font-extrabold text-sky-900">⚡ Creación Autónoma de OTs por Telemetría IoT</div>
+                  <div className="text-[11px] text-sky-700 mt-0.5">
+                    {autoCreateIoTWorkOrders 
+                      ? 'ACTIVADO: Las alertas térmicas, de vibración u horómetros crearán automáticamente la Orden PM02.' 
+                      : 'DESACTIVADO: Se actualizarán horómetros y salud de la flota sin generar OTs de mantenimiento.'}
+                  </div>
+                </div>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => {
+                  const newState = !autoCreateIoTWorkOrders;
+                  setAutoCreateIoTWorkOrders(newState);
+                  if (addToast) {
+                    addToast(
+                      newState 
+                        ? '⚡ Creación autónoma de OTs por IoT ACTIVADA.' 
+                        : '⏸️ Creación autónoma de OTs por IoT DESACTIVADA. La telemetría solo actualizará horómetros sin crear OTs.', 
+                      newState ? 'success' : 'info'
+                    );
+                  }
+                }}
+                className={`px-3.5 py-1.5 rounded-xl font-mono text-xs font-bold transition-all shadow-xs shrink-0 cursor-pointer ${
+                  autoCreateIoTWorkOrders 
+                    ? 'bg-sky-600 hover:bg-sky-700 text-white' 
+                    : 'bg-slate-300 hover:bg-slate-400 text-slate-800'
+                }`}
+              >
+                {autoCreateIoTWorkOrders ? 'ON (Activado)' : 'OFF (Desactivado)'}
+              </button>
             </div>
           </div>
 

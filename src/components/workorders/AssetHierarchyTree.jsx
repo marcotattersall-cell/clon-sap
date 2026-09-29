@@ -29,7 +29,7 @@ import { getTelemetryHistory, processIoTTelemetry } from '../../services/iotInge
 import { predictAssetRUL } from '../../services/pdmPredictiveMaintenanceService';
 
 export const AssetHierarchyTree = () => {
-  const { assets, workOrders, addToast } = useSAP();
+  const { assets, workOrders, autoCreateIoTWorkOrders, addToast } = useSAP();
   const [selectedAsset, setSelectedAsset] = useState(assets[0] || null);
   const [isCreateAssetOpen, setIsCreateAssetOpen] = useState(false);
   const [editingAsset, setEditingAsset] = useState(null);
@@ -66,7 +66,7 @@ export const AssetHierarchyTree = () => {
         healthScore: randomTemp > 102 || randomVib > 6.5 ? 62 : 96
       },
       assets,
-      true
+      autoCreateIoTWorkOrders ?? true
     );
 
     addToast(res.message, res.triggeredAlert ? 'warning' : 'success');
@@ -93,7 +93,7 @@ export const AssetHierarchyTree = () => {
           healthScore: randomTemp > 102 || randomVib > 6.5 ? 60 : 95
         },
         assets,
-        true
+        autoCreateIoTWorkOrders ?? true
       );
 
       if (res.triggeredAlert) alertCount++;

@@ -39,6 +39,7 @@ import {
 import { formatDateDDMMYYYY } from '../../utils/dateUtils';
 import { getStaleWorkOrdersList, triggerStaleWorkOrderAlerts, isWorkOrderStale } from '../../services/workOrderNotificationService';
 import { NotificationConfigModal } from '../modals/NotificationConfigModal';
+import { MassDeleteValidationModal } from '../modals/MassDeleteValidationModal';
 import { WorkOrderGanttChart } from './WorkOrderGanttChart';
 
 export const WorkOrderMaster = ({ onOpenCreateWO, onOpenMIGOForWO }) => {
@@ -51,12 +52,20 @@ export const WorkOrderMaster = ({ onOpenCreateWO, onOpenMIGOForWO }) => {
     updateWorkOrderStatus,
     issueComponentToWorkOrder,
     deleteWorkOrder,
+    purgeOrphanWorkOrders,
+    bulkDeleteWorkOrders,
+    deleteAllWorkOrders,
     addToast
   } = useSAP();
 
   const [viewMode, setViewMode] = useState('KANBAN'); // KANBAN or TABLE
   const [selectedStatusFilter, setSelectedStatusFilter] = useState('ALL');
   const [selectedPriorityFilter, setSelectedPriorityFilter] = useState('ALL');
+  const [selectedWOIds, setSelectedWOIds] = useState([]);
+
+  // Mass Delete Validation Modal State
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [deleteModalConfig, setDeleteModalConfig] = useState({ isSelectionOnly: false });
 
   // Stale Work Orders Notifications State
   const [isConfigModalOpen, setIsConfigModalOpen] = useState(false);
@@ -223,6 +232,41 @@ export const WorkOrderMaster = ({ onOpenCreateWO, onOpenMIGOForWO }) => {
           >
             <RefreshCw className={`w-3.5 h-3.5 ${isAuditingCloudFn ? 'animate-spin' : ''}`} />
             <span>⚡ Auditoría Cloud Function</span>
+          </button>
+
+          <button
+            onClick={() => {
+              if (currentRole === 'FIELD_MECHANIC') {
+                addToast('🚫 [RBAC-ERR] Acceso Denegado: Su rol (Mecánico de Terreno) no posee privilegios para ejecutar limpiezas masivas.', 'error');
+                return;
+              }
+              if (window.confirm('¿Está seguro de eliminar todas las Órdenes de Trabajo que no tienen un equipo/vehículo registrado en la Flota?')) {
+                purgeOrphanWorkOrders();
+                setSelectedWOIds([]);
+              }
+            }}
+            className="bg-amber-50 hover:bg-amber-100 text-amber-900 dark:bg-amber-950/60 dark:hover:bg-amber-900/80 dark:text-amber-300 border border-amber-300 dark:border-amber-800 text-xs font-bold px-3.5 py-2 rounded-xl shadow-xs flex items-center space-x-1.5 transition-all cursor-pointer"
+            title="Eliminar masivamente todas las OTs creadas sin equipo real en la base de datos de Flota"
+          >
+            <Trash2 className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400" />
+            <span>🧹 Limpiar OTs Huérfanas (Sin Flota)</span>
+          </button>
+
+          <button
+            onClick={() => {
+              if (currentRole === 'FIELD_MECHANIC') {
+                addToast('🚫 [RBAC-ERR] Acceso Denegado: Su rol (Mecánico de Terreno) no posee privilegios de borrado masivo.', 'error');
+                return;
+              }
+              setDeleteModalConfig({ isSelectionOnly: false });
+              setIsDeleteModalOpen(true);
+            }}
+            disabled={workOrders.length === 0}
+            className="bg-rose-50 hover:bg-rose-100 text-rose-800 dark:bg-rose-950/60 dark:hover:bg-rose-900/80 dark:text-rose-300 border border-rose-300 dark:border-rose-800 text-xs font-bold px-3.5 py-2 rounded-xl shadow-xs flex items-center space-x-1.5 transition-all cursor-pointer disabled:opacity-40"
+            title="Eliminar masivamente todas las Órdenes de Trabajo del sistema previa validación"
+          >
+            <Trash2 className="w-3.5 h-3.5 text-rose-600 dark:text-rose-400" />
+            <span>💥 Eliminación Masiva Total ({workOrders.length})</span>
           </button>
 
           <button
@@ -545,11 +589,57 @@ export const WorkOrderMaster = ({ onOpenCreateWO, onOpenMIGOForWO }) => {
 
       {/* ----------------- VIEW MODE 2: LISTA TABULAR VIRTUALIZADA ----------------- */}
       {viewMode === 'TABLE' && (
-        <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 overflow-hidden shadow-xs">
+        <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 overflow-hidden shadow-xs relative">
+          {selectedWOIds.length > 0 && (
+            <div className="bg-amber-500 text-white px-4 py-2.5 flex items-center justify-between shadow-md text-xs font-bold animate-fadeIn">
+              <div className="flex items-center space-x-2">
+                <CheckSquare className="w-4 h-4" />
+                <span>{selectedWOIds.length} Órdenes de Trabajo seleccionadas para acción en lote</span>
+              </div>
+              <div className="flex items-center space-x-2">
+                <button
+                  onClick={() => setSelectedWOIds([])}
+                  className="bg-amber-600 hover:bg-amber-700 px-2.5 py-1 rounded text-white text-[11px] font-bold cursor-pointer"
+                >
+                  Cancelar
+                </button>
+                <button
+                  onClick={() => {
+                    if (currentRole === 'FIELD_MECHANIC') {
+                      addToast('🚫 [RBAC-ERR] Acceso Denegado: Su rol (Mecánico de Terreno) no posee privilegios de borrado masivo.', 'error');
+                      return;
+                    }
+                    setDeleteModalConfig({ isSelectionOnly: true });
+                    setIsDeleteModalOpen(true);
+                  }}
+                  className="bg-rose-700 hover:bg-rose-800 px-3 py-1 rounded text-white text-[11px] font-bold flex items-center space-x-1 cursor-pointer shadow-xs"
+                >
+                  <Trash2 className="w-3.5 h-3.5" />
+                  <span>Eliminar ({selectedWOIds.length}) Seleccionadas</span>
+                </button>
+              </div>
+            </div>
+          )}
+
           <div ref={parentRef} className="overflow-auto max-h-[600px] custom-scrollbar">
             <table className="w-full text-left text-xs divide-y divide-slate-200">
-              <thead className="sticky top-0 z-10 bg-slate-100 text-slate-700 font-bold uppercase tracking-wider shadow-xs">
+              <thead className="sticky top-0 z-10 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-bold uppercase tracking-wider shadow-xs">
                 <tr>
+                  <th className="p-3.5 w-10 text-center">
+                    <input
+                      type="checkbox"
+                      checked={filteredWorkOrders.length > 0 && selectedWOIds.length === filteredWorkOrders.length}
+                      onChange={(e) => {
+                        if (e.target.checked) {
+                          setSelectedWOIds(filteredWorkOrders.map(w => w.id));
+                        } else {
+                          setSelectedWOIds([]);
+                        }
+                      }}
+                      className="rounded border-slate-300 text-sap-blue focus:ring-sap-blue cursor-pointer"
+                      title="Seleccionar todas las OTs filtradas"
+                    />
+                  </th>
                   <th className="p-3.5">Folio Orden</th>
                   <th className="p-3.5">Título / Descripción</th>
                   <th className="p-3.5">Equipo Asignado</th>
@@ -563,7 +653,7 @@ export const WorkOrderMaster = ({ onOpenCreateWO, onOpenMIGOForWO }) => {
               <tbody className="divide-y divide-slate-100 font-medium text-slate-800">
                 {paddingTop > 0 && (
                   <tr>
-                    <td colSpan={8} style={{ height: `${paddingTop}px` }} />
+                    <td colSpan={9} style={{ height: `${paddingTop}px` }} />
                   </tr>
                 )}
                 {virtualItems.map(virtualRow => {
@@ -571,9 +661,24 @@ export const WorkOrderMaster = ({ onOpenCreateWO, onOpenMIGOForWO }) => {
                   if (!wo) return null;
                   const matchingAsset = assets.find(a => a.id === wo.equipmentId);
                   const equipmentName = matchingAsset ? matchingAsset.name : wo.equipmentId;
+                  const isSelected = selectedWOIds.includes(wo.id);
 
                   return (
-                    <tr key={wo.id} className="hover:bg-slate-50 transition-colors">
+                    <tr key={wo.id} className={`${isSelected ? 'bg-amber-50/80 dark:bg-amber-950/40' : 'hover:bg-slate-50 dark:hover:bg-slate-850'} transition-colors`}>
+                      <td className="p-3.5 text-center">
+                        <input
+                          type="checkbox"
+                          checked={isSelected}
+                          onChange={(e) => {
+                            if (e.target.checked) {
+                              setSelectedWOIds(prev => [...prev, wo.id]);
+                            } else {
+                              setSelectedWOIds(prev => prev.filter(id => id !== wo.id));
+                            }
+                          }}
+                          className="rounded border-slate-300 text-sap-blue focus:ring-sap-blue cursor-pointer"
+                        />
+                      </td>
                       <td className="p-3.5 font-mono font-bold text-sap-blue">
                         {wo.id}
                       </td>
@@ -915,6 +1020,35 @@ export const WorkOrderMaster = ({ onOpenCreateWO, onOpenMIGOForWO }) => {
         onClose={() => setIsConfigModalOpen(false)}
         addToast={addToast}
       />
+
+      {(() => {
+        const targetList = deleteModalConfig.isSelectionOnly 
+          ? workOrders.filter(w => selectedWOIds.includes(w.id))
+          : workOrders;
+        const crteCount = targetList.filter(w => !['REL', 'PCNF', 'TECO', 'CLSD', 'COMPLETADA'].includes(w.status)).length;
+        const protectedCount = targetList.filter(w => ['REL', 'PCNF', 'TECO', 'CLSD', 'COMPLETADA'].includes(w.status)).length;
+
+        return (
+          <MassDeleteValidationModal
+            isOpen={isDeleteModalOpen}
+            onClose={() => setIsDeleteModalOpen(false)}
+            totalOrdersCount={workOrders.length}
+            crteCount={crteCount}
+            protectedCount={protectedCount}
+            isSelectionOnly={deleteModalConfig.isSelectionOnly}
+            selectedCount={selectedWOIds.length}
+            onConfirm={({ forceProtected }) => {
+              if (deleteModalConfig.isSelectionOnly) {
+                bulkDeleteWorkOrders(selectedWOIds, forceProtected);
+                setSelectedWOIds([]);
+              } else {
+                deleteAllWorkOrders(forceProtected);
+                setSelectedWOIds([]);
+              }
+            }}
+          />
+        );
+      })()}
     </div>
   );
 };

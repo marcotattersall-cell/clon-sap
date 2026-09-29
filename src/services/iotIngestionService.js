@@ -36,10 +36,16 @@ export const processIoTTelemetryBatch = async (telemetryBatch = [], existingAsse
   const workOrdersToCreate = [];
 
   for (const telemetryPayload of telemetryBatch) {
-    const { equipmentId, hourmeter, odometer, healthScore, engineTemp, vibrationRms } = telemetryPayload;
-    const baseAsset = lastProcessedPerAsset.get(equipmentId) || existingAssets.find(a => a.id === equipmentId);
+    const { equipmentId, hourmeter, odometer, healthScore, engineTemp, vibrationRms } = telemetryPayload || {};
+    const baseAsset = lastProcessedPerAsset.get(equipmentId) || (existingAssets || []).find(a => 
+      a.id === equipmentId || a.plate === equipmentId || a.name === equipmentId
+    );
 
-    if (!baseAsset) continue;
+    // ⛔ REGLA SAP IW31-E001: No pueden crearse automáticamente OTs sin flota registrada en el Maestro
+    if (!baseAsset) {
+      console.warn(`🚫 [IW31-E001] Ingesta/OT omitida: El equipo '${equipmentId}' no existe en la Flota de activos.`);
+      continue;
+    }
 
     const newHourmeter = hourmeter !== undefined ? Math.max(Number(baseAsset.hourmeter || 0), Number(hourmeter)) : baseAsset.hourmeter;
     const newOdometer = odometer !== undefined ? Math.max(Number(baseAsset.odometer || 0), Number(odometer)) : baseAsset.odometer;

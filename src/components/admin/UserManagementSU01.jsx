@@ -189,79 +189,17 @@ export const UserManagementSU01 = () => {
   // Estado Local de Clientes Corporativos (Tenants Multi-Tenant Isolation)
   const [corporateClientsList, setCorporateClientsList] = useState([]);
 
-  // Estado Local de Usuarios para la Transacción SU01
-  const [usersList, setUsersList] = useState([
-    {
-      id: 'USR-1001',
-      uid: 'uid-marco-admin',
-      name: 'Marco Vidal Tattersall',
-      email: 'marco.tattersall@gmail.com',
-      role: 'ADMINISTRATOR',
-      roleName: 'Administrador Universal (SUPERUSER)',
-      tenantId: 'tenant_demo',
-      tenantName: 'Demo Axomira Enterprise',
-      plant: '0001 (Planta Central Santiago)',
-      status: 'Activo',
-      lastLogin: '2026-08-23 13:00',
-      isUniversalAdmin: true
-    },
-    {
-      id: 'USR-1002',
-      uid: 'uid-jorge-silva',
-      name: 'Jorge Silva San Martín',
-      email: 'jorge.silva@codelco.cl',
-      role: 'MAINTENANCE_MGR',
-      roleName: 'Jefe de Mantenimiento (PM)',
-      tenantId: 'tenant_codelco',
-      tenantName: 'CODELCO Chile',
-      plant: '0002 (Centro Logístico Antofagasta)',
-      status: 'Activo',
-      lastLogin: '2026-08-23 11:45',
-      isUniversalAdmin: false
-    },
-    {
-      id: 'USR-1003',
-      uid: 'uid-carlos-mendoza',
-      name: 'Carlos Mendoza Vidal',
-      email: 'carlos.mendoza@bhp.com',
-      role: 'WAREHOUSE_KEEPER',
-      roleName: 'Encargado de Almacén (MM)',
-      tenantId: 'tenant_bhp',
-      tenantName: 'BHP Billiton',
-      plant: '0001 (Planta Central)',
-      status: 'Activo',
-      lastLogin: '2026-08-22 16:30',
-      isUniversalAdmin: false
-    },
-    {
-      id: 'USR-1004',
-      uid: 'uid-luis-paredes',
-      name: 'Luis Paredes Ugarte',
-      email: 'luis.paredes@pelambres.cl',
-      role: 'FIELD_MECHANIC',
-      roleName: 'Mecánico Especialista Terreno',
-      tenantId: 'tenant_antofagasta_minerals',
-      tenantName: 'Antofagasta Minerals',
-      plant: '0003 (Planta Concepción)',
-      status: 'Bloqueado',
-      lastLogin: '2026-08-10 09:15',
-      isUniversalAdmin: false
-    },
-    {
-      id: 'USR-1005',
-      uid: 'uid-patricia-morales',
-      name: 'Patricia Morales Soto',
-      email: 'patricia.morales@collahuasi.cl',
-      role: 'MAINTENANCE_MGR',
-      roleName: 'Supervisora de Operaciones PM',
-      tenantId: 'tenant_collahuasi',
-      tenantName: 'Minera Collahuasi',
-      plant: '0001 (Planta Central)',
-      status: 'Activo',
-      lastLogin: '2026-08-23 10:20',
-      isUniversalAdmin: false
-    }
-  ]);
+  // Estado Local de Usuarios para la Transacción SU01 (Leído dinámicamente desde la BD)
+  const [usersList, setUsersList] = useState([]);
+
+  useEffect(() => {
+    const unsub = subscribeCollection('users', (items) => {
+      if (Array.isArray(items)) {
+        setUsersList(items);
+      }
+    });
+    return () => unsub && unsub();
+  }, []);
 
   // Matriz de Permisos Dinámica e Configurable por el Super Admin
   const [matrixState, setMatrixState] = useState({ ...RBAC_PERMISSIONS });

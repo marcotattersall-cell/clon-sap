@@ -60,6 +60,23 @@ export const SAPProvider = ({ children }) => {
   const [globalToasts, setGlobalToasts] = useState([]);
   const [tecoModalData, setTecoModalData] = useState(null);
 
+  // Global Toggle: Auto-create Work Orders on IoT sensor telemetry burst
+  const [autoCreateIoTWorkOrders, setAutoCreateIoTWorkOrdersState] = useState(() => {
+    try {
+      const saved = localStorage.getItem('sap_auto_create_iot_wo');
+      return saved !== null ? JSON.parse(saved) : true;
+    } catch (e) {
+      return true;
+    }
+  });
+
+  const setAutoCreateIoTWorkOrders = useCallback((enabled) => {
+    setAutoCreateIoTWorkOrdersState(enabled);
+    try {
+      localStorage.setItem('sap_auto_create_iot_wo', JSON.stringify(enabled));
+    } catch (e) {}
+  }, []);
+
   // Persistencia de Secciones Colapsables del Dashboard en localStorage
   const [dashboardCollapsedState, setDashboardCollapsedState] = useState(() => {
     try {
@@ -573,6 +590,123 @@ export const SAPProvider = ({ children }) => {
     return true;
   }, [workOrders, addToast]);
 
+  // Purge Orphan Work Orders (WOs with equipment not present in Assets / Fleet)
+  const purgeOrphanWorkOrders = useCallback(() => {
+    const validAssetIds = new Set((assets || []).map(a => (a.id || '').toLowerCase().trim()));
+    const validPlates = new Set((assets || []).map(a => (a.plate || '').toLowerCase().trim()));
+    const validNames = new Set((assets || []).map(a => (a.name || '').toLowerCase().trim()));
+
+    const isAssetRegistered = (eqId) => {
+      if (!eqId) return false;
+      const clean = String(eqId).toLowerCase().trim();
+      if (validAssetIds.has(clean) || validPlates.has(clean) || validNames.has(clean)) return true;
+      return (assets || []).some(a => {
+        const idClean = (a.id || '').toLowerCase().trim();
+        return idClean && (clean.includes(idClean) || idClean.includes(clean));
+      });
+    };
+
+    const orphanOrders = (workOrders || []).filter(w => !isAssetRegistered(w.equipmentId));
+    if (orphanOrders.length === 0) {
+      addToast('✅ No se encontraron Órdenes huérfanas sin equipo en Flota.', 'info');
+      return 0;
+    }
+
+    const orphanIds = new Set(orphanOrders.map(w => w.id));
+    setWorkOrders(prev => prev.filter(w => !orphanIds.has(w.id)));
+
+    orphanOrders.forEach(w => {
+      deleteDocument('workOrders', w.id);
+    });
+
+    recordAuditLog({
+      entityType: 'WORK_ORDER',
+      action: 'PURGE_ORPHAN_WORK_ORDERS',
+      details: `Purga masiva de ${orphanOrders.length} Órdenes de Trabajo huérfanas (sin flota creada).`,
+      user: 'Especialista PM / Flota'
+    });
+
+    addToast(`🧹 ${orphanOrders.length} Órdenes huérfanas (sin equipo en Flota) eliminadas con éxito.`, 'success');
+    return orphanOrders.length;
+  }, [assets, workOrders, addToast]);
+
+  // Bulk Delete Work Orders by ID list with SAP Status Validation (protects REL, PCNF, TECO)
+  const bulkDeleteWorkOrders = useCallback((woIds = [], allowProtected = false) => {
+    if (!Array.isArray(woIds) || woIds.length === 0) return { success: false, deletedCount: 0, protectedCount: 0 };
+
+    const targetOrders = workOrders.filter(w => woIds.includes(w.id));
+    
+    // Categorize orders based on SAP PM protection rules
+    const protectedOrders = targetOrders.filter(w => ['REL', 'PCNF', 'TECO', 'CLSD', 'COMPLETADA'].includes(w.status));
+    const deletableOrders = allowProtected ? targetOrders : targetOrders.filter(w => !['REL', 'PCNF', 'TECO', 'CLSD', 'COMPLETADA'].includes(w.status));
+
+    if (deletableOrders.length === 0) {
+      addToast(`🚫 [SAP-VAL-001] Eliminación masiva bloqueada: Las ${protectedOrders.length} OTs seleccionadas están Liberadas (REL), En Proceso (PCNF) o TECO con recursos imputados.`, 'error');
+      return { success: false, deletedCount: 0, protectedCount: protectedOrders.length };
+    }
+
+    const deletableIds = new Set(deletableOrders.map(w => w.id));
+    setWorkOrders(prev => prev.filter(w => !deletableIds.has(w.id)));
+
+    deletableOrders.forEach(w => {
+      deleteDocument('workOrders', w.id);
+    });
+
+    recordAuditLog({
+      entityType: 'WORK_ORDER',
+      action: 'BULK_DELETE_WORK_ORDERS',
+      details: `Eliminación masiva validada: ${deletableOrders.length} OTs eliminadas. ${protectedOrders.length} OTs protegidas por estado.`,
+      user: 'Especialista PM'
+    });
+
+    if (protectedOrders.length > 0 && !allowProtected) {
+      addToast(`⚠️ Eliminación parcial: ${deletableOrders.length} OTs (CRTE) borradas. 🛡️ ${protectedOrders.length} OTs (REL/TECO) protegidas por norma SAP.`, 'warning');
+    } else {
+      addToast(`🗑️ Eliminación masiva completada: ${deletableOrders.length} Órdenes eliminadas del sistema.`, 'success');
+    }
+
+    return { success: true, deletedCount: deletableOrders.length, protectedCount: protectedOrders.length };
+  }, [workOrders, addToast]);
+
+  // Delete ALL Work Orders (Mass Purge with Status Validation)
+  const deleteAllWorkOrders = useCallback((allowProtected = false) => {
+    const totalCount = workOrders.length;
+    if (totalCount === 0) {
+      addToast('ℹ️ No hay Órdenes de Trabajo para eliminar.', 'info');
+      return { success: false, deletedCount: 0, protectedCount: 0 };
+    }
+
+    const protectedOrders = workOrders.filter(w => ['REL', 'PCNF', 'TECO', 'CLSD', 'COMPLETADA'].includes(w.status));
+    const deletableOrders = allowProtected ? workOrders : workOrders.filter(w => !['REL', 'PCNF', 'TECO', 'CLSD', 'COMPLETADA'].includes(w.status));
+
+    if (deletableOrders.length === 0) {
+      addToast(`🚫 [SAP-VAL-001] Borrado masivo bloqueado: Todas las OTs están en ejecución (REL/PCNF) o Cierre Técnico (TECO).`, 'error');
+      return { success: false, deletedCount: 0, protectedCount: protectedOrders.length };
+    }
+
+    const deletableIds = new Set(deletableOrders.map(w => w.id));
+    setWorkOrders(prev => prev.filter(w => !deletableIds.has(w.id)));
+
+    deletableOrders.forEach(w => {
+      deleteDocument('workOrders', w.id);
+    });
+
+    recordAuditLog({
+      entityType: 'WORK_ORDER',
+      action: 'DELETE_ALL_WORK_ORDERS',
+      details: `Borrado masivo total validado: ${deletableOrders.length} OTs eliminadas. ${protectedOrders.length} OTs en ejecución/TECO protegidas.`,
+      user: 'Administrador PM'
+    });
+
+    if (protectedOrders.length > 0 && !allowProtected) {
+      addToast(`⚠️ Borrado total validado: ${deletableOrders.length} OTs borradas. 🛡️ ${protectedOrders.length} OTs en ejecución/TECO protegidas automáticamente.`, 'warning');
+    } else {
+      addToast(`💥 Borrado masivo completado: ${deletableOrders.length} Órdenes eliminadas con éxito.`, 'success');
+    }
+
+    return { success: true, deletedCount: deletableOrders.length, protectedCount: protectedOrders.length };
+  }, [workOrders, addToast]);
+
   // Add new Material
   const createMaterial = useCallback((newMat) => {
     const id = newMat.id || `MAT-${Math.floor(1000 + Math.random() * 9000)}`;
@@ -1047,9 +1181,9 @@ export const SAPProvider = ({ children }) => {
     const updatedEmp = {
       ...emp,
       ...newDates,
-      medicalExamExpiry: newDates.medicalExamExpiry || emp.medicalExamExpiry,
-      accreditationExpiry: newDates.accreditationExpiry || emp.accreditationExpiry,
-      safetyCourseExpiry: newDates.safetyCourseExpiry || emp.safetyCourseExpiry,
+      medicalExamExpiry: newDates.medicalExamExpiry !== undefined ? newDates.medicalExamExpiry : (emp.medicalExamExpiry || ''),
+      accreditationExpiry: newDates.accreditationExpiry !== undefined ? newDates.accreditationExpiry : (emp.accreditationExpiry || ''),
+      safetyCourseExpiry: newDates.safetyCourseExpiry !== undefined ? newDates.safetyCourseExpiry : (emp.safetyCourseExpiry || ''),
       faenasAccredited: updatedFaenas
     };
 
@@ -1073,10 +1207,10 @@ export const SAPProvider = ({ children }) => {
 
     const updatedAsset = {
       ...asset,
-      accreditationExpiry: expirationData.accreditationExpiry || asset.accreditationExpiry || '',
-      circulationPermitExpiry: expirationData.circulationPermitExpiry || asset.circulationPermitExpiry || '',
-      soapExpiry: expirationData.soapExpiry || asset.soapExpiry || '',
-      technicalReviewExpiry: expirationData.technicalReviewExpiry || asset.technicalReviewExpiry || '',
+      accreditationExpiry: expirationData.accreditationExpiry !== undefined ? expirationData.accreditationExpiry : (asset.accreditationExpiry || ''),
+      circulationPermitExpiry: expirationData.circulationPermitExpiry !== undefined ? expirationData.circulationPermitExpiry : (asset.circulationPermitExpiry || ''),
+      soapExpiry: expirationData.soapExpiry !== undefined ? expirationData.soapExpiry : (asset.soapExpiry || ''),
+      technicalReviewExpiry: expirationData.technicalReviewExpiry !== undefined ? expirationData.technicalReviewExpiry : (asset.technicalReviewExpiry || ''),
       customExpirations: Array.isArray(expirationData.customExpirations) ? expirationData.customExpirations : (asset.customExpirations || [])
     };
 
@@ -1232,8 +1366,13 @@ export const SAPProvider = ({ children }) => {
     deleteAsset,
     deleteNotification,
     createNotification,
-    convertNotificationToWO
-  }), [assets, createAsset, updateAsset, notifications, workOrders, updateWorkOrderStatus, issueComponentToWorkOrder, createWorkOrder, deleteWorkOrder, deleteAsset, deleteNotification, createNotification, convertNotificationToWO]);
+    convertNotificationToWO,
+    purgeOrphanWorkOrders,
+    bulkDeleteWorkOrders,
+    deleteAllWorkOrders,
+    autoCreateIoTWorkOrders,
+    setAutoCreateIoTWorkOrders
+  }), [assets, createAsset, updateAsset, notifications, workOrders, updateWorkOrderStatus, issueComponentToWorkOrder, createWorkOrder, deleteWorkOrder, deleteAsset, deleteNotification, createNotification, convertNotificationToWO, purgeOrphanWorkOrders, bulkDeleteWorkOrders, deleteAllWorkOrders, autoCreateIoTWorkOrders, setAutoCreateIoTWorkOrders]);
 
   const hcmValue = useMemo(() => ({
     employees,
