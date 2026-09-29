@@ -19,15 +19,19 @@ import {
   Truck,
   Sparkles,
   Trash2,
-  Edit3
+  Edit3,
+  ShoppingCart,
+  QrCode
 } from 'lucide-react';
 import { forecastCatalogDemand } from '../../services/materialDemandForecastingService';
+import { QRScannerModal } from '../modals/QRScannerModal';
 
 export const MaterialMasterTable = ({ onOpenCreateMaterial, onOpenMIGOForMaterial }) => {
-  const { materials, searchTerm, setSearchTerm, addToast, deleteMaterial, updateMaterial } = useSAP();
+  const { materials, searchTerm, setSearchTerm, addToast, deleteMaterial, updateMaterial, createSolped } = useSAP();
   const [selectedType, setSelectedType] = useState('ALL'); // ALL, SPARE, RAW, FIN
   const [selectedLocation, setSelectedLocation] = useState('ALL'); // ALL, 0001, 0002, 0003
   const [onlyLowStock, setOnlyLowStock] = useState(false);
+  const [isQRScannerOpen, setIsQRScannerOpen] = useState(false);
 
   const parentRef = useRef(null);
 
@@ -77,7 +81,15 @@ export const MaterialMasterTable = ({ onOpenCreateMaterial, onOpenMIGOForMateria
           </p>
         </div>
 
-        <div className="flex items-center space-x-3">
+        <div className="flex items-center space-x-2.5">
+          <button
+            onClick={() => setIsQRScannerOpen(true)}
+            className="bg-slate-100 hover:bg-slate-200 text-slate-800 dark:bg-slate-800 dark:hover:bg-slate-700 dark:text-slate-200 text-xs font-bold px-3.5 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 shadow-xs flex items-center space-x-2 transition-all cursor-pointer"
+            title="Escanear QR / Código de Barras de Repuesto"
+          >
+            <QrCode className="w-4 h-4 text-sap-blue" />
+            <span>Escáner QR / Barcode</span>
+          </button>
           <button
             onClick={onOpenCreateMaterial}
             className="bg-sap-blue hover:bg-sap-blue-hover text-white text-xs font-bold px-4 py-2.5 rounded-xl shadow flex items-center space-x-2 transition-all cursor-pointer"
@@ -359,6 +371,16 @@ export const MaterialMasterTable = ({ onOpenCreateMaterial, onOpenMIGOForMateria
                     </td>
                     <td className="text-right">
                       <div className="flex items-center justify-end space-x-1.5">
+                        {isCriticalStock && (
+                          <button
+                            onClick={() => createSolped(mat.id, 50)}
+                            className="bg-amber-500/10 hover:bg-amber-600 text-amber-700 hover:text-white dark:text-amber-300 text-xs font-bold px-2 py-1 rounded-lg border border-amber-500/30 transition-all font-mono cursor-pointer flex items-center space-x-1"
+                            title="Generar Solicitud de Pedido automatizada (#mm-solped)"
+                          >
+                            <ShoppingCart className="w-3 h-3" />
+                            <span>#mm-solped</span>
+                          </button>
+                        )}
                         <button
                           onClick={() => onOpenMIGOForMaterial(mat.id)}
                           className="bg-sky-500/10 hover:bg-sky-600 text-sky-700 hover:text-white dark:text-sky-300 text-xs font-bold px-2 py-1 rounded-lg border border-sky-500/30 transition-all font-mono cursor-pointer"
@@ -414,6 +436,17 @@ export const MaterialMasterTable = ({ onOpenCreateMaterial, onOpenMIGOForMateria
           </table>
         </div>
       </div>
+
+      {/* Modal de Escáner QR / Barcode */}
+      <QRScannerModal
+        isOpen={isQRScannerOpen}
+        onClose={() => setIsQRScannerOpen(false)}
+        onScanSuccess={(code) => {
+          setSearchTerm(code);
+          addToast(`📷 Código escaneado: [${code}]. Filtro aplicado en catálogo.`, 'info');
+        }}
+        title="Escáner QR / Código de Barras MM"
+      />
     </div>
   );
 };

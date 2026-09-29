@@ -946,6 +946,27 @@ export const SAPProvider = ({ children }) => {
     return true;
   }, [employees, addToast]);
 
+  // MM: Create SolPed (Purchase Requisition #mm-solped)
+  const createSolped = useCallback((materialId, quantity = 50) => {
+    const mat = materials.find(m => m.id === materialId);
+    const solpedId = `SOLPED-${Date.now().toString().slice(-6)}`;
+    const newSolped = {
+      id: solpedId,
+      materialId: materialId,
+      materialName: mat ? mat.name : 'Material Repuesto',
+      qty: quantity,
+      unit: mat ? mat.unit : 'UN',
+      status: 'SOLICITADA',
+      costCenter: 'CC-MM-400',
+      createdAt: new Date().toISOString().split('T')[0],
+      requestedBy: 'Planificador MM (Engine ROP)'
+    };
+    setPurchaseOrders(prev => [newSolped, ...prev]);
+    upsertDocument('purchase_orders', solpedId, newSolped);
+    addToast(`🛒 SolPed #${solpedId} generada exitosamente para ${quantity}x ${newSolped.materialName} (#mm-solped).`, 'success');
+    return newSolped;
+  }, [materials, addToast]);
+
   // HCM: Reseed/Reload Full Master Employees (12 Colaboradores)
   const reseedEmployees = useCallback(() => {
     setEmployees(DEFAULT_EMPLOYEES);
@@ -1194,8 +1215,9 @@ export const SAPProvider = ({ children }) => {
     stornoMIGOMovement,
     createMaterial,
     updateMaterial,
-    deleteMaterial
-  }), [plants, activePlant, setActivePlant, createPlant, materials, purchaseOrders, migoDocuments, executeGoodsMovement, stornoMIGOMovement, createMaterial, updateMaterial, deleteMaterial]);
+    deleteMaterial,
+    createSolped
+  }), [plants, activePlant, setActivePlant, createPlant, materials, purchaseOrders, migoDocuments, executeGoodsMovement, stornoMIGOMovement, createMaterial, updateMaterial, deleteMaterial, createSolped]);
 
   const pmValue = useMemo(() => ({
     assets,

@@ -39,6 +39,7 @@ import {
 import { formatDateDDMMYYYY } from '../../utils/dateUtils';
 import { getStaleWorkOrdersList, triggerStaleWorkOrderAlerts, isWorkOrderStale } from '../../services/workOrderNotificationService';
 import { NotificationConfigModal } from '../modals/NotificationConfigModal';
+import { WorkOrderGanttChart } from './WorkOrderGanttChart';
 
 export const WorkOrderMaster = ({ onOpenCreateWO, onOpenMIGOForWO }) => {
   const {
@@ -347,6 +348,14 @@ export const WorkOrderMaster = ({ onOpenCreateWO, onOpenMIGOForWO }) => {
               <TableIcon className="w-3.5 h-3.5" />
               <span>Lista Tabular</span>
             </button>
+            <button
+              onClick={() => setViewMode('GANTT')}
+              className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center space-x-1.5 ${viewMode === 'GANTT' ? 'bg-sap-blue text-white shadow-xs' : 'text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700'
+                }`}
+            >
+              <Calendar className="w-3.5 h-3.5" />
+              <span>Carta Gantt (IW38/39)</span>
+            </button>
           </div>
 
           {/* Filters */}
@@ -636,6 +645,16 @@ export const WorkOrderMaster = ({ onOpenCreateWO, onOpenMIGOForWO }) => {
             </table>
           </div>
         </div>
+      )}
+
+      {/* ----------------- VIEW MODE 3: CARTA GANTT INTERACTIVA ----------------- */}
+      {viewMode === 'GANTT' && (
+        <WorkOrderGanttChart
+          workOrders={filteredWorkOrders}
+          assets={assets}
+          onSelectWorkOrder={(wo) => setActiveWOModal(wo)}
+          onOpenCreateWO={onOpenCreateWO}
+        />
       )}
 
       {/* ----------------- MODAL DETALLE DE ORDEN IW32 / IW33 ----------------- */}
