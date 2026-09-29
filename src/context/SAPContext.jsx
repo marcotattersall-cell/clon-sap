@@ -264,6 +264,35 @@ export const SAPProvider = ({ children }) => {
     };
   }, [activeTenantId]);
 
+  // 🧹 Auto-purga en segundo plano: Garantizar que no existan OTs huérfanas sin equipo en Flota
+  useEffect(() => {
+    if (!workOrders || workOrders.length === 0) return;
+
+    const validAssetIds = new Set((assets || []).map(a => (a.id || '').toLowerCase().trim()));
+    const validPlates = new Set((assets || []).map(a => (a.plate || '').replaceAll('-', '').toLowerCase().trim()));
+    const validNames = new Set((assets || []).map(a => (a.name || '').toLowerCase().trim()));
+
+    const isAssetRegistered = (eqId) => {
+      if (!eqId || (assets || []).length === 0) return false;
+      const clean = String(eqId).replaceAll('-', '').toLowerCase().trim();
+      if (validAssetIds.has(clean) || validPlates.has(clean) || validNames.has(clean)) return true;
+      return (assets || []).some(a => {
+        const idClean = (a.id || '').toLowerCase().trim();
+        return idClean && (clean.includes(idClean) || idClean.includes(clean));
+      });
+    };
+
+    const orphanOrders = workOrders.filter(w => !isAssetRegistered(w.equipmentId));
+    if (orphanOrders.length > 0) {
+      console.log(`[Auto-Purge Flota Limpia] Se detectaron y purgaron ${orphanOrders.length} OTs sin equipo en Flota.`);
+      const orphanIds = new Set(orphanOrders.map(w => w.id));
+      setWorkOrders(prev => prev.filter(w => !orphanIds.has(w.id)));
+      orphanOrders.forEach(w => {
+        deleteDocument('workOrders', w.id, activeTenantId);
+      });
+    }
+  }, [assets, workOrders, activeTenantId]);
+
   // MIGO Goods Movement Transaction engine (Types 101, 261, 311)
   const executeGoodsMovement = useCallback(async ({ movementType, materialId, qty, storageLocation, targetStorageLocation, refDocument, notes: _notes }) => {
     const quantity = Number(qty);
@@ -799,16 +828,30 @@ export const SAPProvider = ({ children }) => {
     const asset = assets.find(a => a.id === assetId);
     setAssets(prev => prev.filter(a => a.id !== assetId));
     deleteDocument('assets', assetId);
+
+    // Desincorporar OTs vinculadas a este activo
+    const linkedWOs = workOrders.filter(w =>
+      w.equipmentId === assetId ||
+      (asset && (w.equipmentId === asset.plate || w.equipmentId === asset.name))
+    );
+    if (linkedWOs.length > 0) {
+      const linkedIds = new Set(linkedWOs.map(w => w.id));
+      setWorkOrders(prev => prev.filter(w => !linkedIds.has(w.id)));
+      linkedWOs.forEach(w => {
+        deleteDocument('workOrders', w.id);
+      });
+    }
+
     recordAuditLog({
       entityType: 'ASSET_MASTER',
       entityId: assetId,
       action: 'DELETE_ASSET',
-      details: `Equipo/Vehículo ${assetId} (${asset?.name || ''}) eliminado de la flota.`,
+      details: `Equipo/Vehículo ${assetId} (${asset?.name || ''}) eliminado de la flota junto a ${linkedWOs.length} OTs vinculadas.`,
       user: 'Especialista PM/Flota'
     });
-    addToast(`🗑️ Equipo/Vehículo ${assetId} (${asset?.name || ''}) eliminado correctamente de la flota.`, 'info');
+    addToast(`🗑️ Equipo/Vehículo ${assetId} (${asset?.name || ''}) y sus OTs vinculadas eliminados correctamente de la flota.`, 'info');
     return true;
-  }, [assets, addToast]);
+  }, [assets, workOrders, addToast]);
 
   // Delete Notification
   const deleteNotification = useCallback((notifId) => {

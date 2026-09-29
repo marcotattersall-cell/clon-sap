@@ -121,12 +121,29 @@ export const WorkOrderMaster = ({ onOpenCreateWO, onOpenMIGOForWO }) => {
   const components = Array.isArray(activeWO?.components) ? activeWO.components : [];
   const logs = Array.isArray(activeWO?.logs) ? activeWO.logs : [];
 
+  // Valid Asset Set for Filtering Orphan Work Orders (Zero OTs without Fleet)
+  const validAssetIds = new Set((assets || []).map(a => (a.id || '').toLowerCase().trim()));
+  const validPlates = new Set((assets || []).map(a => (a.plate || '').replaceAll('-', '').toLowerCase().trim()));
+  const validNames = new Set((assets || []).map(a => (a.name || '').toLowerCase().trim()));
+
+  const isAssetRegistered = (eqId) => {
+    if (!eqId || (assets || []).length === 0) return false;
+    const clean = String(eqId).replaceAll('-', '').toLowerCase().trim();
+    if (validAssetIds.has(clean) || validPlates.has(clean) || validNames.has(clean)) return true;
+    return (assets || []).some(a => {
+      const idClean = (a.id || '').toLowerCase().trim();
+      return idClean && (clean.includes(idClean) || idClean.includes(clean));
+    });
+  };
+
+  const validWorkOrders = workOrders.filter(w => isAssetRegistered(w.equipmentId));
+
   // Stale Work Orders calculation (>24 hours open)
-  const staleWorkOrdersList = getStaleWorkOrdersList(workOrders);
+  const staleWorkOrdersList = getStaleWorkOrdersList(validWorkOrders);
   const staleCount = staleWorkOrdersList.length;
 
   // Filtered WOs
-  const filteredWorkOrders = workOrders.filter(wo => {
+  const filteredWorkOrders = validWorkOrders.filter(wo => {
     const matchesSearch =
       (wo.id || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
       (wo.title || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -188,11 +205,11 @@ export const WorkOrderMaster = ({ onOpenCreateWO, onOpenMIGOForWO }) => {
   };
 
   // KPIs
-  const totalCount = workOrders.length;
-  const crteCount = workOrders.filter(w => w.status === 'CRTE').length;
-  const relCount = workOrders.filter(w => w.status === 'REL').length;
-  const pcnfCount = workOrders.filter(w => w.status === 'PCNF').length;
-  const tecoCount = workOrders.filter(w => w.status === 'TECO' || w.status === 'CLSD').length;
+  const totalCount = validWorkOrders.length;
+  const crteCount = validWorkOrders.filter(w => w.status === 'CRTE').length;
+  const relCount = validWorkOrders.filter(w => w.status === 'REL').length;
+  const pcnfCount = validWorkOrders.filter(w => w.status === 'PCNF').length;
+  const tecoCount = validWorkOrders.filter(w => w.status === 'TECO' || w.status === 'CLSD').length;
 
   return (
     <div className="space-y-6 animate-in fade-in duration-300">
