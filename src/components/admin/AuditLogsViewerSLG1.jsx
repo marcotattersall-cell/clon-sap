@@ -33,78 +33,7 @@ import {
   Server
 } from 'lucide-react';
 
-const FALLBACK_AUDIT_LOGS = [
-  {
-    id: 'AUDIT-1711823901000-101',
-    entityType: 'MIGO_DOCUMENT',
-    entityId: 'MIGO-87672464',
-    action: 'CONTABILIZAR_MIGO_261',
-    details: 'Movimiento 261 (Salida para Orden de Trabajo WO-400101-BHP) de 5 UN de Rodamiento SKF 6205',
-    user: 'operador.migo@axomira.com',
-    timestamp: new Date(Date.now() - 1000 * 60 * 12).toISOString(),
-    tenantId: 'tenant_demo'
-  },
-  {
-    id: 'AUDIT-1711823842000-204',
-    entityType: 'WORK_ORDER',
-    entityId: 'WO-400101-BHP',
-    action: 'TECO_CERTIFICATE',
-    details: 'Certificado de Cierre Técnico (TECO) emitido y firmado por Inspección Mantenimiento PM',
-    user: 'inspector.pm@axomira.com',
-    timestamp: new Date(Date.now() - 1000 * 60 * 45).toISOString(),
-    tenantId: 'tenant_demo'
-  },
-  {
-    id: 'AUDIT-1711823710000-309',
-    entityType: 'WORKFLOW',
-    entityId: 'WF-APPR-2026-99',
-    action: 'THRESHOLD_UPDATE',
-    details: 'Aprobación de Solicitud de Compra REQ-2026-4160 por monto $14.500.000 CLP (Umbral Superado)',
-    user: 'gerente.finanzas@axomira.com',
-    timestamp: new Date(Date.now() - 1000 * 60 * 120).toISOString(),
-    tenantId: 'tenant_demo'
-  },
-  {
-    id: 'AUDIT-1711823500000-412',
-    entityType: 'USER',
-    entityId: 'USR-SU01-8812',
-    action: 'USER_ROLE_UPDATE',
-    details: 'Asignación de Matriz RBAC: Rol asignado MAINTENANCE_MANAGER para usuario jbennett@mineradelnorte.cl',
-    user: 'admin.global@axomira.com',
-    timestamp: new Date(Date.now() - 1000 * 60 * 240).toISOString(),
-    tenantId: 'tenant_demo'
-  },
-  {
-    id: 'AUDIT-1711823100000-550',
-    entityType: 'MATERIAL',
-    entityId: 'MAT-10029',
-    action: 'REORDER_POINT_ALERT',
-    details: 'Alerta de Stock de Seguridad MM: Material Correa Transportadora Continental bajo punto de reorden (2 UN restante)',
-    user: 'SISTEMA_AXOMIRA',
-    timestamp: new Date(Date.now() - 1000 * 60 * 360).toISOString(),
-    tenantId: 'tenant_demo'
-  },
-  {
-    id: 'AUDIT-1711822800000-618',
-    entityType: 'MIGO_DOCUMENT',
-    entityId: 'MIGO-87672100',
-    action: 'CONTABILIZAR_MIGO_101',
-    details: 'Movimiento 101 (Entrada de Mercancía Proveedor PO-900210) de 50 UN de Aceite Hidráulico Shell Tellus S2',
-    user: 'bodega.central@axomira.com',
-    timestamp: new Date(Date.now() - 1000 * 60 * 520).toISOString(),
-    tenantId: 'tenant_demo'
-  },
-  {
-    id: 'AUDIT-1711821900000-741',
-    entityType: 'SYSTEM',
-    entityId: 'SYS-OTP-AUTH',
-    action: 'OTP_VERIFICATION_SUCCESS',
-    details: 'Autenticación de 2 Factores OTP de 6 dígitos verificada exitosamente',
-    user: 'marco.tattersall@gmail.com',
-    timestamp: new Date(Date.now() - 1000 * 60 * 780).toISOString(),
-    tenantId: 'tenant_demo'
-  }
-];
+const FALLBACK_AUDIT_LOGS = [];
 
 export const AuditLogsViewerSLG1 = () => {
   const { user } = useAuth();
@@ -137,22 +66,13 @@ export const AuditLogsViewerSLG1 = () => {
       setLoading(true);
       try {
         const fetchedLogs = await getCollectionDocs('auditLogs', activeTenant || 'tenant_demo');
-        if (Array.isArray(fetchedLogs) && fetchedLogs.length > 0) {
-          // Merge with fallbacks to guarantee rich audit trail if DB has few rows
-          const mergedMap = new Map();
-          [...fetchedLogs, ...FALLBACK_AUDIT_LOGS].forEach(item => {
-            if (item && item.id) mergedMap.set(item.id, item);
-          });
-          const sorted = Array.from(mergedMap.values()).sort(
-            (a, b) => new Date(b.timestamp || 0) - new Date(a.timestamp || 0)
-          );
-          setLogs(sorted);
-        } else {
-          setLogs(FALLBACK_AUDIT_LOGS);
-        }
+        const sorted = (Array.isArray(fetchedLogs) ? fetchedLogs : []).sort(
+          (a, b) => new Date(b.timestamp || 0) - new Date(a.timestamp || 0)
+        );
+        setLogs(sorted);
       } catch (err) {
         console.warn('[SLG1 Audit Viewer] Error cargando logs:', err);
-        setLogs(FALLBACK_AUDIT_LOGS);
+        setLogs([]);
       } finally {
         setLoading(false);
       }
@@ -165,16 +85,10 @@ export const AuditLogsViewerSLG1 = () => {
       unsubscribe = subscribeCollection(
         'auditLogs',
         (updatedLogs) => {
-          if (Array.isArray(updatedLogs) && updatedLogs.length > 0) {
-            const mergedMap = new Map();
-            [...updatedLogs, ...FALLBACK_AUDIT_LOGS].forEach(item => {
-              if (item && item.id) mergedMap.set(item.id, item);
-            });
-            const sorted = Array.from(mergedMap.values()).sort(
-              (a, b) => new Date(b.timestamp || 0) - new Date(a.timestamp || 0)
-            );
-            setLogs(sorted);
-          }
+          const sorted = (Array.isArray(updatedLogs) ? updatedLogs : []).sort(
+            (a, b) => new Date(b.timestamp || 0) - new Date(a.timestamp || 0)
+          );
+          setLogs(sorted);
         },
         (err) => console.warn('[SLG1 Audit Viewer] Error en sub:', err),
         [],

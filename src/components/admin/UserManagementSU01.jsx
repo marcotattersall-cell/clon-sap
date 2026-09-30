@@ -40,72 +40,7 @@ import {
   AlertCircle
 } from 'lucide-react';
 
-const INITIAL_DEMO_REQUESTS = [
-  {
-    id: 'DEMO-REQ-2026-4160',
-    ticketId: 'DEMO-REQ-2026-4160',
-    timestamp: '2026-09-06 14:30',
-    fullName: 'Juan Pablo Bennett',
-    email: 'jbennett@mineradelnorte.cl',
-    company: 'Minera del Norte SpA',
-    industry: 'Gran Minería & Extracción',
-    employeeCount: 'Más de 500 colaboradores (Gran Minería)',
-    phone: '+56 9 8765 4321',
-    primaryModule: 'Mantenimiento PM (IW31/IW32)',
-    assetCount: 'Más de 200 Equipos (Gran Minería)',
-    notes: 'Requerimos migración urgente de flota de camiones CAT 797F y palas hidráulicas P&H 4100XPC.',
-    status: 'Pendiente',
-    responseNotes: ''
-  },
-  {
-    id: 'DEMO-REQ-2026-3892',
-    ticketId: 'DEMO-REQ-2026-3892',
-    timestamp: '2026-09-05 09:15',
-    fullName: 'Camila Torres Valenzuela',
-    email: 'camila.torres@constructoralatitud.cl',
-    company: 'Constructora Latitud Sur',
-    industry: 'Construcción & Obras Civiles',
-    employeeCount: '201 a 500 colaboradores',
-    phone: '+56 9 9123 8877',
-    primaryModule: 'Gestión de Materiales MM (MIGO 261/101)',
-    assetCount: '51 a 200 Equipos/Maquinarias',
-    notes: 'Interesados en trazabilidad en tiempo real de bodega central y despacho de repuestos a faenas.',
-    status: 'En Revisión',
-    responseNotes: 'Reunión agendada con equipo técnico para el jueves 10 AM.'
-  },
-  {
-    id: 'DEMO-REQ-2026-2741',
-    ticketId: 'DEMO-REQ-2026-2741',
-    timestamp: '2026-09-04 16:45',
-    fullName: 'Rodrigo Morales Sepúlveda',
-    email: 'rmorales@transmarlog.com',
-    company: 'Transportes y Logística Marítima',
-    industry: 'Transporte & Logística de Flota',
-    employeeCount: '51 a 200 colaboradores',
-    phone: '+56 9 7766 5544',
-    primaryModule: 'Control de Flotas & Maquinarias (IE03)',
-    assetCount: '51 a 200 Equipos/Maquinarias',
-    notes: 'Evaluando integración telemetría GPS y mantenimiento preventivo por kilometraje.',
-    status: 'Respondido',
-    responseNotes: 'Se envió propuesta técnica personalizada y credenciales de acceso a Axomira.'
-  },
-  {
-    id: 'DEMO-REQ-2026-1509',
-    ticketId: 'DEMO-REQ-2026-1509',
-    timestamp: '2026-09-02 11:20',
-    fullName: 'Ignacio Salgado Bravo',
-    email: 'isalgado@energiapaci.cl',
-    company: 'Pacífico Energía & Gas',
-    industry: 'Energía, Gas & Petróleo',
-    employeeCount: '201 a 500 colaboradores',
-    phone: '+56 9 5544 3322',
-    primaryModule: 'Suite ERP Completa',
-    assetCount: '10 a 50 Equipos/Maquinarias',
-    notes: 'Cotización solicitada para suite completa ERP con módulo HCM de personal.',
-    status: 'Aprobado',
-    responseNotes: 'Demo técnica ejecutada con éxito. Contrato enviado a firma.'
-  }
-];
+const INITIAL_DEMO_REQUESTS = [];
 
 export const UserManagementSU01 = () => {
   const { addToast } = useSAP();
