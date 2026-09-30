@@ -515,9 +515,13 @@ AXOMIRA Cloud ERP Enterprise`;
 
   // Filtrado de usuarios
   const filteredUsers = usersList.filter(u => {
-    const matchesSearch = u.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                          u.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                          u.tenantName.toLowerCase().includes(searchQuery.toLowerCase());
+    if (!u) return false;
+    const q = (searchQuery || '').toLowerCase();
+    const nameStr = (u.name || u.displayName || u.email || '').toLowerCase();
+    const emailStr = (u.email || '').toLowerCase();
+    const tenantNameStr = (u.tenantName || u.tenant_name || u.tenantId || '').toLowerCase();
+
+    const matchesSearch = nameStr.includes(q) || emailStr.includes(q) || tenantNameStr.includes(q);
     const matchesTenant = selectedTenantFilter === 'ALL' || u.tenantId === selectedTenantFilter;
     const matchesRole = selectedRoleFilter === 'ALL' || u.role === selectedRoleFilter;
     const matchesStatus = selectedStatusFilter === 'ALL' || u.status === selectedStatusFilter;

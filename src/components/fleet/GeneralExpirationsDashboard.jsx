@@ -280,12 +280,14 @@ export const GeneralExpirationsDashboard = () => {
 
   // Filtered List
   const filteredList = allExpirations.filter(item => {
+    if (!item) return false;
     const matchesEntity = entityFilter === 'ALL' || item.entityType === entityFilter;
     const matchesStatus = statusFilter === 'ALL' || item.status === statusFilter;
-    const matchesSearch = !searchTerm ||
-      item.entityName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      item.subLabel.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      item.docType.toLowerCase().includes(searchTerm.toLowerCase());
+    const q = (searchTerm || '').toLowerCase();
+    const entityNameStr = (item.entityName || '').toLowerCase();
+    const subLabelStr = (item.subLabel || '').toLowerCase();
+    const docTypeStr = (item.docType || '').toLowerCase();
+    const matchesSearch = !searchTerm || entityNameStr.includes(q) || subLabelStr.includes(q) || docTypeStr.includes(q);
     return matchesEntity && matchesStatus && matchesSearch;
   });
 

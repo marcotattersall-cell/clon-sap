@@ -307,7 +307,7 @@ const GoodsMovementMIGOComponent = ({ initialMaterialId = '' }) => {
         isOpen={isQRModalOpen}
         onClose={() => setIsQRModalOpen(false)}
         onScanSuccess={(code) => {
-          const matched = materials.find(m => m.id === code || m.id.toLowerCase() === code.toLowerCase());
+          const matched = materials.find(m => m && m.id && (m.id === code || m.id.toLowerCase() === (code || '').toLowerCase()));
           if (matched) {
             setSelectedMaterial(matched.id);
             addToast(`📷 QR Detectado: Material ${matched.name} (${matched.id})`, 'success');

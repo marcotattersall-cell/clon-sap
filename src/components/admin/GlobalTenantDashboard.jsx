@@ -189,9 +189,13 @@ export const GlobalTenantDashboard = () => {
   // Filtrado de clientes por búsqueda y sector
   const filteredClients = useMemo(() => {
     return clientsData.filter(c => {
-      const matchSearch = c.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                          c.sector.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                          c.location.toLowerCase().includes(searchQuery.toLowerCase());
+      if (!c) return false;
+      const q = (searchQuery || '').toLowerCase();
+      const nameStr = (c.name || '').toLowerCase();
+      const sectorStr = (c.sector || '').toLowerCase();
+      const locStr = (c.location || '').toLowerCase();
+
+      const matchSearch = nameStr.includes(q) || sectorStr.includes(q) || locStr.includes(q);
       const matchSector = selectedSector === 'ALL' || c.slaTier === selectedSector;
       return matchSearch && matchSector;
     });

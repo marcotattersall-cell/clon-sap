@@ -182,13 +182,17 @@ export const FleetPlanner = ({ onOpenCreateWOForVehicle }) => {
   });
 
   const filteredFleet = fleetData.filter(v => {
-    const matchesSearch = v.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                          v.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                          v.plate.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                          v.equipmentType.toLowerCase().includes(searchTerm.toLowerCase());
+    if (!v) return false;
+    const q = (searchTerm || '').toLowerCase();
+    const nameStr = (v.name || '').toLowerCase();
+    const idStr = (v.id || '').toLowerCase();
+    const plateStr = (v.plate || '').toLowerCase();
+    const eqTypeStr = (v.equipmentType || '').toLowerCase();
+
+    const matchesSearch = nameStr.includes(q) || idStr.includes(q) || plateStr.includes(q) || eqTypeStr.includes(q);
     const matchesCategory = categoryFilter === 'ALL' || v.category === categoryFilter;
     const matchesStatus = statusFilter === 'ALL' || v.status === statusFilter;
-    const matchesExpirations = expirationsFilter === 'ALL' || v.expirationsSummary.overallStatus === expirationsFilter;
+    const matchesExpirations = expirationsFilter === 'ALL' || v.expirationsSummary?.overallStatus === expirationsFilter;
     return matchesSearch && matchesCategory && matchesStatus && matchesExpirations;
   });
 

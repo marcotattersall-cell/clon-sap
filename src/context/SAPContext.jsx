@@ -495,12 +495,13 @@ export const SAPProvider = ({ children }) => {
 
     // ⛔ IW31-E002: El técnico responsable debe existir en el Maestro de Personal HCM (employees)
     const assignedTechName = (newWO.assignedTech || '').trim();
-    const targetTechExists = employees.some(e =>
-      e.name.toLowerCase().trim() === assignedTechName.toLowerCase() ||
-      e.id.toLowerCase().trim() === assignedTechName.toLowerCase() ||
-      assignedTechName.toLowerCase().includes(e.name.toLowerCase().trim()) ||
-      e.name.toLowerCase().trim().includes(assignedTechName.toLowerCase())
-    );
+    const targetTechExists = employees.some(e => {
+      if (!e) return false;
+      const eName = (e.name || '').toLowerCase().trim();
+      const eId = (e.id || '').toLowerCase().trim();
+      const techClean = assignedTechName.toLowerCase();
+      return eName === techClean || eId === techClean || techClean.includes(eName) || eName.includes(techClean);
+    });
     if (!assignedTechName || !targetTechExists) {
       addToast(`❌ [IW31-E002] Técnico "${assignedTechName || 'Sin asignar'}" no registrado en HCM.`, 'error');
       return false;

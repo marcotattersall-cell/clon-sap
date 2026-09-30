@@ -332,11 +332,11 @@ export const FioriHeader = ({ onOpenCreateWO, onOpenCreateMaterial, onOpenCreate
     if (!launcherSearch.trim()) return true;
     const q = launcherSearch.toLowerCase();
     return (
-      app.title.toLowerCase().includes(q) ||
-      app.subtitle.toLowerCase().includes(q) ||
+      (app.title || '').toLowerCase().includes(q) ||
+      (app.subtitle || '').toLowerCase().includes(q) ||
       (app.slug && app.slug.toLowerCase().includes(q)) ||
       (app.alias && app.alias.toLowerCase().includes(q)) ||
-      app.tcode.toLowerCase().includes(q)
+      (app.tcode || '').toLowerCase().includes(q)
     );
   });
 
