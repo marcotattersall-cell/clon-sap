@@ -267,12 +267,12 @@ export const AssetHierarchyTree = () => {
 
                     <div className="flex items-center space-x-1">
                       <Thermometer className={`w-3.5 h-3.5 shrink-0 ${iot?.engineTemp > 102 ? 'text-rose-400 animate-bounce' : 'opacity-70'}`} />
-                      <span>{iot?.engineTemp ? `${iot.engineTemp}°C` : '92°C'}</span>
+                      <span>{iot?.engineTemp != null ? `${iot.engineTemp}°C` : 'N/A'}</span>
                     </div>
 
                     <div className="flex items-center space-x-1">
                       <Gauge className={`w-3.5 h-3.5 shrink-0 ${iot?.vibrationRms > 6.5 ? 'text-amber-400' : 'opacity-70'}`} />
-                      <span>{iot?.vibrationRms ? `${iot.vibrationRms} mm/s` : '3.8 mm/s'}</span>
+                      <span>{iot?.vibrationRms != null ? `${iot.vibrationRms} mm/s` : 'N/A'}</span>
                     </div>
 
                     <div className="flex items-center space-x-1 font-semibold">
@@ -298,7 +298,7 @@ export const AssetHierarchyTree = () => {
                     <span className="text-xs text-slate-400">•</span>
                     <span className="text-xs text-slate-500 font-semibold">{selectedAsset.category}</span>
                     <span className="text-xs text-slate-400">•</span>
-                    <span className="text-xs text-slate-500 font-mono">{selectedAsset.serialNumber || 'SN-2026-99'}</span>
+                    <span className="text-xs text-slate-500 font-mono">{selectedAsset.serialNumber || 'Sin N° Serie'}</span>
                   </div>
                   <h3 className="text-xl font-extrabold text-slate-900 dark:text-white mt-1">
                     {selectedAsset.name}
@@ -379,9 +379,9 @@ export const AssetHierarchyTree = () => {
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                   {/* Gauge 1: Temperature */}
                   <div className={`p-4 rounded-xl border space-y-2 transition-all ${
-                    (selectedAsset.lastIoTTelemetry?.engineTemp || 92) > 102
+                    (selectedAsset.lastIoTTelemetry?.engineTemp || 0) > 102
                       ? 'bg-rose-500/10 border-rose-500/50 text-rose-700 dark:text-rose-300'
-                      : (selectedAsset.lastIoTTelemetry?.engineTemp || 92) > 96
+                      : (selectedAsset.lastIoTTelemetry?.engineTemp || 0) > 96
                       ? 'bg-amber-500/10 border-amber-500/50 text-amber-700 dark:text-amber-300'
                       : 'bg-slate-50 dark:bg-slate-800/60 border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-200'
                   }`}>
@@ -395,18 +395,18 @@ export const AssetHierarchyTree = () => {
                       </span>
                     </div>
                     <div className="text-2xl font-black font-mono">
-                      {selectedAsset.lastIoTTelemetry?.engineTemp ? `${selectedAsset.lastIoTTelemetry.engineTemp}°C` : '92.4°C'}
+                      {selectedAsset.lastIoTTelemetry?.engineTemp != null ? `${selectedAsset.lastIoTTelemetry.engineTemp}°C` : 'N/A'}
                     </div>
                     <div className="text-[10px] text-slate-500 dark:text-slate-400">
-                      {(selectedAsset.lastIoTTelemetry?.engineTemp || 92) > 102 ? '⚠️ ALERTA SOBRECALENTAMIENTO' : 'Rango Térmico Normal'}
+                      {(selectedAsset.lastIoTTelemetry?.engineTemp || 0) > 102 ? '⚠️ ALERTA SOBRECALENTAMIENTO' : 'Rango Térmico Normal'}
                     </div>
                   </div>
 
                   {/* Gauge 2: Bearing Vibration RMS */}
                   <div className={`p-4 rounded-xl border space-y-2 transition-all ${
-                    (selectedAsset.lastIoTTelemetry?.vibrationRms || 3.8) > 6.5
+                    (selectedAsset.lastIoTTelemetry?.vibrationRms || 0) > 6.5
                       ? 'bg-rose-500/10 border-rose-500/50 text-rose-700 dark:text-rose-300'
-                      : (selectedAsset.lastIoTTelemetry?.vibrationRms || 3.8) > 5.0
+                      : (selectedAsset.lastIoTTelemetry?.vibrationRms || 0) > 5.0
                       ? 'bg-amber-500/10 border-amber-500/50 text-amber-700 dark:text-amber-300'
                       : 'bg-slate-50 dark:bg-slate-800/60 border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-200'
                   }`}>
@@ -420,10 +420,10 @@ export const AssetHierarchyTree = () => {
                       </span>
                     </div>
                     <div className="text-2xl font-black font-mono">
-                      {selectedAsset.lastIoTTelemetry?.vibrationRms ? `${selectedAsset.lastIoTTelemetry.vibrationRms} mm/s` : '3.8 mm/s'}
+                      {selectedAsset.lastIoTTelemetry?.vibrationRms != null ? `${selectedAsset.lastIoTTelemetry.vibrationRms} mm/s` : 'N/A'}
                     </div>
                     <div className="text-[10px] text-slate-500 dark:text-slate-400">
-                      {(selectedAsset.lastIoTTelemetry?.vibrationRms || 3.8) > 6.5 ? '⚠️ ANOMALÍA ESTRUCTURAL' : 'Amplitud Armónica OK'}
+                      {(selectedAsset.lastIoTTelemetry?.vibrationRms || 0) > 6.5 ? '⚠️ ANOMALÍA ESTRUCTURAL' : 'Amplitud Armónica OK'}
                     </div>
                   </div>
 
@@ -458,7 +458,7 @@ export const AssetHierarchyTree = () => {
                         </span>
                       </div>
                       <div className="text-2xl font-black font-mono text-sky-600 dark:text-sky-400">
-                        {selectedAsset.hourmeter || 4250} hrs
+                        {selectedAsset.hourmeter || 0} hrs
                       </div>
                       <div className="text-[10px] text-slate-500 dark:text-slate-400">
                         Próxima Pauta PM: {(Math.ceil((selectedAsset.hourmeter || 250) / 250) * 250)} hrs (Intervalo 250 hrs)
