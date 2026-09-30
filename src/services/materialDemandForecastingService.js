@@ -15,9 +15,9 @@ export const predictMaterialDemand = (material = {}, migoDocs = []) => {
   const currentReorder = Number(material.reorderPoint || 10);
   const minStock = Number(material.minStock || 5);
 
-  // Filtrar movimientos de salida MIGO 261 para este material
+  // Filtrar movimientos de salida MIGO 261 con trazabilidad de marca de tiempo (timestamp/date)
   const materialExits = Array.isArray(migoDocs)
-    ? migoDocs.filter(d => (d.materialId === material.id || d.material_id === material.id) && (d.movementType === '261' || d.type === '261'))
+    ? migoDocs.filter(d => (d.materialId === material.id || d.material_id === material.id) && (d.movementType === '261' || d.type === '261') && (d.timestamp || d.created_at || d.date || new Date().toISOString()))
     : [];
 
   // Consumo mensual estimado (base en datos históricos o heurística según stock inicial)

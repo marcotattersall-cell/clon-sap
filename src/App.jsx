@@ -27,6 +27,7 @@ const FleetPlanner = lazy(() => import('./components/fleet/FleetPlanner').then(m
 const SAPAnalyticsCockpit = lazy(() => import('./components/analytics/SAPAnalyticsCockpit').then(m => ({ default: m.SAPAnalyticsCockpit })));
 const HRMaster = lazy(() => import('./components/hr/HRMaster').then(m => ({ default: m.HRMaster })));
 const UserManagementSU01 = lazy(() => import('./components/admin/UserManagementSU01').then(m => ({ default: m.UserManagementSU01 })));
+const AuditLogsViewerSLG1 = lazy(() => import('./components/admin/AuditLogsViewerSLG1').then(m => ({ default: m.AuditLogsViewerSLG1 })));
 const ExecutiveReportGeneratorModal = lazy(() => import('./components/modals/ExecutiveReportGeneratorModal').then(m => ({ default: m.ExecutiveReportGeneratorModal })));
 
 const ViewLoader = () => (
@@ -344,6 +345,10 @@ const SAPAppContent = () => {
 
             {activeTab === 'USER_MGMT' && (
               <UserManagementSU01 />
+            )}
+
+            {activeTab === 'AUDIT_LOGS' && (
+              <AuditLogsViewerSLG1 />
             )}
           </Suspense>
         </ErrorBoundary>

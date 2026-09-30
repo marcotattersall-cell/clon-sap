@@ -16,7 +16,7 @@ describe('Motor de Idempotencia Persistente Multi-Pestaña (IndexedDB / LocalSto
 
     const result = await executeIdempotentTransaction(testKey, async () => {
       callCount++;
-      return { success: true, docId: 'MIGO-99001' };
+      return { success: true, docId: 'MIGO-99001', timestamp: new Date().toISOString() };
     });
 
     expect(callCount).toBe(1);
@@ -31,7 +31,7 @@ describe('Motor de Idempotencia Persistente Multi-Pestaña (IndexedDB / LocalSto
     // Primera ejecución
     const firstResult = await executeIdempotentTransaction(testKey, async () => {
       callCount++;
-      return { status: 'POSTED', docId: 'MIGO-77002' };
+      return { status: 'POSTED', docId: 'MIGO-77002', timestamp: new Date().toISOString() };
     });
 
     expect(callCount).toBe(1);
@@ -40,7 +40,7 @@ describe('Motor de Idempotencia Persistente Multi-Pestaña (IndexedDB / LocalSto
     // Segunda ejecución (Intento de duplicación)
     const secondResult = await executeIdempotentTransaction(testKey, async () => {
       callCount++;
-      return { status: 'POSTED', docId: 'MIGO-77002' };
+      return { status: 'POSTED', docId: 'MIGO-77002', timestamp: new Date().toISOString() };
     });
 
     // La función interna no debe ser invocada por segunda vez

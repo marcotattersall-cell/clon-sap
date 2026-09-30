@@ -41,7 +41,7 @@ describe('TestSprite Autonomous QA & End-to-End System Audit (TestSprite Engine)
 
     // 5. Simulación de Consumo MIGO 261
     const material = { id: 'MAT-QA-10', name: 'Aceite Hidráulico ISO VG 68', stock: 100, reorderPoint: 20, unitPrice: 15000 };
-    const demandForecast = predictMaterialDemand(material, [{ materialId: material.id, movementType: '261', quantity: 15 }]);
+    const demandForecast = predictMaterialDemand(material, [{ materialId: material.id, movementType: '261', quantity: 15, timestamp: new Date().toISOString() }]);
     expect(demandForecast.projectedDemand30d).toBeGreaterThan(0);
 
     const endTime = performance.now();

@@ -2,6 +2,7 @@ import * as firestoreService from './firestoreService';
 import * as supabaseService from './supabaseService';
 import { isSupabaseConfigured, isUseSupabaseActive } from '../supabase/config';
 import { hasPermission } from '../utils/rbacRules';
+import logger from './loggerService';
 import {
   DEFAULT_PLANTS,
   DEFAULT_MATERIALS,
@@ -50,7 +51,7 @@ export const validateServiceRBACPermission = (userRole, permissionKey) => {
   if (!userRole) return true; // Si no se especifica rol explícito en cliente ligero, permite compatibilidad
   const allowed = hasPermission(userRole, permissionKey);
   if (!allowed) {
-    console.error(`[RBAC Guard] Acceso denegado en servicio para rol '${userRole}' al solicitar '${permissionKey}'`);
+    logger.error(`[RBAC Guard] Acceso denegado en servicio para rol '${userRole}' al solicitar '${permissionKey}'`);
     throw new Error(`[RBAC_DENIED] El rol '${userRole}' no cuenta con autorización para la acción '${permissionKey}'.`);
   }
   return true;
@@ -69,7 +70,7 @@ export const subscribeCollection = (collectionName, onUpdate, onError, constrain
   };
 
   const safeOnError = (err) => {
-    console.warn(`[dbService Protection] Error en suscripción Supabase para '${collectionName}':`, err);
+    logger.warn(`[dbService Protection] Error en suscripción Supabase para '${collectionName}':`, err);
     onUpdate([]);
     if (onError) onError(err);
   };
@@ -118,7 +119,7 @@ export const executeIdempotentTransaction = async (idempotencyKey, transactionFn
 
   const { found, result: existingResult } = await checkProcessedIdempotencyKey(idempotencyKey);
   if (found) {
-    console.warn(`[IdempotencyGuard Persistente] Transacción duplicada bloqueada. Key: ${idempotencyKey}`);
+    logger.warn(`[IdempotencyGuard Persistente] Transacción duplicada bloqueada. Key: ${idempotencyKey}`);
     return existingResult;
   }
 
@@ -145,7 +146,7 @@ export const getCollectionDocs = async (collectionName, tenantId = DEFAULT_TENAN
     const docs = await getActiveDbService().getCollectionDocs(collectionName, tenantId);
     return Array.isArray(docs) ? docs : [];
   } catch (err) {
-    console.warn(`[dbService Protection] Error en getCollectionDocs para '${collectionName}':`, err);
+    logger.warn(`[dbService Protection] Error en getCollectionDocs para '${collectionName}':`, err);
     return [];
   }
 };
@@ -155,7 +156,7 @@ export const getPagedCollectionDocs = async (collectionName, page = 1, pageSize 
     const res = await getActiveDbService().getPagedCollectionDocs(collectionName, page, pageSize, filters, tenantId);
     return res || { data: [], totalCount: 0, page: 1, pageSize, totalPages: 1 };
   } catch (err) {
-    console.warn(`[dbService Protection] Error en getPagedCollectionDocs para '${collectionName}':`, err);
+    logger.warn(`[dbService Protection] Error en getPagedCollectionDocs para '${collectionName}':`, err);
     return { data: [], totalCount: 0, page: 1, pageSize, totalPages: 1 };
   }
 };

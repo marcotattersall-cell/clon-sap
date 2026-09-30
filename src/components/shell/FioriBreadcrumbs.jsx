@@ -11,7 +11,8 @@ import {
   Users, 
   Activity, 
   Home,
-  Globe
+  Globe,
+  ShieldCheck
 } from 'lucide-react';
 import { useSAP } from '../../context/SAPContext';
 
@@ -24,7 +25,8 @@ export const TAB_BREADCRUMB_MAP = {
   MIGO: { module: 'Gestión Materiales MM', view: 'Movimientos de Stock', tcode: 'MIGO 261/101', icon: Package },
   ANALYTICS: { module: 'Executive Analytics', view: 'Control de Costos CO/FI', tcode: 'S_ALR', icon: Database },
   HR: { module: 'Recursos Humanos HCM', view: 'Ficha de Personal', tcode: 'PA20 / PA30', icon: HardHat },
-  USER_MGMT: { module: 'Administración Global', view: 'Usuarios & Multi-Tenancy', tcode: 'SU01', icon: Users }
+  USER_MGMT: { module: 'Administración Global', view: 'Usuarios & Multi-Tenancy', tcode: 'SU01', icon: Users },
+  AUDIT_LOGS: { module: 'Administración Global', view: 'Logs & Auditoría SAP', tcode: 'SLG1 / ST03N', icon: ShieldCheck }
 };
 
 export function FioriBreadcrumbs() {

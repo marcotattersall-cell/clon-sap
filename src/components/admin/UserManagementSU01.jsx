@@ -3,6 +3,7 @@ import { useSAP } from '../../context/SAPContext';
 import { useAuth } from '../../context/AuthContext';
 import { RBAC_PERMISSIONS, SAP_ROLES } from '../../utils/rbacRules';
 import { GlobalTenantDashboard } from './GlobalTenantDashboard';
+import { AuditLogsViewerSLG1 } from './AuditLogsViewerSLG1';
 import { upsertDocument, deleteDocument, subscribeCollection } from '../../services/dbService';
 import {
   Users,
@@ -686,7 +687,25 @@ AXOMIRA Cloud ERP Enterprise`;
           <span>Matriz de Permisos RBAC por Función</span>
           <span className="bg-purple-100 text-purple-800 text-[10px] px-1.5 py-0.5 rounded-full font-mono">Configurable</span>
         </button>
+
+        <button
+          onClick={() => setActiveSubTab('AUDIT_SLG1')}
+          className={`pb-3 px-4 flex items-center space-x-2 border-b-2 transition-all whitespace-nowrap ${
+            activeSubTab === 'AUDIT_SLG1'
+              ? 'border-sky-500 text-sky-500 dark:text-sky-400 font-bold'
+              : 'border-transparent text-slate-500 hover:text-slate-800 dark:hover:text-slate-200'
+          }`}
+        >
+          <ShieldCheck className="w-4 h-4 text-sky-400" />
+          <span>Logs & Auditoría SAP (SLG1 / ST03N)</span>
+          <span className="bg-sky-500/10 text-sky-400 border border-sky-500/20 text-[10px] px-1.5 py-0.5 rounded-full font-mono">Inmutable</span>
+        </button>
       </div>
+
+      {/* SUB-TAB AUDIT LOGS SLG1 */}
+      {activeSubTab === 'AUDIT_SLG1' && (
+        <AuditLogsViewerSLG1 />
+      )}
 
       {/* SUB-TAB 0: DASHBOARD GLOBAL DE CLIENTES (11 MÉTIRCAS SUPERADMIN) */}
       {activeSubTab === 'DASHBOARD_GLOBAL' && (

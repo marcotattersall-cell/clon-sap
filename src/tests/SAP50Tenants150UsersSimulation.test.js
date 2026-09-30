@@ -104,7 +104,8 @@ describe('Simulación Masiva: 50 Clientes Corporativos y 150 Usuarios Concurrent
             materialId: db.materials[0].id,
             qty: 2,
             refDocument: woId,
-            tenantId: user.tenantId
+            tenantId: user.tenantId,
+            timestamp: new Date().toISOString()
           });
 
           db.txCount += 2;

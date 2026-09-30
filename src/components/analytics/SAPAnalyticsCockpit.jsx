@@ -39,7 +39,7 @@ export const SAPAnalyticsCockpit = () => {
 
   const totalInventoryValuation = materials.reduce((sum, m) => sum + (Number(m.stock || 0) * Number(m.unitPrice || 0)), 0);
   const totalMigoConsumptionValuation = migoDocuments
-    .filter(d => d.movementType === '261')
+    .filter(d => d.movementType === '261' && (d.timestamp || d.created_at || d.date || new Date().toISOString()))
     .reduce((sum, d) => sum + (Number(d.qty || 0) * 50), 0);
   const inventoryTurnover = totalInventoryValuation > 0
     ? (totalMigoConsumptionValuation / totalInventoryValuation).toFixed(1)

@@ -128,7 +128,7 @@ export const FioriLaunchpad = ({ onOpenCreateWO, onOpenCreateMIGO }) => {
         </div>
 
         {!dashboardCollapsedState['tiles'] && (
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-5 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-4">
           {/* Tile 1: Órdenes de Trabajo Activas */}
           <div
             onClick={() => setActiveTab('WORK_ORDERS')}
@@ -277,6 +277,35 @@ export const FioriLaunchpad = ({ onOpenCreateWO, onOpenCreateMIGO }) => {
               </span>
               <span className="text-sky-700 dark:text-sky-400 group-hover:underline flex items-center font-bold">
                 Ver HCM <ArrowRight className="w-3 h-3 ml-1" />
+              </span>
+            </div>
+          </div>
+
+          {/* Tile 6: Logs de Auditoría & Trazabilidad SAP (SLG1 / ST03N) */}
+          <div
+            onClick={() => setActiveTab('AUDIT_LOGS')}
+            className="fiori-glass p-5 rounded-xl cursor-pointer hover:border-sky-500 hover:shadow-md transition-all transform hover:-translate-y-0.5 group relative overflow-hidden"
+          >
+            <div className="flex items-center justify-between text-slate-500 mb-2">
+              <span className="text-xs font-bold uppercase tracking-wider text-slate-600 dark:text-slate-400">Auditoría (SLG1 / ST03N)</span>
+              <div className="w-8 h-8 rounded-lg bg-sky-500/10 text-sky-400 flex items-center justify-center font-bold border border-sky-500/20">
+                <ShieldCheck className="w-4 h-4 group-hover:scale-110 transition-transform" />
+              </div>
+            </div>
+            <div className="flex items-baseline justify-between">
+              <div className="text-3xl font-black text-slate-900 dark:text-white tracking-tight flex items-baseline gap-2">
+                <span>Inmutable</span>
+              </div>
+              <span className="text-xs font-bold text-emerald-400 bg-emerald-950/40 border border-emerald-800 px-2 py-0.5 rounded flex items-center">
+                Realtime
+              </span>
+            </div>
+            <div className="flex items-center justify-between mt-3 pt-3 border-t border-slate-100 dark:border-slate-800 text-xs">
+              <span className="text-slate-400 font-medium flex items-center gap-1">
+                Logs Transaccionales
+              </span>
+              <span className="text-sky-400 group-hover:underline flex items-center font-bold">
+                Ver Logs <ArrowRight className="w-3 h-3 ml-1" />
               </span>
             </div>
           </div>
@@ -435,6 +464,9 @@ export const FioriLaunchpad = ({ onOpenCreateWO, onOpenCreateMIGO }) => {
                 <div className="flex items-center justify-between text-[11px] text-slate-500 dark:text-slate-400">
                   <span>Cant: <strong>{doc.qty} {doc.unit}</strong></span>
                   <span>Ref: <strong className="text-slate-600 dark:text-slate-300">{doc.refDocument}</strong></span>
+                </div>
+                <div className="text-[10px] text-slate-400 font-mono text-right pt-0.5">
+                  Fecha: {doc.timestamp || doc.created_at || doc.date || new Date().toISOString().slice(0, 10)}
                 </div>
               </div>
             ))}

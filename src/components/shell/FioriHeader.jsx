@@ -171,6 +171,17 @@ export const FioriHeader = ({ onOpenCreateWO, onOpenCreateMaterial, onOpenCreate
       icon: Users,
       colorClasses: 'bg-purple-500/10 text-purple-400 border-purple-500/20',
       badge: '#admin-usuarios'
+    },
+    {
+      key: 'AUDIT_LOGS',
+      title: 'Logs de Auditoría',
+      subtitle: 'Transacciones & Trazabilidad Inmutable',
+      slug: 'axomira:admin:auditoria',
+      alias: '#admin-auditoria',
+      tcode: 'SLG1 / ST03N',
+      icon: ShieldCheck,
+      colorClasses: 'bg-sky-500/10 text-sky-400 border-sky-500/20',
+      badge: '#admin-auditoria'
     }
   ];
 
@@ -198,7 +209,8 @@ export const FioriHeader = ({ onOpenCreateWO, onOpenCreateMaterial, onOpenCreate
     MIGO: { title: 'Movimientos (#inv-mov)', icon: Package, desc: 'Entradas/Salidas (axomira:inventario:movimientos)', slug: 'axomira:inventario:movimientos', alias: '#inv-mov' },
     ANALYTICS: { title: 'Analytics (#analitica-costos)', icon: Database, desc: 'Executive Analytics (axomira:analitica:costos)', slug: 'axomira:analitica:costos', alias: '#analitica-costos' },
     HR: { title: 'Recursos Humanos (#rrhh-personal)', icon: HardHat, desc: 'Ficha personal (axomira:rrhh:personal)', slug: 'axomira:rrhh:personal', alias: '#rrhh-personal' },
-    USER_MGMT: { title: '🏢 Dashboard Clientes', icon: Building2, desc: 'Dashboard Global de Clientes & Usuarios', slug: 'axomira:admin:usuarios', alias: '#admin-usuarios' }
+    USER_MGMT: { title: '🏢 Dashboard Clientes', icon: Building2, desc: 'Dashboard Global de Clientes & Usuarios', slug: 'axomira:admin:usuarios', alias: '#admin-usuarios' },
+    AUDIT_LOGS: { title: '🛡️ Logs Auditoría SLG1', icon: ShieldCheck, desc: 'Trazabilidad & Logs Inmutables (SLG1/ST03N)', slug: 'axomira:admin:auditoria', alias: '#admin-auditoria' }
   };
 
 
