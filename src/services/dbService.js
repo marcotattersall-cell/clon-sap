@@ -105,6 +105,19 @@ export const seedCollectionIfEmpty = async (collectionName, defaultItems = [], t
   return await getActiveDbService().seedCollectionIfEmpty(collectionName, itemsToSeed, tenantId);
 };
 
+export const purgeTenantData = async (tenantId = DEFAULT_TENANT_ID) => {
+  try {
+    await firestoreService.purgeTenantData(tenantId);
+  } catch (e) {}
+  try {
+    if (isSupabaseConfigured) {
+      await supabaseService.purgeTenantData(tenantId);
+    }
+  } catch (e) {}
+  return true;
+};
+
+
 import { checkProcessedIdempotencyKey, markIdempotencyKeyProcessed } from './idempotencyService';
 
 /**

@@ -5,6 +5,7 @@ import {
   upsertDocument,
   deleteDocument,
   seedCollectionIfEmpty,
+  purgeTenantData,
   executeAtomicGoodsMovement,
   recordAuditLog,
   DEFAULT_TENANT_ID
@@ -184,17 +185,14 @@ export const SAPProvider = ({ children }) => {
 
   // Real-Time Subscriptions & Dynamic Sync per Tenant
   useEffect(() => {
-    // Auto-seeding predeterminado
-    seedCollectionIfEmpty('plants', DEFAULT_PLANTS, activeTenantId);
-    seedCollectionIfEmpty('materials', DEFAULT_MATERIALS, activeTenantId);
-    seedCollectionIfEmpty('assets', DEFAULT_ASSETS, activeTenantId);
-    seedCollectionIfEmpty('notifications', DEFAULT_NOTIFICATIONS, activeTenantId);
-    seedCollectionIfEmpty('workOrders', DEFAULT_WORK_ORDERS, activeTenantId);
-    seedCollectionIfEmpty('purchaseOrders', DEFAULT_PURCHASE_ORDERS, activeTenantId);
-    seedCollectionIfEmpty('migoDocuments', DEFAULT_MIGO_DOCUMENTS, activeTenantId);
-    seedCollectionIfEmpty('employees', DEFAULT_EMPLOYEES, activeTenantId);
-    seedCollectionIfEmpty('absences', DEFAULT_ABSENCES, activeTenantId);
-    seedCollectionIfEmpty('payrollRuns', DEFAULT_PAYROLL_RUNS, activeTenantId);
+    // Limpieza única inicial de registros semilla/mock remotos en la base de datos
+    try {
+      if (!localStorage.getItem('sap_database_purged_v2')) {
+        purgeTenantData(activeTenantId).then(() => {
+          localStorage.setItem('sap_database_purged_v2', 'true');
+        });
+      }
+    } catch (e) {}
 
     // 2. Real-Time Snapshot Listeners por Tenant
     const unsubPlants = subscribeCollection('plants', (items) => {

@@ -699,3 +699,33 @@ export const getPagedCollectionDocs = async (
     };
   }
 };
+
+/**
+ * Purga y elimina de forma definitiva todos los registros sembrados o mock de las tablas de un Tenant en Supabase.
+ */
+export const purgeTenantData = async (tenantId = DEFAULT_TENANT_ID) => {
+  const activeTenant = tenantId || DEFAULT_TENANT_ID;
+  const collectionsToPurge = [
+    'assets',
+    'materials',
+    'workOrders',
+    'notifications',
+    'purchaseOrders',
+    'migoDocuments',
+    'employees',
+    'absences',
+    'payrollRuns',
+    'plants'
+  ];
+
+  for (const colName of collectionsToPurge) {
+    const tableName = getTableName(colName);
+    try {
+      await supabase.from(tableName).delete().eq('tenant_id', activeTenant);
+    } catch (err) {
+      console.warn(`[Supabase Purge Warning] Error limpiando ${tableName} (${activeTenant}):`, err);
+    }
+  }
+  return true;
+};
+

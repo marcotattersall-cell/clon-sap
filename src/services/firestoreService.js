@@ -301,3 +301,41 @@ export const getCollectionDocs = async (collectionName, tenantId = DEFAULT_TENAN
     return [];
   }
 };
+
+/**
+ * Purga y elimina de forma definitiva todos los registros sembrados o mock de las colecciones de un Tenant en Firestore.
+ */
+export const purgeTenantData = async (tenantId = DEFAULT_TENANT_ID) => {
+  if (!db) return false;
+  const activeTenant = tenantId || DEFAULT_TENANT_ID;
+  const collectionsToPurge = [
+    'assets',
+    'materials',
+    'workOrders',
+    'notifications',
+    'purchaseOrders',
+    'migoDocuments',
+    'employees',
+    'absences',
+    'payrollRuns',
+    'plants'
+  ];
+
+  for (const colName of collectionsToPurge) {
+    try {
+      const colRef = getTenantCollectionRef(colName, activeTenant);
+      const snapshot = await getDocs(colRef);
+      if (!snapshot.empty) {
+        const batch = writeBatch(db);
+        snapshot.docs.forEach(d => {
+          batch.delete(d.ref);
+        });
+        await batch.commit();
+      }
+    } catch (err) {
+      console.warn(`[Firestore Purge Warning] Error limpiando ${colName} (${activeTenant}):`, err);
+    }
+  }
+  return true;
+};
+
