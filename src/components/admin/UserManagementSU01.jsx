@@ -956,11 +956,11 @@ AXOMIRA Cloud ERP Enterprise`;
                     <div className="flex items-start justify-between gap-2">
                       <div className="flex items-center space-x-3">
                         <div className="w-10 h-10 rounded-xl bg-sap-blue/10 border border-sap-blue/30 text-sap-blue flex items-center justify-center font-black text-base shrink-0">
-                          {client.name.charAt(0)}
+                          {((client && client.name) || client?.tenantId || 'C').charAt(0).toUpperCase()}
                         </div>
                         <div>
                           <h3 className="text-base font-black text-slate-900 dark:text-white leading-tight">
-                            {client.name}
+                            {client?.name || client?.tenantId || 'Cliente'}
                           </h3>
                           <div className="text-[10px] text-slate-500 font-mono flex items-center gap-1">
                             <Globe className="w-3 h-3 text-sap-blue" />
@@ -1180,37 +1180,37 @@ AXOMIRA Cloud ERP Enterprise`;
                 </thead>
                 <tbody className="divide-y divide-slate-200 dark:divide-slate-800 text-xs">
                   {filteredUsers.map(u => (
-                    <tr key={u.id} className="hover:bg-blue-50/50 dark:hover:bg-slate-800/50 transition-colors">
+                    <tr key={u.id || u.uid || Math.random()} className="hover:bg-blue-50/50 dark:hover:bg-slate-800/50 transition-colors">
                       <td className="font-bold text-slate-900 dark:text-slate-100 flex items-center space-x-2 py-3">
                         <div className="w-7 h-7 rounded-full bg-sap-blue/10 border border-sap-blue/30 text-sap-blue flex items-center justify-center font-bold text-xs shrink-0">
-                          {u.name.charAt(0)}
+                          {((u && (u.name || u.displayName || u.email)) || 'U').charAt(0).toUpperCase()}
                         </div>
                         <div>
-                          <div>{u.name}</div>
-                          <div className="text-[10px] text-slate-400 font-mono">{u.id}</div>
+                          <div>{u?.name || u?.displayName || u?.email || 'Usuario'}</div>
+                          <div className="text-[10px] text-slate-400 font-mono">{u?.id || u?.uid || 'USR-000'}</div>
                         </div>
                       </td>
                       <td className="font-mono text-slate-700 dark:text-slate-300">
-                        {u.email}
+                        {u?.email || 'N/A'}
                       </td>
                       <td>
                         <span className="px-2.5 py-1 rounded-lg text-[10px] font-bold bg-slate-100 text-slate-800 dark:bg-slate-800 dark:text-slate-200 border border-slate-300 dark:border-slate-700 inline-flex items-center gap-1">
                           <Globe className="w-3 h-3 text-sap-blue" />
-                          <span>{u.tenantName}</span>
+                          <span>{u?.tenantName || u?.tenant_name || u?.tenantId || 'Tenant Central'}</span>
                         </span>
                       </td>
                       <td>
                         <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${
-                          u.role === 'ADMINISTRATOR' ? 'bg-purple-100 text-purple-800 dark:bg-purple-950 dark:text-purple-300' :
-                          u.role === 'MAINTENANCE_MGR' ? 'bg-blue-100 text-blue-800 dark:bg-blue-950 dark:text-blue-300' :
-                          u.role === 'WAREHOUSE_KEEPER' ? 'bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300' :
+                          u?.role === 'ADMINISTRATOR' ? 'bg-purple-100 text-purple-800 dark:bg-purple-950 dark:text-purple-300' :
+                          u?.role === 'MAINTENANCE_MGR' ? 'bg-blue-100 text-blue-800 dark:bg-blue-950 dark:text-blue-300' :
+                          u?.role === 'WAREHOUSE_KEEPER' ? 'bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300' :
                           'bg-slate-100 text-slate-800 dark:bg-slate-800 dark:text-slate-300'
                         }`}>
-                          {u.roleName}
+                          {u?.roleName || u?.role || 'Operador'}
                         </span>
                       </td>
                       <td className="text-slate-600 dark:text-slate-400 font-medium">
-                        {u.plant}
+                        {u?.plant || '0001 (Planta Central)'}
                       </td>
                       <td>
                         <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold inline-flex items-center gap-1 ${

@@ -751,10 +751,10 @@ export const FioriHeader = ({ onOpenCreateWO, onOpenCreateMaterial, onOpenCreate
                 className="flex items-center space-x-2 p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors border border-slate-200 dark:border-slate-700"
               >
                 <div className="w-7 h-7 rounded-full bg-sap-blue text-white flex items-center justify-center font-bold text-xs">
-                  {user.displayName ? user.displayName.charAt(0).toUpperCase() : user.email.charAt(0).toUpperCase()}
+                  {((user?.displayName || user?.email || 'U')).charAt(0).toUpperCase()}
                 </div>
                 <span className="text-xs font-bold text-slate-800 dark:text-slate-200 hidden xl:inline max-w-[120px] truncate">
-                  {user.displayName || user.email.split('@')[0]}
+                  {user?.displayName || (user?.email ? user.email.split('@')[0] : 'Usuario')}
                 </span>
                 <ChevronDown className="w-3 h-3 text-slate-400" />
               </button>
